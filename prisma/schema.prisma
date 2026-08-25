@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Rol {
+  ADMINISTRADOR
+  TUTOR
+  ESTUDIANTE
+}
+
+enum EstadoUsuario {
+  ACTIVO
+  INACTIVO
+}
+
+enum EstadoCurso {
+  BORRADOR
+  PUBLICADO
+  ARCHIVADO
+}
+
+enum TipoContenido {
+  VIDEO
+  TEXTO
+  DOCUMENTO
+}
+
+model Users {
+  id        String        @id @default(uuid())
+  authId    String?       @unique
+  nombre    String
+  apellido  String
+  email     String        @unique
+  rol       Rol
+  estado    EstadoUsuario @default(ACTIVO)
+  createdAt DateTime      @default(now())
+
+  cursosComoTutor Courses[]     @relation("TutorCourses")
+  inscripciones   CourseUsers[]
+
+  @@map("users")
+}
+
+model Courses {
+  id          String      @id @default(uuid())
+  titulo      String
+  descripcion String
+  imagen      String?
+  tutorId     String
+  estado      EstadoCurso @default(BORRADOR)
+  createdAt   DateTime    @default(now())
+
+  tutor      Users         @relation("TutorCourses", fields: [tutorId], references: [id])
+  inscritos  CourseUsers[]
+  contenidos Contents[]
+
+  @@map("courses")
+}
+
+model CourseUsers {
+  id       String   @id @default(uuid())
+  courseId String
+  userId   String
+  fecha    DateTime @default(now())
+
+  course Courses @relation(fields: [courseId], references: [id])
+  user   Users   @relation(fields: [userId], references: [id])
+
+  @@unique([courseId, userId])
+  @@map("course_users")
+}
+
+model Contents {
+  id          String        @id @default(uuid())
+  courseId    String
+  titulo      String
+  descripcion String?
+  tipo        TipoContenido
+  contenido   String
+  orden       Int           @default(0)
+  visible     Boolean       @default(true)
+
+  course     Courses     @relation(fields: [courseId], references: [id])
+  documentos Documents[]
+
+  @@map("contents")
+}
+
+model Documents {
+  id        String @id @default(uuid())
+  contentId String
+  archivo   String
+  nombre    String
+  tipo      String
+
+  content Contents @relation(fields: [contentId], references: [id])
+
+  @@map("documents")
+}
