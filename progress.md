@@ -12,11 +12,11 @@ Leyenda:
 
 | ID | Sprint | Implementado | Pruebas unitarias | Pruebas pasan | Validado | Patrón/Práctica aplicada | Notas |
 |----|--------|---------------|--------------------|-----------------|----------|---------------------------|-------|
-| US01 | 1 | No iniciado | No | N/A | No | — | Login Admin vía Supabase Auth. Modelo de datos ya migrado (tabla `users` lista) |
+| US01 | 1 | Sí | Sí (`app/dashboard/page.test.ts`) | Sí | No (pendiente revisión por pares/docente) | Server Component + redirect() de Next.js | Login funcional, verificado manualmente (redirige correctamente según rol) |
 | US02 | 2 | No iniciado | No | N/A | No | — | Depende de US21 |
 | US03 | 2 | No iniciado | No | N/A | No | — | |
 | US04 | 4 | No iniciado | No | N/A | No | — | |
-| US05 | 1 | No iniciado | No | N/A | No | — | Login Tutor. Modelo de datos ya migrado |
+| US05 | 1 | Sí | Sí (`app/dashboard/page.test.ts`) | Sí | No (pendiente revisión por pares/docente) | Server Component + redirect() de Next.js | Login Tutor verificado manualmente end-to-end (login real → `/tutor`) |
 | US06 | 2 | No iniciado | No | N/A | No | — | Depende de US21 |
 | US07 | 2 | No iniciado | No | N/A | No | — | |
 | US08 | 3 | No iniciado | No | N/A | No | — | |
@@ -24,7 +24,7 @@ Leyenda:
 | US10 | 3 | No iniciado | No | N/A | No | — | |
 | US11 | 2 | No iniciado | No | N/A | No | — | |
 | US12 | 4 | No iniciado | No | N/A | No | — | |
-| US13 | 1 | No iniciado | No | N/A | No | — | Login Estudiante. Modelo de datos ya migrado |
+| US13 | 1 | Sí | Sí (`app/dashboard/page.test.ts`) | Sí | No (pendiente revisión por pares/docente) | Server Component + redirect() de Next.js | Login Estudiante cubierto por la misma lógica de despacho por rol |
 | US14 | 4 | No iniciado | No | N/A | No | — | |
 | US15 | 3 | No iniciado | No | N/A | No | — | |
 | US16 | 3 | No iniciado | No | N/A | No | — | |
@@ -38,9 +38,9 @@ Leyenda:
 
 ## Cobertura de pruebas (resumen)
 
-- Historias con pruebas implementadas: 1 / 23 (US21)
-- Historias con pruebas pasando: 1 / 23 (US21)
-- Historias validadas: 0 / 23
+- Historias con pruebas implementadas: 4 / 23 (US01, US05, US13, US21)
+- Historias con pruebas pasando: 4 / 23 (8/8 tests en 2 archivos: `sync-user.test.ts`, `page.test.ts`)
+- Historias validadas: 0 / 23 (todas pendientes de revisión por pares/docente)
 
 ## Próxima actualización
 
