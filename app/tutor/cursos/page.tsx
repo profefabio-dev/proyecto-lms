@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CreateCourseForm } from "@/components/create-course-form";
+import Link from "next/link";
 
 export default async function CursosPage() {
   const supabase = await createClient();
@@ -48,7 +49,11 @@ export default async function CursosPage() {
           )}
           {cursos.map((curso) => (
             <tr key={curso.id} className="border-b">
-              <td className="py-2">{curso.titulo}</td>
+              <td className="py-2">
+                 <Link href={`/tutor/cursos/${curso.id}`} className="text-blue-600 underline">
+                    {curso.titulo}
+                 </Link>
+              </td>
               <td className="py-2">{curso.estado}</td>
               <td className="py-2">{curso.createdAt.toLocaleDateString("es-CO")}</td>
             </tr>
