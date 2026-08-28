@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import type { Rol } from "@prisma/client";
+import { EditEmailForm } from "@/components/edit-email-form";
 
 const ROLES_FILTRO: { valor: Rol | "TODOS"; etiqueta: string }[] = [
   { valor: "TODOS", etiqueta: "Todos" },
@@ -82,12 +83,13 @@ export default async function UsuariosPage({
             <th className="py-2">Email</th>
             <th className="py-2">Rol</th>
             <th className="py-2">Estado</th>
+            <th className="py-2">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {usuarios.length === 0 && (
             <tr>
-              <td colSpan={4} className="py-4 text-center text-gray-500">
+              <td colSpan={5} className="py-4 text-center text-gray-500">
                 No hay usuarios {filtroRol ? "con ese rol" : "registrados"} todavía.
               </td>
             </tr>
@@ -109,6 +111,9 @@ export default async function UsuariosPage({
                 >
                   {usuario.estado}
                 </span>
+              </td>
+              <td className="py-2">
+                <EditEmailForm usuarioId={usuario.id} emailActual={usuario.email} />
               </td>
             </tr>
           ))}

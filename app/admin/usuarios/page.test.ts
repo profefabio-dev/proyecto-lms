@@ -19,6 +19,14 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// La página ahora renderiza <EditEmailForm>, que importa la Server Action
+// de US22 y, en cadena, el cliente admin de Supabase (que necesita
+// SUPABASE_SERVICE_ROLE_KEY en tiempo real). La mockeamos para que esta
+// prueba siga siendo una prueba unitaria de la página, no de esa cadena.
+vi.mock("@/lib/supabase/sync-user", () => ({
+  updateSyncedUserEmail: vi.fn(),
+}));
+
 import UsuariosPage from "./page";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";

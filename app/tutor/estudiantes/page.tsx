@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CreateStudentForm } from "@/components/create-student-form";
+import { EditEmailForm } from "@/components/edit-email-form";
 
 export default async function EstudiantesPage() {
   const supabase = await createClient();
@@ -36,12 +37,13 @@ export default async function EstudiantesPage() {
             <th className="py-2">Nombre</th>
             <th className="py-2">Email</th>
             <th className="py-2">Estado</th>
+            <th className="py-2">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {estudiantes.length === 0 && (
             <tr>
-              <td colSpan={3} className="py-4 text-gray-500">
+              <td colSpan={4} className="py-4 text-gray-500">
                 Aún no hay estudiantes registrados.
               </td>
             </tr>
@@ -53,6 +55,9 @@ export default async function EstudiantesPage() {
               </td>
               <td className="py-2">{estudiante.email}</td>
               <td className="py-2">{estudiante.estado}</td>
+              <td className="py-2">
+                <EditEmailForm usuarioId={estudiante.id} emailActual={estudiante.email} />
+              </td>
             </tr>
           ))}
         </tbody>
