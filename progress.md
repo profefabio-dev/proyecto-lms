@@ -2,7 +2,17 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-08-26 — US21 implementada y probada: `lib/supabase/sync-user.ts` crea el usuario en Supabase Auth y su registro vinculado en `Users` (por `authId`), con reversión automática (borra el usuario de Auth) si falla el guardado en la base de datos. Verificado manualmente con un script (`scripts/test-sync-user.ts`) contra Supabase real, y con 3 pruebas unitarias automatizadas (`lib/supabase/sync-user.test.ts`, mockeando Supabase Auth y Prisma) — las 3 pasan. Pendiente: conectar esta función a un formulario/Server Action real para US02 y US06, y revisión por pares/docente antes de marcarla como validada.
+Última actualización: 2026-08-28 — US03 implementada y probada: página `app/admin/usuarios/page.tsx` (Server Component) protegida por sesión + rol Administrador (mismo patrón de guarda que las páginas de Tutor), que lista todos los usuarios del sistema (nombre, email, rol y estado) con filtro por rol vía query param (`?rol=ADMINISTRADOR|TUTOR|ESTUDIANTE`); un valor de rol inválido en la URL se ignora y muestra el listado completo. Enlace agregado desde `app/admin/page.tsx` ("Ver todos los usuarios"). 6 pruebas unitarias automatizadas (`app/admin/usuarios/page.test.ts`, mockeando sesión y Prisma) — las 6 pasan. Verificado con la suite completa (`npm test`): 35/35 tests en 7 archivos, y con `npx eslint` y `npx tsc --noEmit` sin errores. Pendiente: revisión por pares/docente antes de marcarla como validada; falta verificación manual en el navegador con una cuenta Admin real.
+
+Actualización anterior — 2026-08-27: US11 implementada y probada: Server Action `asignarEstudiantes` (`lib/actions/assign-students.ts`) valida sesión y rol Tutor, verifica que el curso pertenezca al tutor autenticado (evita asignar a cursos ajenos), filtra estudiantes ya inscritos y crea los registros en `CourseUsers`. Página de detalle de curso (`app/tutor/cursos/[courseId]/page.tsx`) muestra estudiantes inscritos y formulario de asignación (`components/assign-students-form.tsx`); el listado de cursos (`app/tutor/cursos/page.tsx`) enlaza a cada detalle. 6 pruebas unitarias automatizadas (`lib/actions/assign-students.test.ts`, mockeando sesión y Prisma) — las 6 pasan. Verificado manualmente asignando un estudiante real a un curso real (se movió correctamente a "Estudiantes inscritos"). Pendiente: revisión por pares/docente antes de marcarla como validada; falta la restricción real de acceso al contenido para estudiantes no asignados (se resolverá junto con las historias de contenido del Sprint 3).
+
+Actualización anterior — 2026-08-27: US07 implementada y probada: Server Action `crearCurso` (`lib/actions/create-course.ts`) valida sesión y rol Tutor, valida datos con Zod (título, descripción, URL de imagen obligatoria, estado Borrador/Publicado), y crea el registro en `Courses` asociado al tutor autenticado. Formulario (`components/create-course-form.tsx`) y listado (`app/tutor/cursos/page.tsx`) conectados al panel de Tutor. 5 pruebas unitarias automatizadas (`lib/actions/create-course.test.ts`, mockeando sesión y Prisma) — las 5 pasan. Verificado manualmente creando un curso real desde la interfaz (aparece en la tabla con su estado). Nota: el campo "imagen" por ahora es una URL de texto, no una subida de archivo real; eso quedaría como historia aparte si el docente lo requiere. Pendiente: revisión por pares/docente antes de marcarla como validada.
+
+Actualización anterior — 2026-08-27: US06 implementada y probada: Server Action `crearEstudiante` (`lib/actions/create-student.ts`) valida sesión y rol Tutor, valida datos con Zod, genera contraseña temporal y llama a `createSyncedUser` (US21) para dar de alta al estudiante en Supabase Auth y en `Users` en la misma operación. Formulario (`components/create-student-form.tsx`) y listado (`app/tutor/estudiantes/page.tsx`) conectados al panel de Tutor. 5 pruebas unitarias automatizadas (`lib/actions/create-student.test.ts`, mockeando sesión, Prisma y `createSyncedUser`) — las 5 pasan. Verificado manualmente creando un estudiante real desde la interfaz e iniciando sesión con él (redirige correctamente a `/estudiante`). Pendiente: revisión por pares/docente antes de marcarla como validada.
+
+Actualización anterior — 2026-08-26: US02 implementada y probada: Server Action `crearTutor` (`lib/actions/create-tutor.ts`) valida sesión y rol Administrador, valida datos con Zod, genera contraseña temporal y llama a `createSyncedUser` (US21) para dar de alta al tutor en Supabase Auth y en `Users` en la misma operación. Formulario (`components/create-tutor-form.tsx`) y listado (`app/admin/tutores/page.tsx`) conectados al panel de Admin. 5 pruebas unitarias automatizadas (`lib/actions/create-tutor.test.ts`, mockeando sesión, Prisma y `createSyncedUser`) — las 5 pasan. Verificado manualmente creando un tutor real desde la interfaz (login exitoso con la contraseña temporal generada). Pendiente: revisión por pares/docente antes de marcarla como validada.
+
+Actualización anterior — 2026-08-26: US21 implementada y probada: `lib/supabase/sync-user.ts` crea el usuario en Supabase Auth y su registro vinculado en `Users` (por `authId`), con reversión automática (borra el usuario de Auth) si falla el guardado en la base de datos. Verificado manualmente con un script (`scripts/test-sync-user.ts`) contra Supabase real, y con 3 pruebas unitarias automatizadas (`lib/supabase/sync-user.test.ts`, mockeando Supabase Auth y Prisma) — las 3 pasan.
 
 Leyenda:
 - **Implementado:** No iniciado / En progreso / Sí
@@ -13,16 +23,16 @@ Leyenda:
 | ID | Sprint | Implementado | Pruebas unitarias | Pruebas pasan | Validado | Patrón/Práctica aplicada | Notas |
 |----|--------|---------------|--------------------|-----------------|----------|---------------------------|-------|
 | US01 | 1 | Sí | Sí (`app/dashboard/page.test.ts`) | Sí | No (pendiente revisión por pares/docente) | Server Component + redirect() de Next.js | Login funcional, verificado manualmente (redirige correctamente según rol) |
-| US02 | 2 | No iniciado | No | N/A | No | — | Depende de US21 |
-| US03 | 2 | No iniciado | No | N/A | No | — | |
+| US02 | 2 | Sí | Sí (`lib/actions/create-tutor.test.ts`, 5 casos) | Sí | No (pendiente revisión por pares/docente) | Server Action + validación Zod + autorización server-side (rol Administrador) + patrón de compensación heredado de US21 | `crearTutor` en `lib/actions/create-tutor.ts`. Verificado manualmente creando un tutor real desde `app/admin/tutores/page.tsx` (login confirmado con contraseña temporal) |
+| US03 | 2 | Sí | Sí (`app/admin/usuarios/page.test.ts`, 6 casos) | Sí | No (pendiente revisión por pares/docente) | Server Component + autorización server-side (rol Administrador) + filtro por query param (`?rol=`) | Listado en `app/admin/usuarios/page.tsx`; enlazado desde `app/admin/page.tsx`. Falta verificación manual en navegador con cuenta Admin real |
 | US04 | 4 | No iniciado | No | N/A | No | — | |
 | US05 | 1 | Sí | Sí (`app/dashboard/page.test.ts`) | Sí | No (pendiente revisión por pares/docente) | Server Component + redirect() de Next.js | Login Tutor verificado manualmente end-to-end (login real → `/tutor`) |
-| US06 | 2 | No iniciado | No | N/A | No | — | Depende de US21 |
-| US07 | 2 | No iniciado | No | N/A | No | — | |
+| US06 | 2 | Sí | Sí (`lib/actions/create-student.test.ts`, 5 casos) | Sí | No (pendiente revisión por pares/docente) | Server Action + validación Zod + autorización server-side (rol Tutor) + patrón de compensación heredado de US21 | `crearEstudiante` en `lib/actions/create-student.ts`. Verificado manualmente creando un estudiante real desde `app/tutor/estudiantes/page.tsx` y confirmando su login (redirige a `/estudiante`) |
+| US07 | 2 | Sí | Sí (`lib/actions/create-course.test.ts`, 5 casos) | Sí | No (pendiente revisión por pares/docente) | Server Action + validación Zod + autorización server-side (rol Tutor) | `crearCurso` en `lib/actions/create-course.ts`. Verificado manualmente creando un curso real desde `app/tutor/cursos/page.tsx`. Campo "imagen" es URL de texto por ahora, no subida de archivo |
 | US08 | 3 | No iniciado | No | N/A | No | — | |
 | US09 | 3 | No iniciado | No | N/A | No | — | |
 | US10 | 3 | No iniciado | No | N/A | No | — | |
-| US11 | 2 | No iniciado | No | N/A | No | — | |
+| US11 | 2 | Sí | Sí (`lib/actions/assign-students.test.ts`, 6 casos) | Sí | No (pendiente revisión por pares/docente) | Server Action + validación Zod + autorización server-side (curso debe pertenecer al tutor) + filtrado de duplicados | `asignarEstudiantes` en `lib/actions/assign-students.ts`. Verificado manualmente asignando un estudiante real desde `app/tutor/cursos/[courseId]/page.tsx` |
 | US12 | 4 | No iniciado | No | N/A | No | — | |
 | US13 | 1 | Sí | Sí (`app/dashboard/page.test.ts`) | Sí | No (pendiente revisión por pares/docente) | Server Component + redirect() de Next.js | Login Estudiante cubierto por la misma lógica de despacho por rol |
 | US14 | 4 | No iniciado | No | N/A | No | — | |
@@ -38,8 +48,8 @@ Leyenda:
 
 ## Cobertura de pruebas (resumen)
 
-- Historias con pruebas implementadas: 4 / 23 (US01, US05, US13, US21)
-- Historias con pruebas pasando: 4 / 23 (8/8 tests en 2 archivos: `sync-user.test.ts`, `page.test.ts`)
+- Historias con pruebas implementadas: 9 / 23 (US01, US02, US03, US05, US06, US07, US11, US13, US21)
+- Historias con pruebas pasando: 9 / 23 (35/35 tests en 7 archivos: `sync-user.test.ts`, `app/dashboard/page.test.ts`, `create-tutor.test.ts`, `create-student.test.ts`, `create-course.test.ts`, `assign-students.test.ts`, `app/admin/usuarios/page.test.ts`)
 - Historias validadas: 0 / 23 (todas pendientes de revisión por pares/docente)
 
 ## Próxima actualización
