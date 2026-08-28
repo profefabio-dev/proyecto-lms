@@ -3,7 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AssignStudentsForm } from "@/components/assign-students-form";
 import { CreateVideoContentForm } from "@/components/create-video-content-form";
+import { UploadDocumentForm } from "@/components/upload-document-form";
 import { YoutubeEmbed } from "@/components/youtube-embed";
+import { crearUrlDescarga } from "@/lib/supabase/storage";
 
 export default async function CursoDetallePage({
   params,
@@ -35,6 +37,7 @@ export default async function CursoDetallePage({
       },
       contenidos: {
         orderBy: { orden: "asc" },
+        include: { documentos: true },
       },
     },
   });
@@ -52,6 +55,25 @@ export default async function CursoDetallePage({
     },
     orderBy: { nombre: "asc" },
   });
+
+  // Las URLs de descarga son firmadas y de corta duración (US09/US16), así
+  // que se generan en cada carga de la página en vez de guardarse.
+  const contenidosConDocumentos = await Promise.all(
+    curso.contenidos.map(async (contenido) => {
+      if (contenido.tipo !== "DOCUMENTO") {
+        return { ...contenido, documentosConUrl: [] };
+      }
+
+      const documentosConUrl = await Promise.all(
+        contenido.documentos.map(async (documento) => ({
+          ...documento,
+          url: await crearUrlDescarga(documento.archivo),
+        }))
+      );
+
+      return { ...contenido, documentosConUrl };
+    })
+  );
 
   return (
     <main className="p-8 space-y-8">
@@ -81,11 +103,11 @@ export default async function CursoDetallePage({
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
-        {curso.contenidos.length === 0 ? (
+        {contenidosConDocumentos.length === 0 ? (
           <p className="text-gray-500">Este curso todavía no tiene contenido publicado.</p>
         ) : (
           <ul className="space-y-6">
-            {curso.contenidos.map((contenido) => (
+            {contenidosConDocumentos.map((contenido) => (
               <li key={contenido.id} className="space-y-2">
                 <h3 className="font-medium">{contenido.titulo}</h3>
                 {contenido.descripcion && (
@@ -93,6 +115,28 @@ export default async function CursoDetallePage({
                 )}
                 {contenido.tipo === "VIDEO" && (
                   <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                )}
+                {contenido.tipo === "DOCUMENTO" && (
+                  <ul className="list-disc list-inside space-y-1">
+                    {contenido.documentosConUrl.map((documento) =>
+                      documento.url ? (
+                        <li key={documento.id}>
+                          <a
+                            href={documento.url}
+                            className="text-blue-600 underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {documento.nombre}
+                          </a>
+                        </li>
+                      ) : (
+                        <li key={documento.id} className="text-gray-500">
+                          {documento.nombre} (no se pudo generar el enlace de descarga)
+                        </li>
+                      )
+                    )}
+                  </ul>
                 )}
               </li>
             ))}
@@ -102,6 +146,11 @@ export default async function CursoDetallePage({
         <div>
           <h3 className="mb-2 text-lg font-semibold">Publicar video</h3>
           <CreateVideoContentForm courseId={curso.id} />
+        </div>
+
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Subir documento</h3>
+          <UploadDocumentForm courseId={curso.id} />
         </div>
       </section>
     </main>

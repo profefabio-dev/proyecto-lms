@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { YoutubeEmbed } from "@/components/youtube-embed";
+import { crearUrlDescarga } from "@/lib/supabase/storage";
 
 export default async function CursoEstudiantePage({
   params,
@@ -28,7 +29,10 @@ export default async function CursoEstudiantePage({
   const curso = await prisma.courses.findUnique({
     where: { id: courseId },
     include: {
-      contenidos: { orderBy: { orden: "asc" } },
+      contenidos: {
+        orderBy: { orden: "asc" },
+        include: { documentos: true },
+      },
     },
   });
 
@@ -49,6 +53,25 @@ export default async function CursoEstudiantePage({
 
   const contenidosVisibles = curso.contenidos.filter((contenido) => contenido.visible);
 
+  // Las URLs de descarga son firmadas y de corta duración (US09/US16), así
+  // que se generan en cada carga de la página en vez de guardarse.
+  const contenidosConDocumentos = await Promise.all(
+    contenidosVisibles.map(async (contenido) => {
+      if (contenido.tipo !== "DOCUMENTO") {
+        return { ...contenido, documentosConUrl: [] };
+      }
+
+      const documentosConUrl = await Promise.all(
+        contenido.documentos.map(async (documento) => ({
+          ...documento,
+          url: await crearUrlDescarga(documento.archivo),
+        }))
+      );
+
+      return { ...contenido, documentosConUrl };
+    })
+  );
+
   return (
     <main className="p-8 space-y-8">
       <h1 className="text-2xl font-bold">{curso.titulo}</h1>
@@ -57,11 +80,11 @@ export default async function CursoEstudiantePage({
       <section className="space-y-6">
         <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
-        {contenidosVisibles.length === 0 ? (
+        {contenidosConDocumentos.length === 0 ? (
           <p className="text-gray-500">Este curso todavía no tiene contenido publicado.</p>
         ) : (
           <ul className="space-y-6">
-            {contenidosVisibles.map((contenido) => (
+            {contenidosConDocumentos.map((contenido) => (
               <li key={contenido.id} className="space-y-2">
                 <h3 className="font-medium">{contenido.titulo}</h3>
                 {contenido.descripcion && (
@@ -69,6 +92,28 @@ export default async function CursoEstudiantePage({
                 )}
                 {contenido.tipo === "VIDEO" && (
                   <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                )}
+                {contenido.tipo === "DOCUMENTO" && (
+                  <ul className="list-disc list-inside space-y-1">
+                    {contenido.documentosConUrl.map((documento) =>
+                      documento.url ? (
+                        <li key={documento.id}>
+                          <a
+                            href={documento.url}
+                            className="text-blue-600 underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {documento.nombre}
+                          </a>
+                        </li>
+                      ) : (
+                        <li key={documento.id} className="text-gray-500">
+                          {documento.nombre} (no se pudo generar el enlace de descarga)
+                        </li>
+                      )
+                    )}
+                  </ul>
                 )}
               </li>
             ))}

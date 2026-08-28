@@ -27,6 +27,10 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("@/lib/supabase/storage", () => ({
+  crearUrlDescarga: vi.fn().mockResolvedValue(null),
+}));
+
 import CursoEstudiantePage from "./page";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -120,7 +124,7 @@ describe("CursoEstudiantePage (US15)", () => {
 
     expect(prisma.courses.findUnique).toHaveBeenCalledWith({
       where: { id: "curso-1" },
-      include: { contenidos: { orderBy: { orden: "asc" } } },
+      include: { contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } } },
     });
   });
 });
