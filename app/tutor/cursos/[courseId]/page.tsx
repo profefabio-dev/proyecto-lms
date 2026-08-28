@@ -2,6 +2,8 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AssignStudentsForm } from "@/components/assign-students-form";
+import { CreateVideoContentForm } from "@/components/create-video-content-form";
+import { YoutubeEmbed } from "@/components/youtube-embed";
 
 export default async function CursoDetallePage({
   params,
@@ -30,6 +32,9 @@ export default async function CursoDetallePage({
     include: {
       inscritos: {
         include: { user: true },
+      },
+      contenidos: {
+        orderBy: { orden: "asc" },
       },
     },
   });
@@ -71,6 +76,33 @@ export default async function CursoDetallePage({
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Asignar estudiantes</h2>
         <AssignStudentsForm courseId={curso.id} estudiantes={estudiantesDisponibles} />
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Contenido del curso</h2>
+
+        {curso.contenidos.length === 0 ? (
+          <p className="text-gray-500">Este curso todavía no tiene contenido publicado.</p>
+        ) : (
+          <ul className="space-y-6">
+            {curso.contenidos.map((contenido) => (
+              <li key={contenido.id} className="space-y-2">
+                <h3 className="font-medium">{contenido.titulo}</h3>
+                {contenido.descripcion && (
+                  <p className="text-sm text-gray-600">{contenido.descripcion}</p>
+                )}
+                {contenido.tipo === "VIDEO" && (
+                  <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Publicar video</h3>
+          <CreateVideoContentForm courseId={curso.id} />
+        </div>
       </section>
     </main>
   );
