@@ -4,7 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { AssignStudentsForm } from "@/components/assign-students-form";
 import { CreateVideoContentForm } from "@/components/create-video-content-form";
 import { UploadDocumentForm } from "@/components/upload-document-form";
+import { CreateTextContentForm } from "@/components/create-text-content-form";
 import { YoutubeEmbed } from "@/components/youtube-embed";
+import { MarkdownContent } from "@/components/markdown-content";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 
 export default async function CursoDetallePage({
@@ -116,6 +118,9 @@ export default async function CursoDetallePage({
                 {contenido.tipo === "VIDEO" && (
                   <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
                 )}
+                {contenido.tipo === "TEXTO" && (
+                  <MarkdownContent contenido={contenido.contenido} />
+                )}
                 {contenido.tipo === "DOCUMENTO" && (
                   <ul className="list-disc list-inside space-y-1">
                     {contenido.documentosConUrl.map((documento) =>
@@ -151,6 +156,11 @@ export default async function CursoDetallePage({
         <div>
           <h3 className="mb-2 text-lg font-semibold">Subir documento</h3>
           <UploadDocumentForm courseId={curso.id} />
+        </div>
+
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Publicar contenido de texto</h3>
+          <CreateTextContentForm courseId={curso.id} />
         </div>
       </section>
     </main>

@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { YoutubeEmbed } from "@/components/youtube-embed";
+import { MarkdownContent } from "@/components/markdown-content";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 
 export default async function CursoEstudiantePage({
@@ -92,6 +93,9 @@ export default async function CursoEstudiantePage({
                 )}
                 {contenido.tipo === "VIDEO" && (
                   <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                )}
+                {contenido.tipo === "TEXTO" && (
+                  <MarkdownContent contenido={contenido.contenido} />
                 )}
                 {contenido.tipo === "DOCUMENTO" && (
                   <ul className="list-disc list-inside space-y-1">
