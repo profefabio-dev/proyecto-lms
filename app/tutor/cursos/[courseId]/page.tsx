@@ -8,6 +8,7 @@ import { CreateTextContentForm } from "@/components/create-text-content-form";
 import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
+import { ContentOrderControls } from "@/components/content-order-controls";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 
 export default async function CursoDetallePage({
@@ -110,8 +111,17 @@ export default async function CursoDetallePage({
           <p className="text-gray-500">Este curso todavía no tiene contenido publicado.</p>
         ) : (
           <ul className="space-y-6">
-            {contenidosConDocumentos.map((contenido) => (
-              <li key={contenido.id} className="space-y-2">
+            {contenidosConDocumentos.map((contenido, indice) => (
+              <li
+                key={contenido.id}
+                className={`space-y-2 ${!contenido.visible ? "opacity-60" : ""}`}
+              >
+                <ContentOrderControls
+                  contentId={contenido.id}
+                  esPrimero={indice === 0}
+                  esUltimo={indice === contenidosConDocumentos.length - 1}
+                  visible={contenido.visible}
+                />
                 <h3 className="font-medium">{contenido.titulo}</h3>
                 {contenido.descripcion && (
                   <p className="text-sm text-gray-600">{contenido.descripcion}</p>
