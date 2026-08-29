@@ -7,6 +7,7 @@ import { UploadDocumentForm } from "@/components/upload-document-form";
 import { CreateTextContentForm } from "@/components/create-text-content-form";
 import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
+import { DocumentContentList } from "@/components/document-content-list";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 
 export default async function CursoDetallePage({
@@ -122,26 +123,7 @@ export default async function CursoDetallePage({
                   <MarkdownContent contenido={contenido.contenido} />
                 )}
                 {contenido.tipo === "DOCUMENTO" && (
-                  <ul className="list-disc list-inside space-y-1">
-                    {contenido.documentosConUrl.map((documento) =>
-                      documento.url ? (
-                        <li key={documento.id}>
-                          <a
-                            href={documento.url}
-                            className="text-blue-600 underline"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {documento.nombre}
-                          </a>
-                        </li>
-                      ) : (
-                        <li key={documento.id} className="text-gray-500">
-                          {documento.nombre} (no se pudo generar el enlace de descarga)
-                        </li>
-                      )
-                    )}
-                  </ul>
+                  <DocumentContentList documentos={contenido.documentosConUrl} />
                 )}
               </li>
             ))}

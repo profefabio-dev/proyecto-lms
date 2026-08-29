@@ -19,6 +19,7 @@ vi.mock("./admin", () => ({
 
 import {
   esTipoDocumentoPermitido,
+  esDocumentoPdf,
   subirDocumentoAStorage,
   eliminarDocumentoDeStorage,
   crearUrlDescarga,
@@ -43,6 +44,24 @@ describe("esTipoDocumentoPermitido", () => {
   it("rechaza otros tipos (imagenes, ejecutables, etc.)", () => {
     expect(esTipoDocumentoPermitido("image/png")).toBe(false);
     expect(esTipoDocumentoPermitido("application/x-msdownload")).toBe(false);
+  });
+});
+
+describe("esDocumentoPdf (US16)", () => {
+  it("reconoce application/pdf como previsualizable", () => {
+    expect(esDocumentoPdf("application/pdf")).toBe(true);
+  });
+
+  it("no marca los documentos Word como previsualizables", () => {
+    expect(esDocumentoPdf("application/msword")).toBe(false);
+    expect(
+      esDocumentoPdf("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    ).toBe(false);
+  });
+
+  it("no marca otros tipos de archivo como previsualizables", () => {
+    expect(esDocumentoPdf("image/png")).toBe(false);
+    expect(esDocumentoPdf("")).toBe(false);
   });
 });
 

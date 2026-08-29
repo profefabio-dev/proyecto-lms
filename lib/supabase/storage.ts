@@ -28,6 +28,16 @@ export function esTipoDocumentoPermitido(mimeType: string): boolean {
   return (TIPOS_DOCUMENTO_PERMITIDOS as readonly string[]).includes(mimeType);
 }
 
+/**
+ * US16: los documentos PDF se pueden previsualizar embebidos en el
+ * navegador (los navegadores modernos renderizan PDF de forma nativa);
+ * los documentos Word (.doc/.docx) no tienen esa capacidad nativa, así
+ * que para esos solo se ofrece el enlace de descarga.
+ */
+export function esDocumentoPdf(mimeType: string): boolean {
+  return mimeType === "application/pdf";
+}
+
 function sanearNombreArchivo(nombre: string): string {
   return nombre.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
