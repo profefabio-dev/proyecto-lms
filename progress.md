@@ -65,7 +65,7 @@ Leyenda:
 ## Cobertura de pruebas (resumen)
 
 - Historias con pruebas implementadas: 16 / 23 (US01, US02, US03, US05, US06, US07, US08, US09, US10, US11, US13, US14, US15, US16, US21, US22)
-- Historias con pruebas pasando: 16 / 23 (98/98 + 3 nuevas de `lib/course-status.test.ts` = 101/101 pruebas individuales esperadas en la máquina del docente, en 16 archivos; pendiente confirmar ahí, ya que en esta sesión de nube solo se corrió `lib/course-status.test.ts` y `app/estudiante/page.test.ts` de forma aislada — 6/6 pasan — sin la suite completa por la limitación de red ya documentada. 1 archivo — `create-student.test.ts` — sigue fallando completo por un límite conocido de Vitest, no relacionado con el código: no carga `.env.local` automáticamente)
+- Historias con pruebas pasando: 16 / 23 (101/101 pruebas individuales pasan en la máquina del docente, en 16 archivos — confirmado con `npm test` el 2026-08-29. 1 archivo — `create-student.test.ts` — sigue fallando completo por un límite conocido de Vitest, no relacionado con el código: no carga `.env.local` automáticamente)
 - Historias validadas: 5 / 23 (**US03, US08, US10, US15, US16**, verificadas manualmente en navegador real el 2026-08-29; el resto sigue pendiente de revisión por pares/docente, incluida US14 que es nueva esta sesión)
 
 ## Próxima actualización
