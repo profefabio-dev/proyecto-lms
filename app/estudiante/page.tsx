@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { obtenerEstadoEstudiante } from "@/lib/course-status";
 
 export default async function EstudiantePage() {
   const supabase = await createClient();
@@ -35,17 +36,25 @@ export default async function EstudiantePage() {
         {inscripciones.length === 0 ? (
           <p className="text-gray-500">Todavía no estás inscrito en ningún curso.</p>
         ) : (
-          <ul className="space-y-1">
-            {inscripciones.map((inscripcion) => (
-              <li key={inscripcion.id}>
-                <Link
-                  href={`/estudiante/cursos/${inscripcion.course.id}`}
-                  className="text-blue-600 underline"
-                >
-                  {inscripcion.course.titulo}
-                </Link>
-              </li>
-            ))}
+          <ul className="space-y-2">
+            {inscripciones.map((inscripcion) => {
+              const estado = obtenerEstadoEstudiante(inscripcion.course.estado);
+              return (
+                <li key={inscripcion.id} className="flex items-center gap-2">
+                  <Link
+                    href={`/estudiante/cursos/${inscripcion.course.id}`}
+                    className="text-blue-600 underline"
+                  >
+                    {inscripcion.course.titulo}
+                  </Link>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${estado.className}`}
+                  >
+                    {estado.label}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
