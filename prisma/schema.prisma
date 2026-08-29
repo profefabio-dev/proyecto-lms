@@ -41,8 +41,9 @@ model Users {
   estado    EstadoUsuario @default(ACTIVO)
   createdAt DateTime      @default(now())
 
-  cursosComoTutor Courses[]     @relation("TutorCourses")
-  inscripciones   CourseUsers[]
+  cursosComoTutor  Courses[]      @relation("TutorCourses")
+  inscripciones    CourseUsers[]
+  contenidosVistos ContentViews[]
 
   @@map("users")
 }
@@ -86,8 +87,9 @@ model Contents {
   orden       Int           @default(0)
   visible     Boolean       @default(true)
 
-  course     Courses     @relation(fields: [courseId], references: [id])
+  course     Courses        @relation(fields: [courseId], references: [id])
   documentos Documents[]
+  vistos     ContentViews[]
 
   @@map("contents")
 }
@@ -102,4 +104,23 @@ model Documents {
   content Contents @relation(fields: [contentId], references: [id])
 
   @@map("documents")
+}
+
+// US19: registra que un Estudiante vio un contenido, para calcular el
+// porcentaje de avance por curso en su dashboard. Se marca automáticamente
+// la primera vez que abre la página de detalle del curso (no requiere una
+// acción manual) — ver `lib/progress-tracking.ts`. La restricción única
+// evita duplicados si vuelve a abrir la misma página varias veces, y
+// conserva la fecha de la primera vez que se vio.
+model ContentViews {
+  id        String   @id @default(uuid())
+  contentId String
+  userId    String
+  vistoEn   DateTime @default(now())
+
+  content Contents @relation(fields: [contentId], references: [id])
+  user    Users    @relation(fields: [userId], references: [id])
+
+  @@unique([contentId, userId])
+  @@map("content_views")
 }

@@ -31,10 +31,15 @@ vi.mock("@/lib/supabase/storage", () => ({
   crearUrlDescarga: vi.fn().mockResolvedValue(null),
 }));
 
+vi.mock("@/lib/progress-tracking", () => ({
+  registrarContenidosVistos: vi.fn(),
+}));
+
 import CursoEstudiantePage from "./page";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { registrarContenidosVistos } from "@/lib/progress-tracking";
 
 function mockSesion(authUserId: string | null) {
   (createClient as any).mockResolvedValue({
@@ -126,5 +131,24 @@ describe("CursoEstudiantePage (US15)", () => {
       where: { id: "curso-1" },
       include: { contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } } },
     });
+  });
+
+  it("registra como vistos solo los contenidos visibles (US19)", async () => {
+    mockSesion("auth-2");
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "est-1", rol: "ESTUDIANTE" });
+    (prisma.courses.findUnique as any).mockResolvedValue({
+      id: "curso-1",
+      titulo: "Curso",
+      descripcion: "desc",
+      contenidos: [
+        { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true },
+        { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false },
+      ],
+    });
+    (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
+
+    await CursoEstudiantePage(buildParams("curso-1"));
+
+    expect(registrarContenidosVistos).toHaveBeenCalledWith("est-1", ["c1"]);
   });
 });

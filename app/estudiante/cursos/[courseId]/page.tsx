@@ -5,6 +5,7 @@ import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
+import { registrarContenidosVistos } from "@/lib/progress-tracking";
 
 export default async function CursoEstudiantePage({
   params,
@@ -54,6 +55,17 @@ export default async function CursoEstudiantePage({
   }
 
   const contenidosVisibles = curso.contenidos.filter((contenido) => contenido.visible);
+
+  // US19: se marca como "visto" cada contenido visible en cuanto el
+  // Estudiante abre esta página — no hay una acción manual separada, ya
+  // que todos los contenidos ya se muestran directamente en la página
+  // (igual que el video de US15 o el PDF de US16, que tampoco requieren
+  // un clic extra para "abrirse"). Es seguro llamarla en cada carga:
+  // `registrarContenidosVistos` ignora los contenidos ya vistos antes.
+  await registrarContenidosVistos(
+    usuarioActual.id,
+    contenidosVisibles.map((contenido) => contenido.id)
+  );
 
   // Las URLs de descarga son firmadas y de corta duración (US09/US16), así
   // que se generan en cada carga de la página en vez de guardarse.
