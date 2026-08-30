@@ -50,6 +50,10 @@ export default async function EstudiantePage() {
     <main className="p-8 space-y-8">
       <h1 className="text-2xl font-bold">Panel de Estudiante</h1>
 
+      <Link href="/estudiante/buscar" className="inline-block text-sm text-blue-600 underline">
+        Buscar en mis cursos
+      </Link>
+
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Mis cursos</h2>
 
