@@ -24,6 +24,17 @@ export default async function DashboardPage() {
     redirect("/login?error=usuario_no_encontrado");
   }
 
+  // US20: un usuario desactivado no puede iniciar sesión. El bloqueo real
+  // ocurre en Supabase Auth (`ban_duration`, ver US23 en
+  // `lib/supabase/sync-user.ts`), pero esa API no puede invalidar un
+  // access token que ya se emitió antes de que expire por sí solo — así
+  // que este chequeo es la segunda capa: como todo login pasa por este
+  // despachador único, basta con validar aquí en vez de repetirlo en cada
+  // página protegida.
+  if (usuario.estado !== "ACTIVO") {
+    redirect("/login?error=cuenta_desactivada");
+  }
+
   switch (usuario.rol) {
     case "ADMINISTRADOR":
       redirect("/admin");

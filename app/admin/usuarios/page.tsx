@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import type { Rol } from "@prisma/client";
 import { EditEmailForm } from "@/components/edit-email-form";
+import { ToggleUserStatusForm } from "@/components/toggle-user-status-form";
 
 const ROLES_FILTRO: { valor: Rol | "TODOS"; etiqueta: string }[] = [
   { valor: "TODOS", etiqueta: "Todos" },
@@ -112,8 +113,11 @@ export default async function UsuariosPage({
                   {usuario.estado}
                 </span>
               </td>
-              <td className="py-2">
+              <td className="space-y-1 py-2">
                 <EditEmailForm usuarioId={usuario.id} emailActual={usuario.email} />
+                {usuario.id !== usuarioActual.id && (
+                  <ToggleUserStatusForm usuarioId={usuario.id} estadoActual={usuario.estado} />
+                )}
               </td>
             </tr>
           ))}

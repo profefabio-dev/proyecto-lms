@@ -24,7 +24,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { createSyncedUser, updateSyncedUserEmail } from "./sync-user";
+import { createSyncedUser, updateSyncedUserEmail, setSyncedUserActiveState } from "./sync-user";
 import { supabaseAdmin } from "./admin";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
@@ -195,6 +195,79 @@ describe("updateSyncedUserEmail (US22)", () => {
     });
     expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenNthCalledWith(2, "auth-1", {
       email: "viejo@example.com",
+    });
+  });
+});
+
+describe("setSyncedUserActiveState (US20/US23)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("lanza un error si el usuario no tiene authId vinculado", async () => {
+    await expect(
+      setSyncedUserActiveState({ usuarioId: "db-1", authId: null, activar: false })
+    ).rejects.toThrow(/no tiene una cuenta de Supabase Auth vinculada/);
+
+    expect(supabaseAdmin.auth.admin.updateUserById).not.toHaveBeenCalled();
+    expect(prisma.users.update).not.toHaveBeenCalled();
+  });
+
+  it("desactiva: banea en Auth y marca INACTIVO en Users", async () => {
+    (supabaseAdmin.auth.admin.updateUserById as any).mockResolvedValue({ error: null });
+    (prisma.users.update as any).mockResolvedValue({ id: "db-1", estado: "INACTIVO" });
+
+    await setSyncedUserActiveState({ usuarioId: "db-1", authId: "auth-1", activar: false });
+
+    expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenCalledWith("auth-1", {
+      ban_duration: "876000h",
+    });
+    expect(prisma.users.update).toHaveBeenCalledWith({
+      where: { id: "db-1" },
+      data: { estado: "INACTIVO" },
+    });
+  });
+
+  it("reactiva: quita el baneo en Auth y marca ACTIVO en Users", async () => {
+    (supabaseAdmin.auth.admin.updateUserById as any).mockResolvedValue({ error: null });
+    (prisma.users.update as any).mockResolvedValue({ id: "db-1", estado: "ACTIVO" });
+
+    await setSyncedUserActiveState({ usuarioId: "db-1", authId: "auth-1", activar: true });
+
+    expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenCalledWith("auth-1", {
+      ban_duration: "none",
+    });
+    expect(prisma.users.update).toHaveBeenCalledWith({
+      where: { id: "db-1" },
+      data: { estado: "ACTIVO" },
+    });
+  });
+
+  it("lanza un error y no toca Prisma si falla la actualizacion en Auth", async () => {
+    (supabaseAdmin.auth.admin.updateUserById as any).mockResolvedValue({
+      error: { message: "No se pudo banear" },
+    });
+
+    await expect(
+      setSyncedUserActiveState({ usuarioId: "db-1", authId: "auth-1", activar: false })
+    ).rejects.toThrow(/No se pudo actualizar el acceso en Supabase Auth/);
+
+    expect(prisma.users.update).not.toHaveBeenCalled();
+  });
+
+  it("revierte el baneo en Auth si falla el guardado en Users", async () => {
+    (supabaseAdmin.auth.admin.updateUserById as any).mockResolvedValue({ error: null });
+    (prisma.users.update as any).mockRejectedValue(new Error("fallo de base de datos"));
+
+    await expect(
+      setSyncedUserActiveState({ usuarioId: "db-1", authId: "auth-1", activar: false })
+    ).rejects.toThrow(/se revirtió el cambio en Auth/);
+
+    expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenNthCalledWith(1, "auth-1", {
+      ban_duration: "876000h",
+    });
+    expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenNthCalledWith(2, "auth-1", {
+      ban_duration: "none",
     });
   });
 });

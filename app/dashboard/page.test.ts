@@ -41,7 +41,7 @@ describe("DashboardPage (US01/US05/US13 - redireccion por rol)", () => {
     (createClient as any).mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } } }) },
     });
-    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ADMINISTRADOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ADMINISTRADOR", estado: "ACTIVO" });
 
     await expect(DashboardPage()).rejects.toThrow("NEXT_REDIRECT");
     expect(redirect).toHaveBeenCalledWith("/admin");
@@ -51,7 +51,7 @@ describe("DashboardPage (US01/US05/US13 - redireccion por rol)", () => {
     (createClient as any).mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-2" } } }) },
     });
-    (prisma.users.findUnique as any).mockResolvedValue({ rol: "TUTOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({ rol: "TUTOR", estado: "ACTIVO" });
 
     await expect(DashboardPage()).rejects.toThrow("NEXT_REDIRECT");
     expect(redirect).toHaveBeenCalledWith("/tutor");
@@ -61,10 +61,20 @@ describe("DashboardPage (US01/US05/US13 - redireccion por rol)", () => {
     (createClient as any).mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-3" } } }) },
     });
-    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ESTUDIANTE" });
+    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ESTUDIANTE", estado: "ACTIVO" });
 
     await expect(DashboardPage()).rejects.toThrow("NEXT_REDIRECT");
     expect(redirect).toHaveBeenCalledWith("/estudiante");
+  });
+
+  it("redirige a /login con error si el usuario esta desactivado (US20)", async () => {
+    (createClient as any).mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-5" } } }) },
+    });
+    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ESTUDIANTE", estado: "INACTIVO" });
+
+    await expect(DashboardPage()).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirect).toHaveBeenCalledWith("/login?error=cuenta_desactivada");
   });
 
   it("redirige a /login con error si el usuario de Auth no tiene registro en Users", async () => {

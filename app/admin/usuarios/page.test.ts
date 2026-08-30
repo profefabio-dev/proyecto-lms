@@ -23,8 +23,11 @@ vi.mock("@/lib/prisma", () => ({
 // de US22 y, en cadena, el cliente admin de Supabase (que necesita
 // SUPABASE_SERVICE_ROLE_KEY en tiempo real). La mockeamos para que esta
 // prueba siga siendo una prueba unitaria de la página, no de esa cadena.
+// US20: la página ahora también renderiza <ToggleUserStatusForm>, que
+// llega a la misma cadena de Supabase Auth por el mismo motivo.
 vi.mock("@/lib/supabase/sync-user", () => ({
   updateSyncedUserEmail: vi.fn(),
+  setSyncedUserActiveState: vi.fn(),
 }));
 
 import UsuariosPage from "./page";

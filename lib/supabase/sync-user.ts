@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "./admin";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
+import type { EstadoUsuario } from "@prisma/client";
 
 interface CreateSyncedUserInput {
   email: string;
@@ -108,6 +109,75 @@ export async function updateSyncedUserEmail(input: UpdateSyncedUserEmailInput) {
     });
     throw new Error(
       `No se pudo actualizar el email en la base de datos, se revirtió el cambio en Auth: ${dbError}`
+    );
+  }
+}
+
+interface SetSyncedUserActiveStateInput {
+  usuarioId: string;
+  authId: string | null;
+  activar: boolean;
+}
+
+// ~100 años: la Admin API de Supabase no tiene un "ban permanente" real,
+// así que se usa una duración muy larga en vez de una fecha de expiración.
+const DURACION_BLOQUEO_PERMANENTE = "876000h";
+
+/**
+ * US20/US23 — desactiva o reactiva el acceso de un usuario, sincronizando
+ * Supabase Auth (lo que de verdad controla el login) con el campo `estado`
+ * de la tabla Users (lo que se muestra en la interfaz de Admin y lo que
+ * usa `app/dashboard/page.tsx` como segunda capa de defensa).
+ *
+ * Mismo orden que `updateSyncedUserEmail` arriba: primero se actualiza en
+ * Auth; si falla, no se toca la base de datos. Si Auth se actualiza bien
+ * pero falla el guardado en Users, se revierte el cambio en Auth para no
+ * dejar las dos fuentes desincronizadas.
+ *
+ * **Límite conocido de la Admin API de Supabase:** `ban_duration` bloquea
+ * inicios de sesión y refrescos de token nuevos de inmediato, pero no hay
+ * una forma de invalidar por la fuerza un access token que ya se emitió
+ * antes de que expire por sí solo — Supabase no expone esa operación. Por
+ * eso `app/dashboard/page.tsx` también valida `estado === "ACTIVO"` en
+ * cada inicio de sesión: cierra esa ventana sin depender de que el token
+ * ya haya expirado.
+ */
+export async function setSyncedUserActiveState(
+  input: SetSyncedUserActiveStateInput
+): Promise<void> {
+  const { usuarioId, authId, activar } = input;
+
+  if (!authId) {
+    throw new Error(
+      "El usuario no tiene una cuenta de Supabase Auth vinculada; no se puede sincronizar su estado."
+    );
+  }
+
+  const nuevoEstado: EstadoUsuario = activar ? "ACTIVO" : "INACTIVO";
+  const nuevaDuracion = activar ? "none" : DURACION_BLOQUEO_PERMANENTE;
+
+  // 1. Actualizar primero en Supabase Auth.
+  const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(authId, {
+    ban_duration: nuevaDuracion,
+  });
+
+  if (authError) {
+    throw new Error(`No se pudo actualizar el acceso en Supabase Auth: ${authError.message}`);
+  }
+
+  // 2. Actualizar en la base de datos (Prisma).
+  try {
+    await prisma.users.update({
+      where: { id: usuarioId },
+      data: { estado: nuevoEstado },
+    });
+  } catch (dbError) {
+    // 3. Compensación: revertir el cambio en Auth.
+    await supabaseAdmin.auth.admin.updateUserById(authId, {
+      ban_duration: activar ? DURACION_BLOQUEO_PERMANENTE : "none",
+    });
+    throw new Error(
+      `No se pudo actualizar el estado en la base de datos, se revirtió el cambio en Auth: ${dbError}`
     );
   }
 }
