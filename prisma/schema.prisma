@@ -107,10 +107,12 @@ model Documents {
 }
 
 // US19: registra que un Estudiante vio un contenido, para calcular el
-// porcentaje de avance por curso en su dashboard. Se marca automáticamente
-// la primera vez que abre la página de detalle del curso (no requiere una
-// acción manual) — ver `lib/progress-tracking.ts`. La restricción única
-// evita duplicados si vuelve a abrir la misma página varias veces, y
+// porcentaje de avance por curso en su dashboard. Se marca cuando el
+// Estudiante hace clic en "Marcar como visto" sobre ese contenido — ver
+// `lib/actions/mark-content-viewed.ts` (rediseñado el 2026-08-31; el
+// diseño original la marcaba automáticamente al abrir la página, pero
+// eso no distinguía "abrió la página" de "consumió el contenido").
+// La restricción única evita duplicados si se marca más de una vez, y
 // conserva la fecha de la primera vez que se vio.
 model ContentViews {
   id        String   @id @default(uuid())
