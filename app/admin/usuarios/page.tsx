@@ -80,10 +80,10 @@ export default async function UsuariosPage({
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b text-left">
-            <th className="py-2">Nombre</th>
-            <th className="py-2">Email</th>
-            <th className="py-2">Rol</th>
-            <th className="py-2">Estado</th>
+            <th className="py-2 pr-4">Nombre</th>
+            <th className="py-2 pr-4">Email</th>
+            <th className="py-2 pr-4">Rol</th>
+            <th className="py-2 pr-4">Estado</th>
             <th className="py-2">Acciones</th>
           </tr>
         </thead>
@@ -97,12 +97,12 @@ export default async function UsuariosPage({
           )}
           {usuarios.map((usuario) => (
             <tr key={usuario.id} className="border-b">
-              <td className="py-2">
+              <td className="py-2 pr-4">
                 {usuario.nombre} {usuario.apellido}
               </td>
-              <td className="py-2">{usuario.email}</td>
-              <td className="py-2">{usuario.rol}</td>
-              <td className="py-2">
+              <td className="py-2 pr-4 break-all">{usuario.email}</td>
+              <td className="py-2 pr-4">{usuario.rol}</td>
+              <td className="py-2 pr-4">
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                     usuario.estado === "ACTIVO"

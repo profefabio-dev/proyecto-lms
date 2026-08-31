@@ -34,9 +34,9 @@ export default async function EstudiantesPage() {
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr className="text-left border-b">
-            <th className="py-2">Nombre</th>
-            <th className="py-2">Email</th>
-            <th className="py-2">Estado</th>
+            <th className="py-2 pr-4">Nombre</th>
+            <th className="py-2 pr-4">Email</th>
+            <th className="py-2 pr-4">Estado</th>
             <th className="py-2">Acciones</th>
           </tr>
         </thead>
@@ -50,11 +50,11 @@ export default async function EstudiantesPage() {
           )}
           {estudiantes.map((estudiante) => (
             <tr key={estudiante.id} className="border-b">
-              <td className="py-2">
+              <td className="py-2 pr-4">
                 {estudiante.nombre} {estudiante.apellido}
               </td>
-              <td className="py-2">{estudiante.email}</td>
-              <td className="py-2">{estudiante.estado}</td>
+              <td className="py-2 pr-4 break-all">{estudiante.email}</td>
+              <td className="py-2 pr-4">{estudiante.estado}</td>
               <td className="py-2">
                 <EditEmailForm usuarioId={estudiante.id} emailActual={estudiante.email} />
               </td>
