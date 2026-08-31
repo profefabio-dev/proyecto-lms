@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
+      DIRECT_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
+      NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder-anon-key"
+      SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key"
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Generar el cliente de Prisma
+        run: npx prisma generate
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Revisar tipos (TypeScript)
+        run: npx tsc --noEmit
+
+      - name: Pruebas unitarias
+        run: npm test
+
+      - name: Build de producción
+        run: npm run build
