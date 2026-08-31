@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { SiteHeader } from "@/components/site-header";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function TutorPage() {
   // Igual que en app/admin/page.tsx (US04): esta página tampoco tenía
@@ -48,29 +50,34 @@ export default async function TutorPage() {
   ];
 
   return (
-    <main className="p-8 space-y-8">
-      <h1 className="text-2xl font-bold">Panel de Tutor</h1>
+    <>
+      <SiteHeader usuario={usuarioActual} />
+      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+        <h1 className="text-3xl font-bold tracking-tight">Panel de Tutor</h1>
 
-      <section
-        className="grid grid-cols-1 gap-4 sm:grid-cols-3"
-        aria-label="Indicadores generales"
-      >
-        {indicadores.map((indicador) => (
-          <div key={indicador.etiqueta} className="rounded-lg border p-4">
-            <p className="text-sm text-gray-500">{indicador.etiqueta}</p>
-            <p className="text-2xl font-bold">{indicador.valor}</p>
-          </div>
-        ))}
-      </section>
+        <section
+          className="grid grid-cols-1 gap-4 sm:grid-cols-3"
+          aria-label="Indicadores generales"
+        >
+          {indicadores.map((indicador) => (
+            <Card key={indicador.etiqueta}>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{indicador.etiqueta}</p>
+                <p className="text-2xl font-bold">{indicador.valor}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
 
-      <div className="space-x-4">
-        <Link href="/tutor/estudiantes" className="text-blue-600 underline">
-          Gestionar estudiantes
-        </Link>
-        <Link href="/tutor/cursos" className="text-blue-600 underline">
-          Gestionar cursos
-        </Link>
-      </div>
-    </main>
+        <div className="flex flex-wrap gap-4">
+          <Link href="/tutor/estudiantes" className="font-medium text-primary hover:underline">
+            Gestionar estudiantes
+          </Link>
+          <Link href="/tutor/cursos" className="font-medium text-primary hover:underline">
+            Gestionar cursos
+          </Link>
+        </div>
+      </main>
+    </>
   );
 }

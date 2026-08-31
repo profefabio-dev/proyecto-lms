@@ -1,46 +1,79 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CreateTutorForm } from "@/components/create-tutor-form";
+import { SiteHeader } from "@/components/site-header";
+import { Badge } from "@/components/ui/badge";
 
 export default async function TutoresPage() {
+  // Esta página no tenía guarda de sesión/rol antes de este pase de
+  // diseño — se agrega aquí junto con el header, siguiendo el mismo
+  // patrón ya usado en el resto de páginas de Admin (era un vacío real:
+  // cualquier persona con sesión activa, sin importar su rol, podía
+  // entrar a /admin/tutores y crear tutores nuevos).
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const usuarioActual = await prisma.users.findUnique({ where: { authId: user.id } });
+
+  if (!usuarioActual || usuarioActual.rol !== "ADMINISTRADOR") {
+    redirect("/login");
+  }
+
   const tutores = await prisma.users.findMany({
     where: { rol: "TUTOR" },
     orderBy: { createdAt: "desc" },
   });
 
   return (
-    <main className="mx-auto max-w-3xl space-y-8 p-8">
-      <h1 className="text-2xl font-bold">Gestión de Tutores</h1>
+    <>
+      <SiteHeader usuario={usuarioActual} />
+      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+        <h1 className="text-3xl font-bold tracking-tight">Gestión de Tutores</h1>
 
-      <CreateTutorForm />
+        <CreateTutorForm />
 
-      <div>
-        <h2 className="mb-2 text-lg font-semibold">Tutores registrados</h2>
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b text-left">
-              <th className="py-2">Nombre</th>
-              <th className="py-2">Email</th>
-              <th className="py-2">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tutores.map((tutor) => (
-              <tr key={tutor.id} className="border-b">
-                <td className="py-2">{tutor.nombre} {tutor.apellido}</td>
-                <td className="py-2">{tutor.email}</td>
-                <td className="py-2">{tutor.estado}</td>
-              </tr>
-            ))}
-            {tutores.length === 0 && (
-              <tr>
-                <td colSpan={3} className="py-4 text-center text-muted-foreground">
-                  Todavía no hay tutores registrados.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </main>
+        <div>
+          <h2 className="mb-2 text-lg font-semibold">Tutores registrados</h2>
+          <div className="overflow-hidden rounded-lg border">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50 text-left">
+                  <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre</th>
+                  <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email</th>
+                  <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tutores.map((tutor) => (
+                  <tr key={tutor.id} className="border-b last:border-b-0 hover:bg-muted/30">
+                    <td className="py-2 pr-4 pl-4">{tutor.nombre} {tutor.apellido}</td>
+                    <td className="py-2 pr-4 break-all">{tutor.email}</td>
+                    <td className="py-2 pr-4">
+                      <Badge variant={tutor.estado === "ACTIVO" ? "success" : "secondary"}>
+                        {tutor.estado}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+                {tutores.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="py-4 text-center text-muted-foreground">
+                      Todavía no hay tutores registrados.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </>
   );
 }

@@ -10,6 +10,7 @@ import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
 import { ContentOrderControls } from "@/components/content-order-controls";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
+import { SiteHeader } from "@/components/site-header";
 
 export default async function CursoDetallePage({
   params,
@@ -80,16 +81,20 @@ export default async function CursoDetallePage({
   );
 
   return (
-    <main className="p-8 space-y-8">
-      <h1 className="text-2xl font-bold">{curso.titulo}</h1>
-      <p className="text-gray-600">{curso.descripcion}</p>
+    <>
+      <SiteHeader usuario={usuarioActual} />
+      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">{curso.titulo}</h1>
+        <p className="text-muted-foreground">{curso.descripcion}</p>
+      </div>
 
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Estudiantes inscritos</h2>
         {curso.inscritos.length === 0 ? (
-          <p className="text-gray-500">Aún no hay estudiantes inscritos en este curso.</p>
+          <p className="text-muted-foreground">Aún no hay estudiantes inscritos en este curso.</p>
         ) : (
-          <ul className="list-disc list-inside space-y-1">
+          <ul className="list-disc list-inside space-y-1 text-sm">
             {curso.inscritos.map((inscripcion) => (
               <li key={inscripcion.id}>
                 {inscripcion.user.nombre} {inscripcion.user.apellido} — {inscripcion.user.email}
@@ -108,23 +113,23 @@ export default async function CursoDetallePage({
         <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
         {contenidosConDocumentos.length === 0 ? (
-          <p className="text-gray-500">Este curso todavía no tiene contenido publicado.</p>
+          <p className="text-muted-foreground">Este curso todavía no tiene contenido publicado.</p>
         ) : (
-          <ul className="space-y-6">
+          <ul className="space-y-4">
             {contenidosConDocumentos.map((contenido, indice) => (
               <li
                 key={contenido.id}
-                className={`space-y-2 ${!contenido.visible ? "opacity-60" : ""}`}
+                className={`space-y-2 rounded-lg border bg-card p-4 ${!contenido.visible ? "opacity-60" : ""}`}
               >
+                <h3 className="font-medium">{contenido.titulo}</h3>
                 <ContentOrderControls
                   contentId={contenido.id}
                   esPrimero={indice === 0}
                   esUltimo={indice === contenidosConDocumentos.length - 1}
                   visible={contenido.visible}
                 />
-                <h3 className="font-medium">{contenido.titulo}</h3>
                 {contenido.descripcion && (
-                  <p className="text-sm text-gray-600">{contenido.descripcion}</p>
+                  <p className="text-sm text-muted-foreground">{contenido.descripcion}</p>
                 )}
                 {contenido.tipo === "VIDEO" && (
                   <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
@@ -155,6 +160,7 @@ export default async function CursoDetallePage({
           <CreateTextContentForm courseId={curso.id} />
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 }

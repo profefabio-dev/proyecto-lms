@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { obtenerEstadoEstudiante } from "@/lib/course-status";
 import { calcularProgreso } from "@/lib/course-progress";
+import { SiteHeader } from "@/components/site-header";
 
 export default async function EstudiantePage() {
   const supabase = await createClient();
@@ -47,60 +48,63 @@ export default async function EstudiantePage() {
   const idsVistos = new Set(vistos.map((visto) => visto.contentId));
 
   return (
-    <main className="p-8 space-y-8">
-      <h1 className="text-2xl font-bold">Panel de Estudiante</h1>
+    <>
+      <SiteHeader usuario={usuarioActual} />
+      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+        <h1 className="text-3xl font-bold tracking-tight">Panel de Estudiante</h1>
 
-      <Link href="/estudiante/buscar" className="inline-block text-sm text-blue-600 underline">
-        Buscar en mis cursos
-      </Link>
+        <Link href="/estudiante/buscar" className="inline-block text-sm font-medium text-primary hover:underline">
+          Buscar en mis cursos
+        </Link>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Mis cursos</h2>
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Mis cursos</h2>
 
-        {inscripciones.length === 0 ? (
-          <p className="text-gray-500">Todavía no estás inscrito en ningún curso.</p>
-        ) : (
-          <ul className="space-y-4">
-            {inscripciones.map((inscripcion) => {
-              const estado = obtenerEstadoEstudiante(inscripcion.course.estado);
-              const totalContenidos = inscripcion.course.contenidos.length;
-              const contenidosVistos = inscripcion.course.contenidos.filter((contenido) =>
-                idsVistos.has(contenido.id)
-              ).length;
-              const progreso = calcularProgreso(contenidosVistos, totalContenidos);
+          {inscripciones.length === 0 ? (
+            <p className="text-muted-foreground">Todavía no estás inscrito en ningún curso.</p>
+          ) : (
+            <ul className="space-y-3">
+              {inscripciones.map((inscripcion) => {
+                const estado = obtenerEstadoEstudiante(inscripcion.course.estado);
+                const totalContenidos = inscripcion.course.contenidos.length;
+                const contenidosVistos = inscripcion.course.contenidos.filter((contenido) =>
+                  idsVistos.has(contenido.id)
+                ).length;
+                const progreso = calcularProgreso(contenidosVistos, totalContenidos);
 
-              return (
-                <li key={inscripcion.id} className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/estudiante/cursos/${inscripcion.course.id}`}
-                      className="text-blue-600 underline"
-                    >
-                      {inscripcion.course.titulo}
-                    </Link>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${estado.className}`}
-                    >
-                      {estado.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-40 overflow-hidden rounded-full bg-gray-200">
-                      <div
-                        className="h-full rounded-full bg-blue-600"
-                        style={{ width: `${progreso}%` }}
-                      />
+                return (
+                  <li key={inscripcion.id} className="space-y-2 rounded-lg border bg-card p-4">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/estudiante/cursos/${inscripcion.course.id}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {inscripcion.course.titulo}
+                      </Link>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${estado.className}`}
+                      >
+                        {estado.label}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500">
-                      {progreso}% ({contenidosVistos}/{totalContenidos} contenidos)
-                    </span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-    </main>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-40 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${progreso}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {progreso}% ({contenidosVistos}/{totalContenidos} contenidos)
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      </main>
+    </>
   );
 }

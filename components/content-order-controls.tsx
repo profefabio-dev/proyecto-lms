@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import { moverContenido } from "@/lib/actions/reorder-content";
 import { alternarVisibilidadContenido } from "@/lib/actions/toggle-content-visibility";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export function ContentOrderControls({
   contentId,
@@ -23,45 +25,39 @@ export function ContentOrderControls({
       <form action={moverAction}>
         <input type="hidden" name="contentId" value={contentId} />
         <input type="hidden" name="direccion" value="arriba" />
-        <button
+        <Button
           type="submit"
+          variant="outline"
+          size="icon-xs"
           disabled={esPrimero || moviendo}
           aria-label="Mover contenido arriba"
-          className="rounded border px-1.5 py-0.5 disabled:cursor-not-allowed disabled:opacity-30"
         >
           ↑
-        </button>
+        </Button>
       </form>
 
       <form action={moverAction}>
         <input type="hidden" name="contentId" value={contentId} />
         <input type="hidden" name="direccion" value="abajo" />
-        <button
+        <Button
           type="submit"
+          variant="outline"
+          size="icon-xs"
           disabled={esUltimo || moviendo}
           aria-label="Mover contenido abajo"
-          className="rounded border px-1.5 py-0.5 disabled:cursor-not-allowed disabled:opacity-30"
         >
           ↓
-        </button>
+        </Button>
       </form>
 
       <form action={alternarAction}>
         <input type="hidden" name="contentId" value={contentId} />
-        <button
-          type="submit"
-          disabled={alternando}
-          className="rounded border px-2 py-0.5 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <Button type="submit" variant="outline" size="xs" disabled={alternando}>
           {visible ? "Ocultar" : "Mostrar"}
-        </button>
+        </Button>
       </form>
 
-      {!visible && (
-        <span className="rounded-full bg-gray-200 px-2 py-0.5 font-medium text-gray-700">
-          Oculto
-        </span>
-      )}
+      {!visible && <Badge variant="secondary">Oculto</Badge>}
     </div>
   );
 }

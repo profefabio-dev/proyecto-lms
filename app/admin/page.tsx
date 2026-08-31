@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { construirConteoPorRol } from "@/lib/admin-stats";
+import { SiteHeader } from "@/components/site-header";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function AdminPage() {
   // Igual que en app/admin/usuarios/page.tsx y app/tutor/*: verificar sesión
@@ -43,29 +45,34 @@ export default async function AdminPage() {
   ];
 
   return (
-    <main className="p-8 space-y-8">
-      <h1 className="text-2xl font-bold">Panel de Administrador</h1>
+    <>
+      <SiteHeader usuario={usuarioActual} />
+      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+        <h1 className="text-3xl font-bold tracking-tight">Panel de Administrador</h1>
 
-      <section
-        className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
-        aria-label="Indicadores generales"
-      >
-        {indicadores.map((indicador) => (
-          <div key={indicador.etiqueta} className="rounded-lg border p-4">
-            <p className="text-sm text-gray-500">{indicador.etiqueta}</p>
-            <p className="text-2xl font-bold">{indicador.valor}</p>
-          </div>
-        ))}
-      </section>
+        <section
+          className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+          aria-label="Indicadores generales"
+        >
+          {indicadores.map((indicador) => (
+            <Card key={indicador.etiqueta}>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{indicador.etiqueta}</p>
+                <p className="text-2xl font-bold">{indicador.valor}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
 
-      <div className="flex flex-col gap-1">
-        <Link href="/admin/tutores" className="inline-block text-blue-600 underline">
-          Gestionar tutores
-        </Link>
-        <Link href="/admin/usuarios" className="inline-block text-blue-600 underline">
-          Ver todos los usuarios
-        </Link>
-      </div>
-    </main>
+        <div className="flex flex-col gap-2">
+          <Link href="/admin/tutores" className="font-medium text-primary hover:underline">
+            Gestionar tutores
+          </Link>
+          <Link href="/admin/usuarios" className="font-medium text-primary hover:underline">
+            Ver todos los usuarios
+          </Link>
+        </div>
+      </main>
+    </>
   );
 }

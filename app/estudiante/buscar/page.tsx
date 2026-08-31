@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { construirFiltroBusqueda } from "@/lib/search";
+import { SiteHeader } from "@/components/site-header";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default async function BuscarPage({
   searchParams,
@@ -58,73 +61,73 @@ export default async function BuscarPage({
   const sinResultados = termino.length > 0 && cursos.length === 0 && contenidos.length === 0;
 
   return (
-    <main className="p-8 space-y-8">
-      <h1 className="text-2xl font-bold">Buscar</h1>
+    <>
+      <SiteHeader usuario={usuarioActual} />
+      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+        <h1 className="text-3xl font-bold tracking-tight">Buscar</h1>
 
-      <form method="get" className="flex max-w-md gap-2">
-        <input
-          type="search"
-          name="q"
-          defaultValue={termino}
-          placeholder="Buscar en mis cursos..."
-          aria-label="Buscar en mis cursos"
-          className="w-full rounded-md border px-3 py-2 text-sm"
-        />
-        <button type="submit" className="rounded-md bg-black px-4 py-2 text-sm text-white">
-          Buscar
-        </button>
-      </form>
+        <form method="get" className="flex max-w-md gap-2">
+          <Input
+            type="search"
+            name="q"
+            defaultValue={termino}
+            placeholder="Buscar en mis cursos..."
+            aria-label="Buscar en mis cursos"
+          />
+          <Button type="submit">Buscar</Button>
+        </form>
 
-      {termino.length === 0 && (
-        <p className="text-gray-500">Escribe una palabra clave para buscar en tus cursos.</p>
-      )}
+        {termino.length === 0 && (
+          <p className="text-muted-foreground">Escribe una palabra clave para buscar en tus cursos.</p>
+        )}
 
-      {sinResultados && (
-        <p className="text-gray-500">Sin resultados para &quot;{termino}&quot;.</p>
-      )}
+        {sinResultados && (
+          <p className="text-muted-foreground">Sin resultados para &quot;{termino}&quot;.</p>
+        )}
 
-      {(cursos.length > 0 || contenidos.length > 0) && (
-        <div className="space-y-8">
-          {cursos.length > 0 && (
-            <section className="space-y-2">
-              <h2 className="text-xl font-semibold">Cursos ({cursos.length})</h2>
-              <ul className="space-y-1">
-                {cursos.map((curso) => (
-                  <li key={curso.id}>
-                    <Link
-                      href={`/estudiante/cursos/${curso.id}`}
-                      className="text-blue-600 underline"
-                    >
-                      {curso.titulo}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+        {(cursos.length > 0 || contenidos.length > 0) && (
+          <div className="space-y-8">
+            {cursos.length > 0 && (
+              <section className="space-y-2">
+                <h2 className="text-xl font-semibold">Cursos ({cursos.length})</h2>
+                <ul className="space-y-1">
+                  {cursos.map((curso) => (
+                    <li key={curso.id}>
+                      <Link
+                        href={`/estudiante/cursos/${curso.id}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {curso.titulo}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-          {contenidos.length > 0 && (
-            <section className="space-y-2">
-              <h2 className="text-xl font-semibold">Contenidos ({contenidos.length})</h2>
-              <ul className="space-y-1">
-                {contenidos.map((contenido) => (
-                  <li key={contenido.id}>
-                    <Link
-                      href={`/estudiante/cursos/${contenido.courseId}`}
-                      className="text-blue-600 underline"
-                    >
-                      {contenido.titulo}
-                    </Link>
-                    <span className="ml-2 text-xs text-gray-500">
-                      en {contenido.course.titulo}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-      )}
-    </main>
+            {contenidos.length > 0 && (
+              <section className="space-y-2">
+                <h2 className="text-xl font-semibold">Contenidos ({contenidos.length})</h2>
+                <ul className="space-y-1">
+                  {contenidos.map((contenido) => (
+                    <li key={contenido.id}>
+                      <Link
+                        href={`/estudiante/cursos/${contenido.courseId}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {contenido.titulo}
+                      </Link>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        en {contenido.course.titulo}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+        )}
+      </main>
+    </>
   );
 }

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { marcarContenidoVisto } from "@/lib/actions/mark-content-viewed";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 type EstadoAccion = { success: true } | { success: false; error: string } | null;
 
@@ -23,7 +24,7 @@ export function MarkContentViewedButton({
   // `estado?.success` cubre el caso de que se acabe de marcar en esta
   // misma carga, antes de que revalidatePath refresque la página.
   if (visto || estado?.success) {
-    return <span className="text-xs font-medium text-green-700">✓ Visto</span>;
+    return <Badge variant="success">✓ Visto</Badge>;
   }
 
   return (

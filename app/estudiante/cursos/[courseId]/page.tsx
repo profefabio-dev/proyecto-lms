@@ -6,6 +6,7 @@ import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 import { MarkContentViewedButton } from "@/components/mark-content-viewed-button";
+import { SiteHeader } from "@/components/site-header";
 
 export default async function CursoEstudiantePage({
   params,
@@ -95,43 +96,48 @@ export default async function CursoEstudiantePage({
   );
 
   return (
-    <main className="p-8 space-y-8">
-      <h1 className="text-2xl font-bold">{curso.titulo}</h1>
-      <p className="text-gray-600">{curso.descripcion}</p>
+    <>
+      <SiteHeader usuario={usuarioActual} />
+      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{curso.titulo}</h1>
+          <p className="text-muted-foreground">{curso.descripcion}</p>
+        </div>
 
-      <section className="space-y-6">
-        <h2 className="text-xl font-semibold">Contenido del curso</h2>
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
-        {contenidosConDocumentos.length === 0 ? (
-          <p className="text-gray-500">Este curso todavía no tiene contenido publicado.</p>
-        ) : (
-          <ul className="space-y-6">
-            {contenidosConDocumentos.map((contenido) => (
-              <li key={contenido.id} className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <h3 className="font-medium">{contenido.titulo}</h3>
-                  <MarkContentViewedButton
-                    contentId={contenido.id}
-                    visto={idsVistos.has(contenido.id)}
-                  />
-                </div>
-                {contenido.descripcion && (
-                  <p className="text-sm text-gray-600">{contenido.descripcion}</p>
-                )}
-                {contenido.tipo === "VIDEO" && (
-                  <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
-                )}
-                {contenido.tipo === "TEXTO" && (
-                  <MarkdownContent contenido={contenido.contenido} />
-                )}
-                {contenido.tipo === "DOCUMENTO" && (
-                  <DocumentContentList documentos={contenido.documentosConUrl} />
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </main>
+          {contenidosConDocumentos.length === 0 ? (
+            <p className="text-muted-foreground">Este curso todavía no tiene contenido publicado.</p>
+          ) : (
+            <ul className="space-y-4">
+              {contenidosConDocumentos.map((contenido) => (
+                <li key={contenido.id} className="space-y-2 rounded-lg border bg-card p-4">
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-medium">{contenido.titulo}</h3>
+                    <MarkContentViewedButton
+                      contentId={contenido.id}
+                      visto={idsVistos.has(contenido.id)}
+                    />
+                  </div>
+                  {contenido.descripcion && (
+                    <p className="text-sm text-muted-foreground">{contenido.descripcion}</p>
+                  )}
+                  {contenido.tipo === "VIDEO" && (
+                    <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                  )}
+                  {contenido.tipo === "TEXTO" && (
+                    <MarkdownContent contenido={contenido.contenido} />
+                  )}
+                  {contenido.tipo === "DOCUMENTO" && (
+                    <DocumentContentList documentos={contenido.documentosConUrl} />
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </main>
+    </>
   );
 }
