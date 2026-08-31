@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { actualizarEmailUsuario } from "@/lib/actions/update-user-email";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,12 +25,17 @@ export function EditEmailForm({
   const [estado, formAction, isPending] = useActionState(accionInicial, null);
 
   // Al guardar con éxito, volvemos a modo lectura: revalidatePath ya trajo
-  // el email nuevo al Server Component padre.
-  useEffect(() => {
+  // el email nuevo al Server Component padre. Se ajusta durante el render
+  // (comparando contra el último `estado` visto) en vez de en un efecto,
+  // siguiendo el patrón recomendado por React para evitar el renderizado en
+  // cascada de un setState síncrono dentro de un efecto.
+  const [ultimoEstadoVisto, setUltimoEstadoVisto] = useState(estado);
+  if (estado !== ultimoEstadoVisto) {
+    setUltimoEstadoVisto(estado);
     if (estado?.success) {
       setEditando(false);
     }
-  }, [estado]);
+  }
 
   if (!editando) {
     return (

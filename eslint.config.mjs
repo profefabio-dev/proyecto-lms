@@ -13,6 +13,15 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Los archivos de prueba mockean Prisma/Supabase con "as any" a propósito
+  // (convención documentada en progress.md) — sin esto, `npm run lint` falla
+  // en CI aunque el código de la aplicación esté limpio.
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
