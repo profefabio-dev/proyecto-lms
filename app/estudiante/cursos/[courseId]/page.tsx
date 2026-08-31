@@ -5,7 +5,7 @@ import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
-import { registrarContenidosVistos } from "@/lib/progress-tracking";
+import { MarkContentViewedButton } from "@/components/mark-content-viewed-button";
 
 export default async function CursoEstudiantePage({
   params,
@@ -56,16 +56,24 @@ export default async function CursoEstudiantePage({
 
   const contenidosVisibles = curso.contenidos.filter((contenido) => contenido.visible);
 
-  // US19: se marca como "visto" cada contenido visible en cuanto el
-  // Estudiante abre esta página — no hay una acción manual separada, ya
-  // que todos los contenidos ya se muestran directamente en la página
-  // (igual que el video de US15 o el PDF de US16, que tampoco requieren
-  // un clic extra para "abrirse"). Es seguro llamarla en cada carga:
-  // `registrarContenidosVistos` ignora los contenidos ya vistos antes.
-  await registrarContenidosVistos(
-    usuarioActual.id,
-    contenidosVisibles.map((contenido) => contenido.id)
-  );
+  // US19 (rediseño): "visto" ya no se marca solo con abrir esta página —
+  // eso marcaba TODOS los contenidos a la vez sin que el estudiante
+  // interactuara con ninguno, porque todos se muestran juntos en la
+  // misma página. Ahora hace falta el clic del estudiante en
+  // <MarkContentViewedButton>; aquí solo se consulta cuáles ya están
+  // marcados, para no mostrarle el botón a algo que ya confirmó antes.
+  const vistos =
+    contenidosVisibles.length === 0
+      ? []
+      : await prisma.contentViews.findMany({
+          where: {
+            userId: usuarioActual.id,
+            contentId: { in: contenidosVisibles.map((contenido) => contenido.id) },
+          },
+          select: { contentId: true },
+        });
+
+  const idsVistos = new Set(vistos.map((visto) => visto.contentId));
 
   // Las URLs de descarga son firmadas y de corta duración (US09/US16), así
   // que se generan en cada carga de la página en vez de guardarse.
@@ -100,7 +108,13 @@ export default async function CursoEstudiantePage({
           <ul className="space-y-6">
             {contenidosConDocumentos.map((contenido) => (
               <li key={contenido.id} className="space-y-2">
-                <h3 className="font-medium">{contenido.titulo}</h3>
+                <div className="flex items-center gap-3">
+                  <h3 className="font-medium">{contenido.titulo}</h3>
+                  <MarkContentViewedButton
+                    contentId={contenido.id}
+                    visto={idsVistos.has(contenido.id)}
+                  />
+                </div>
                 {contenido.descripcion && (
                   <p className="text-sm text-gray-600">{contenido.descripcion}</p>
                 )}

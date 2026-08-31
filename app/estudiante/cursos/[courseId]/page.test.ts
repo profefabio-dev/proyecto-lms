@@ -24,6 +24,9 @@ vi.mock("@/lib/prisma", () => ({
     courseUsers: {
       findFirst: vi.fn(),
     },
+    contentViews: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -31,15 +34,10 @@ vi.mock("@/lib/supabase/storage", () => ({
   crearUrlDescarga: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("@/lib/progress-tracking", () => ({
-  registrarContenidosVistos: vi.fn(),
-}));
-
 import CursoEstudiantePage from "./page";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { registrarContenidosVistos } from "@/lib/progress-tracking";
 
 function mockSesion(authUserId: string | null) {
   (createClient as any).mockResolvedValue({
@@ -58,6 +56,7 @@ function buildParams(courseId: string) {
 describe("CursoEstudiantePage (US15)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (prisma.contentViews.findMany as any).mockResolvedValue([]);
   });
 
   it("redirige a /login si no hay sesion activa", async () => {
@@ -133,7 +132,7 @@ describe("CursoEstudiantePage (US15)", () => {
     });
   });
 
-  it("registra como vistos solo los contenidos visibles (US19)", async () => {
+  it("consulta cuales contenidos visibles ya fueron marcados como vistos (US19)", async () => {
     mockSesion("auth-2");
     (prisma.users.findUnique as any).mockResolvedValue({ id: "est-1", rol: "ESTUDIANTE" });
     (prisma.courses.findUnique as any).mockResolvedValue({
@@ -146,9 +145,29 @@ describe("CursoEstudiantePage (US15)", () => {
       ],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
+    (prisma.contentViews.findMany as any).mockResolvedValue([{ contentId: "c1" }]);
 
     await CursoEstudiantePage(buildParams("curso-1"));
 
-    expect(registrarContenidosVistos).toHaveBeenCalledWith("est-1", ["c1"]);
+    expect(prisma.contentViews.findMany).toHaveBeenCalledWith({
+      where: { userId: "est-1", contentId: { in: ["c1"] } },
+      select: { contentId: true },
+    });
+  });
+
+  it("no consulta contenidos vistos si el curso no tiene contenidos visibles", async () => {
+    mockSesion("auth-2");
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "est-1", rol: "ESTUDIANTE" });
+    (prisma.courses.findUnique as any).mockResolvedValue({
+      id: "curso-1",
+      titulo: "Curso",
+      descripcion: "desc",
+      contenidos: [],
+    });
+    (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
+
+    await CursoEstudiantePage(buildParams("curso-1"));
+
+    expect(prisma.contentViews.findMany).not.toHaveBeenCalled();
   });
 });
