@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
-import { GraduationCap } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CreateStudentForm } from "@/components/create-student-form";
 import { EditEmailForm } from "@/components/edit-email-form";
+import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { AppShell } from "@/components/app-shell";
-import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 
 export default async function EstudiantesPage() {
@@ -49,8 +48,8 @@ export default async function EstudiantesPage() {
             <tbody>
               {estudiantes.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="border-none p-4">
-                    <EmptyState icon={GraduationCap} message="Aún no hay estudiantes registrados." />
+                  <td colSpan={4} className="py-4 pl-4 text-muted-foreground">
+                    Aún no hay estudiantes registrados.
                   </td>
                 </tr>
               )}
@@ -65,7 +64,12 @@ export default async function EstudiantesPage() {
                       {estudiante.estado}
                     </Badge>
                   </td>
-                  <td className="py-2 pr-4">
+                  <td className="space-y-1 py-2 pr-4">
+                    <EditUserNameForm
+                      usuarioId={estudiante.id}
+                      nombreActual={estudiante.nombre}
+                      apellidoActual={estudiante.apellido}
+                    />
                     <EditEmailForm usuarioId={estudiante.id} emailActual={estudiante.email} />
                   </td>
                 </tr>

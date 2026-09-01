@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import type { Rol } from "@prisma/client";
 import { EditEmailForm } from "@/components/edit-email-form";
+import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { ToggleUserStatusForm } from "@/components/toggle-user-status-form";
 import { AppShell } from "@/components/app-shell";
-import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -100,11 +99,8 @@ export default async function UsuariosPage({
             <tbody>
               {usuarios.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="border-none p-4">
-                    <EmptyState
-                      icon={Users}
-                      message={`No hay usuarios ${filtroRol ? "con ese rol" : "registrados"} todavía.`}
-                    />
+                  <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                    No hay usuarios {filtroRol ? "con ese rol" : "registrados"} todavía.
                   </td>
                 </tr>
               )}
@@ -121,6 +117,11 @@ export default async function UsuariosPage({
                     </Badge>
                   </td>
                   <td className="space-y-1 py-2 pr-4">
+                    <EditUserNameForm
+                      usuarioId={usuario.id}
+                      nombreActual={usuario.nombre}
+                      apellidoActual={usuario.apellido}
+                    />
                     <EditEmailForm usuarioId={usuario.id} emailActual={usuario.email} />
                     {usuario.id !== usuarioActual.id && (
                       <ToggleUserStatusForm usuarioId={usuario.id} estadoActual={usuario.estado} />

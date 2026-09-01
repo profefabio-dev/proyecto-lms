@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
-import { UserCog } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CreateTutorForm } from "@/components/create-tutor-form";
+import { EditEmailForm } from "@/components/edit-email-form";
+import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { AppShell } from "@/components/app-shell";
-import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 
 export default async function TutoresPage() {
@@ -49,6 +49,7 @@ export default async function TutoresPage() {
                   <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre</th>
                   <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email</th>
                   <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Estado</th>
+                  <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -61,12 +62,20 @@ export default async function TutoresPage() {
                         {tutor.estado}
                       </Badge>
                     </td>
+                    <td className="space-y-1 py-2 pr-4">
+                      <EditUserNameForm
+                        usuarioId={tutor.id}
+                        nombreActual={tutor.nombre}
+                        apellidoActual={tutor.apellido}
+                      />
+                      <EditEmailForm usuarioId={tutor.id} emailActual={tutor.email} />
+                    </td>
                   </tr>
                 ))}
                 {tutores.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="border-none p-4">
-                      <EmptyState icon={UserCog} message="Todavía no hay tutores registrados." />
+                    <td colSpan={4} className="py-4 text-center text-muted-foreground">
+                      Todavía no hay tutores registrados.
                     </td>
                   </tr>
                 )}

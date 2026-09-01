@@ -179,7 +179,11 @@ function Sidebar({
 
       <div className="space-y-3 border-t px-3 py-4">
         <div>
-          <p className="truncate text-sm font-medium text-foreground">
+          {/* Antes truncaba con "..." en una sola línea; a pedido del
+              docente, ahora el nombre completo se ve siempre, envolviendo
+              en varias líneas si hace falta (el panel tiene ancho fijo de
+              16rem, así que no desborda). */}
+          <p className="text-sm font-medium break-words text-foreground">
             {usuario.nombre} {usuario.apellido}
           </p>
           <Badge variant="secondary">{etiquetaRol}</Badge>
