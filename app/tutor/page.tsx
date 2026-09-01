@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BookOpen, GraduationCap, FileText, type LucideIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default async function TutorPage() {
@@ -43,15 +44,14 @@ export default async function TutorPage() {
     prisma.contents.count({ where: { courseId: { in: idsCursos } } }),
   ]);
 
-  const indicadores = [
-    { etiqueta: "Mis cursos", valor: cursosDelTutor.length },
-    { etiqueta: "Estudiantes inscritos", valor: inscripciones.length },
-    { etiqueta: "Contenidos publicados", valor: totalContenidos },
+  const indicadores: { etiqueta: string; valor: number; icon: LucideIcon }[] = [
+    { etiqueta: "Mis cursos", valor: cursosDelTutor.length, icon: BookOpen },
+    { etiqueta: "Estudiantes inscritos", valor: inscripciones.length, icon: GraduationCap },
+    { etiqueta: "Contenidos publicados", valor: totalContenidos, icon: FileText },
   ];
 
   return (
-    <>
-      <SiteHeader usuario={usuarioActual} />
+    <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
         <h1 className="text-3xl font-bold tracking-tight">Panel de Tutor</h1>
 
@@ -59,14 +59,20 @@ export default async function TutorPage() {
           className="grid grid-cols-1 gap-4 sm:grid-cols-3"
           aria-label="Indicadores generales"
         >
-          {indicadores.map((indicador) => (
-            <Card key={indicador.etiqueta}>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{indicador.etiqueta}</p>
-                <p className="text-2xl font-bold">{indicador.valor}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {indicadores.map((indicador) => {
+            const Icono = indicador.icon;
+            return (
+              <Card key={indicador.etiqueta}>
+                <CardContent>
+                  <div className="flex items-center gap-2">
+                    <Icono className="size-4 text-primary" aria-hidden="true" />
+                    <p className="text-sm text-muted-foreground">{indicador.etiqueta}</p>
+                  </div>
+                  <p className="text-2xl font-bold">{indicador.valor}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </section>
 
         <div className="flex flex-wrap gap-4">
@@ -78,6 +84,6 @@ export default async function TutorPage() {
           </Link>
         </div>
       </main>
-    </>
+    </AppShell>
   );
 }

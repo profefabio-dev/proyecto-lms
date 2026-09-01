@@ -1,4 +1,5 @@
 import { redirect, notFound } from "next/navigation";
+import { Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { YoutubeEmbed } from "@/components/youtube-embed";
@@ -6,7 +7,8 @@ import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 import { MarkContentViewedButton } from "@/components/mark-content-viewed-button";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function CursoEstudiantePage({
   params,
@@ -96,8 +98,7 @@ export default async function CursoEstudiantePage({
   );
 
   return (
-    <>
-      <SiteHeader usuario={usuarioActual} />
+    <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{curso.titulo}</h1>
@@ -108,7 +109,7 @@ export default async function CursoEstudiantePage({
           <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
           {contenidosConDocumentos.length === 0 ? (
-            <p className="text-muted-foreground">Este curso todavía no tiene contenido publicado.</p>
+            <EmptyState icon={Inbox} message="Este curso todavía no tiene contenido publicado." />
           ) : (
             <ul className="space-y-4">
               {contenidosConDocumentos.map((contenido) => (
@@ -138,6 +139,6 @@ export default async function CursoEstudiantePage({
           )}
         </section>
       </main>
-    </>
+    </AppShell>
   );
 }

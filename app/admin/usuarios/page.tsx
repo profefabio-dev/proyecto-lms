@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import type { Rol } from "@prisma/client";
 import { EditEmailForm } from "@/components/edit-email-form";
 import { ToggleUserStatusForm } from "@/components/toggle-user-status-form";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
+import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -53,8 +55,7 @@ export default async function UsuariosPage({
   });
 
   return (
-    <>
-      <SiteHeader usuario={usuarioActual} />
+    <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Usuarios del sistema</h1>
@@ -99,8 +100,11 @@ export default async function UsuariosPage({
             <tbody>
               {usuarios.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-4 text-center text-muted-foreground">
-                    No hay usuarios {filtroRol ? "con ese rol" : "registrados"} todavía.
+                  <td colSpan={5} className="border-none p-4">
+                    <EmptyState
+                      icon={Users}
+                      message={`No hay usuarios ${filtroRol ? "con ese rol" : "registrados"} todavía.`}
+                    />
                   </td>
                 </tr>
               )}
@@ -128,6 +132,6 @@ export default async function UsuariosPage({
           </table>
         </div>
       </main>
-    </>
+    </AppShell>
   );
 }

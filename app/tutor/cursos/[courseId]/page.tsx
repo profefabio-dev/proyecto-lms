@@ -1,4 +1,5 @@
 import { redirect, notFound } from "next/navigation";
+import { GraduationCap, Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AssignStudentsForm } from "@/components/assign-students-form";
@@ -10,7 +11,8 @@ import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
 import { ContentOrderControls } from "@/components/content-order-controls";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function CursoDetallePage({
   params,
@@ -81,8 +83,7 @@ export default async function CursoDetallePage({
   );
 
   return (
-    <>
-      <SiteHeader usuario={usuarioActual} />
+    <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{curso.titulo}</h1>
@@ -92,7 +93,7 @@ export default async function CursoDetallePage({
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Estudiantes inscritos</h2>
         {curso.inscritos.length === 0 ? (
-          <p className="text-muted-foreground">Aún no hay estudiantes inscritos en este curso.</p>
+          <EmptyState icon={GraduationCap} message="Aún no hay estudiantes inscritos en este curso." />
         ) : (
           <ul className="list-disc list-inside space-y-1 text-sm">
             {curso.inscritos.map((inscripcion) => (
@@ -113,7 +114,7 @@ export default async function CursoDetallePage({
         <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
         {contenidosConDocumentos.length === 0 ? (
-          <p className="text-muted-foreground">Este curso todavía no tiene contenido publicado.</p>
+          <EmptyState icon={Inbox} message="Este curso todavía no tiene contenido publicado." />
         ) : (
           <ul className="space-y-4">
             {contenidosConDocumentos.map((contenido, indice) => (
@@ -161,6 +162,6 @@ export default async function CursoDetallePage({
         </div>
       </section>
       </main>
-    </>
+    </AppShell>
   );
 }

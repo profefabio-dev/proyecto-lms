@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { correoPerteneceACuentaDesactivada } from "@/lib/actions/check-account-status";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,11 +15,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function LoginForm() {
+const MENSAJE_CREDENCIALES_INCORRECTAS = "Credenciales incorrectas. Intenta de nuevo.";
+const MENSAJE_CUENTA_DESACTIVADA =
+  "Tu cuenta fue desactivada por el administrador. Contáctalo para más información.";
+
+export function LoginForm({
+  errorInicial,
+}: {
+  /** Viene de `/login?error=cuenta_desactivada` (segunda capa de bloqueo en `app/dashboard/page.tsx`). */
+  errorInicial?: string | null;
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(errorInicial ?? null);
   const [cargando, setCargando] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -27,20 +37,28 @@ export function LoginForm() {
     setCargando(true);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: errorLogin } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    setCargando(false);
-
-    if (error) {
-      setError("Credenciales incorrectas. Intenta de nuevo.");
+    if (!errorLogin) {
+      setCargando(false);
+      router.push("/dashboard");
+      router.refresh();
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    // El login falló: puede ser contraseña incorrecta o una cuenta
+    // desactivada (Supabase Auth bloquea el signIn de una cuenta con
+    // `ban_duration` — ver US23 — y devuelve el mismo error genérico que
+    // una contraseña mal escrita, sin distinguir el motivo). Se consulta
+    // aparte para mostrar el mensaje correcto en vez de dejar que el
+    // usuario piense que escribió mal su contraseña.
+    const desactivada = await correoPerteneceACuentaDesactivada(email);
+
+    setCargando(false);
+    setError(desactivada ? MENSAJE_CUENTA_DESACTIVADA : MENSAJE_CREDENCIALES_INCORRECTAS);
   }
 
   return (

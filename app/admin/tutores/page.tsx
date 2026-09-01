@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
+import { UserCog } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CreateTutorForm } from "@/components/create-tutor-form";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
+import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 
 export default async function TutoresPage() {
@@ -32,8 +34,7 @@ export default async function TutoresPage() {
   });
 
   return (
-    <>
-      <SiteHeader usuario={usuarioActual} />
+    <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
         <h1 className="text-3xl font-bold tracking-tight">Gestión de Tutores</h1>
 
@@ -64,8 +65,8 @@ export default async function TutoresPage() {
                 ))}
                 {tutores.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="py-4 text-center text-muted-foreground">
-                      Todavía no hay tutores registrados.
+                    <td colSpan={3} className="border-none p-4">
+                      <EmptyState icon={UserCog} message="Todavía no hay tutores registrados." />
                     </td>
                   </tr>
                 )}
@@ -74,6 +75,6 @@ export default async function TutoresPage() {
           </div>
         </div>
       </main>
-    </>
+    </AppShell>
   );
 }

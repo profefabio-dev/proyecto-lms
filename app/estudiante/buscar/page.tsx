@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { construirFiltroBusqueda } from "@/lib/search";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -61,8 +61,7 @@ export default async function BuscarPage({
   const sinResultados = termino.length > 0 && cursos.length === 0 && contenidos.length === 0;
 
   return (
-    <>
-      <SiteHeader usuario={usuarioActual} />
+    <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
         <h1 className="text-3xl font-bold tracking-tight">Buscar</h1>
 
@@ -128,6 +127,6 @@ export default async function BuscarPage({
           </div>
         )}
       </main>
-    </>
+    </AppShell>
   );
 }
