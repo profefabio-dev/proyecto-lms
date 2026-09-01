@@ -62,13 +62,15 @@ export default async function TutoresPage() {
                         {tutor.estado}
                       </Badge>
                     </td>
-                    <td className="space-y-1 py-2 pr-4">
-                      <EditUserNameForm
-                        usuarioId={tutor.id}
-                        nombreActual={tutor.nombre}
-                        apellidoActual={tutor.apellido}
-                      />
-                      <EditEmailForm usuarioId={tutor.id} emailActual={tutor.email} />
+                    <td className="py-2 pr-4">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <EditUserNameForm
+                          usuarioId={tutor.id}
+                          nombreActual={tutor.nombre}
+                          apellidoActual={tutor.apellido}
+                        />
+                        <EditEmailForm usuarioId={tutor.id} emailActual={tutor.email} />
+                      </div>
                     </td>
                   </tr>
                 ))}

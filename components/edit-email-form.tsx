@@ -39,13 +39,9 @@ export function EditEmailForm({
 
   if (!editando) {
     return (
-      <button
-        type="button"
-        onClick={() => setEditando(true)}
-        className="text-xs text-blue-600 underline"
-      >
+      <Button type="button" variant="outline" size="xs" onClick={() => setEditando(true)}>
         Editar email
-      </button>
+      </Button>
     );
   }
 

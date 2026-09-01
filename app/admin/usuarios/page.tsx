@@ -116,16 +116,18 @@ export default async function UsuariosPage({
                       {usuario.estado}
                     </Badge>
                   </td>
-                  <td className="space-y-1 py-2 pr-4">
-                    <EditUserNameForm
-                      usuarioId={usuario.id}
-                      nombreActual={usuario.nombre}
-                      apellidoActual={usuario.apellido}
-                    />
-                    <EditEmailForm usuarioId={usuario.id} emailActual={usuario.email} />
-                    {usuario.id !== usuarioActual.id && (
-                      <ToggleUserStatusForm usuarioId={usuario.id} estadoActual={usuario.estado} />
-                    )}
+                  <td className="py-2 pr-4">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <EditUserNameForm
+                        usuarioId={usuario.id}
+                        nombreActual={usuario.nombre}
+                        apellidoActual={usuario.apellido}
+                      />
+                      <EditEmailForm usuarioId={usuario.id} emailActual={usuario.email} />
+                      {usuario.id !== usuarioActual.id && (
+                        <ToggleUserStatusForm usuarioId={usuario.id} estadoActual={usuario.estado} />
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

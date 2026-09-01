@@ -64,13 +64,15 @@ export default async function EstudiantesPage() {
                       {estudiante.estado}
                     </Badge>
                   </td>
-                  <td className="space-y-1 py-2 pr-4">
-                    <EditUserNameForm
-                      usuarioId={estudiante.id}
-                      nombreActual={estudiante.nombre}
-                      apellidoActual={estudiante.apellido}
-                    />
-                    <EditEmailForm usuarioId={estudiante.id} emailActual={estudiante.email} />
+                  <td className="py-2 pr-4">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <EditUserNameForm
+                        usuarioId={estudiante.id}
+                        nombreActual={estudiante.nombre}
+                        apellidoActual={estudiante.apellido}
+                      />
+                      <EditEmailForm usuarioId={estudiante.id} emailActual={estudiante.email} />
+                    </div>
                   </td>
                 </tr>
               ))}

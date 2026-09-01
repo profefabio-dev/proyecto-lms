@@ -136,11 +136,16 @@ function Sidebar({
       )}
     >
       <div className="flex items-center justify-between gap-2 border-b px-4 py-4">
-        <Link
-          href={inicioHref}
-          className="truncate text-base font-bold tracking-tight text-foreground"
-        >
-          Plataforma <span className="text-primary">Fabio Aguirre</span>
+        {/* Antes iba en una sola línea con `truncate`, que le cortaba
+            "Fabio Aguirre" con puntos suspensivos porque no entraba junto
+            con "Plataforma" en el ancho del panel. Se separa en dos líneas
+            (rótulo + nombre) para que el nombre completo se vea siempre,
+            sin depender del ancho disponible. */}
+        <Link href={inicioHref} className="flex min-w-0 flex-col leading-tight">
+          <span className="text-xs font-medium text-muted-foreground">Plataforma</span>
+          <span className="break-words text-base font-bold tracking-tight text-primary">
+            Fabio Aguirre
+          </span>
         </Link>
         <button
           type="button"

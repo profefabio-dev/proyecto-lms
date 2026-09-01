@@ -40,13 +40,9 @@ export function EditUserNameForm({
 
   if (!editando) {
     return (
-      <button
-        type="button"
-        onClick={() => setEditando(true)}
-        className="text-xs text-blue-600 underline"
-      >
+      <Button type="button" variant="outline" size="xs" onClick={() => setEditando(true)}>
         Editar datos
-      </button>
+      </Button>
     );
   }
 
