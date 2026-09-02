@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { Rol } from "@prisma/client";
+import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 import { CreateEspacioForm } from "@/components/create-espacio-form";
+import { ToggleEspacioStatusForm } from "@/components/toggle-espacio-status-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,21 +24,41 @@ export default async function SuperAdminPage() {
     redirect("/login");
   }
 
-  // US25: listado de todos los espacios existentes, con cuántos usuarios
-  // (Administradores + Tutores) tiene cada uno — los Estudiantes no cuentan
-  // aquí, nunca pertenecen a un espacio propio (ver lib/espacio-scope.ts).
-  // El desglose completo (cursos, estudiantes inscritos) y la posibilidad
-  // de desactivar un espacio quedan para US27/US28.
+  // US25/US27: listado de todos los espacios existentes. `usuarios` acá
+  // solo trae Administradores y Tutores (son los únicos roles con
+  // `espacioId` propio — ver prisma/schema.prisma), ordenados por
+  // antigüedad para poder tomar el primer Administrador como "principal".
   const espacios = await prisma.espacios.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      _count: { select: { usuarios: true } },
+      usuarios: { orderBy: { createdAt: "asc" } },
     },
   });
 
+  // Cursos y Estudiantes no cuelgan directamente de Espacios en el modelo
+  // (los cursos son de un Tutor, los Estudiantes se consideran "del
+  // espacio" por inscripción — ver lib/espacio-scope.ts), así que se
+  // consultan aparte por cada espacio.
+  const espaciosConDetalle = await Promise.all(
+    espacios.map(async (espacio) => {
+      const administradorPrincipal =
+        espacio.usuarios.find((usuario) => usuario.rol === Rol.ADMINISTRADOR) ?? null;
+      const cantidadTutores = espacio.usuarios.filter(
+        (usuario) => usuario.rol === Rol.TUTOR
+      ).length;
+
+      const [cantidadCursos, cantidadEstudiantes] = await Promise.all([
+        prisma.courses.count({ where: { tutor: { espacioId: espacio.id } } }),
+        prisma.users.count({ where: filtroUsuarioVisibleEnEspacio(espacio.id, Rol.ESTUDIANTE) }),
+      ]);
+
+      return { ...espacio, administradorPrincipal, cantidadTutores, cantidadCursos, cantidadEstudiantes };
+    })
+  );
+
   return (
     <AppShell usuario={usuarioActual}>
-      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+      <main className="mx-auto max-w-6xl space-y-8 px-6 py-10">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Espacios de docentes</h1>
           <p className="text-sm text-muted-foreground">
@@ -46,7 +69,7 @@ export default async function SuperAdminPage() {
 
         <CreateEspacioForm />
 
-        <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-x-auto rounded-lg border">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b bg-muted/50 text-left">
@@ -54,29 +77,51 @@ export default async function SuperAdminPage() {
                   Nombre
                 </th>
                 <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Usuarios
+                  Administrador
+                </th>
+                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Tutores
+                </th>
+                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Estudiantes
+                </th>
+                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Cursos
                 </th>
                 <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Estado
                 </th>
+                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody>
-              {espacios.length === 0 && (
+              {espaciosConDetalle.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="py-4 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-4 text-center text-muted-foreground">
                     No hay espacios registrados todavía.
                   </td>
                 </tr>
               )}
-              {espacios.map((espacio) => (
+              {espaciosConDetalle.map((espacio) => (
                 <tr key={espacio.id} className="border-b last:border-b-0 hover:bg-muted/30">
                   <td className="py-2 pr-4 pl-4">{espacio.nombre}</td>
-                  <td className="py-2 pr-4">{espacio._count.usuarios}</td>
+                  <td className="py-2 pr-4">
+                    {espacio.administradorPrincipal
+                      ? `${espacio.administradorPrincipal.nombre} ${espacio.administradorPrincipal.apellido}`
+                      : "— sin Administrador —"}
+                  </td>
+                  <td className="py-2 pr-4">{espacio.cantidadTutores}</td>
+                  <td className="py-2 pr-4">{espacio.cantidadEstudiantes}</td>
+                  <td className="py-2 pr-4">{espacio.cantidadCursos}</td>
                   <td className="py-2 pr-4">
                     <Badge variant={espacio.estado === "ACTIVO" ? "success" : "secondary"}>
                       {espacio.estado}
                     </Badge>
+                  </td>
+                  <td className="py-2 pr-4">
+                    <ToggleEspacioStatusForm espacioId={espacio.id} estadoActual={espacio.estado} />
                   </td>
                 </tr>
               ))}
