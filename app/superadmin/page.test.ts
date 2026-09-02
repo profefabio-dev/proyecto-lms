@@ -33,6 +33,7 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/supabase/sync-user", () => ({
   createSyncedUser: vi.fn(),
   setSyncedUserActiveState: vi.fn(),
+  resetSyncedUserPassword: vi.fn(),
 }));
 
 import SuperAdminPage from "./page";

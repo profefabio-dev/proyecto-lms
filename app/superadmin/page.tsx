@@ -5,6 +5,7 @@ import { Rol } from "@prisma/client";
 import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 import { CreateEspacioForm } from "@/components/create-espacio-form";
 import { ToggleEspacioStatusForm } from "@/components/toggle-espacio-status-form";
+import { ResetEspacioAdminPasswordForm } from "@/components/reset-espacio-admin-password-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 
@@ -121,7 +122,14 @@ export default async function SuperAdminPage() {
                     </Badge>
                   </td>
                   <td className="py-2 pr-4">
-                    <ToggleEspacioStatusForm espacioId={espacio.id} estadoActual={espacio.estado} />
+                    <div className="flex flex-col items-start gap-2">
+                      <ToggleEspacioStatusForm espacioId={espacio.id} estadoActual={espacio.estado} />
+                      {espacio.administradorPrincipal && (
+                        <ResetEspacioAdminPasswordForm
+                          administradorId={espacio.administradorPrincipal.id}
+                        />
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
