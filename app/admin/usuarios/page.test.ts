@@ -81,41 +81,96 @@ describe("UsuariosPage (US03 - listado de usuarios para el Admin)", () => {
     expect(redirect).toHaveBeenCalledWith("/login");
   });
 
-  it("consulta todos los usuarios sin filtro cuando no se pasa 'rol'", async () => {
+  it("redirige a /login si el Administrador no tiene espacioId (US24, caso defensivo)", async () => {
+    mockSesion("auth-2b");
+    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ADMINISTRADOR", espacioId: null });
+
+    await expect(UsuariosPage({ searchParams: Promise.resolve({}) })).rejects.toThrow(
+      "NEXT_REDIRECT"
+    );
+    expect(redirect).toHaveBeenCalledWith("/login");
+    expect(prisma.users.findMany).not.toHaveBeenCalled();
+  });
+
+  it("sin filtro de rol, consulta usuarios visibles en el espacio del Administrador (US24)", async () => {
     mockSesion("auth-3");
-    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ADMINISTRADOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({
+      rol: "ADMINISTRADOR",
+      espacioId: "espacio-1",
+    });
     (prisma.users.findMany as any).mockResolvedValue([]);
 
     await UsuariosPage({ searchParams: Promise.resolve({}) });
 
     expect(prisma.users.findMany).toHaveBeenCalledWith({
-      where: undefined,
+      where: {
+        OR: [
+          { rol: { in: ["ADMINISTRADOR", "TUTOR"] }, espacioId: "espacio-1" },
+          {
+            rol: "ESTUDIANTE",
+            inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } },
+          },
+        ],
+      },
       orderBy: { createdAt: "desc" },
     });
   });
 
-  it("filtra por rol cuando se pasa un valor de rol valido", async () => {
+  it("filtra por rol dentro del espacio del Administrador cuando se pasa un valor de rol valido", async () => {
     mockSesion("auth-4");
-    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ADMINISTRADOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({
+      rol: "ADMINISTRADOR",
+      espacioId: "espacio-1",
+    });
     (prisma.users.findMany as any).mockResolvedValue([]);
 
     await UsuariosPage({ searchParams: Promise.resolve({ rol: "TUTOR" }) });
 
     expect(prisma.users.findMany).toHaveBeenCalledWith({
-      where: { rol: "TUTOR" },
+      where: { rol: "TUTOR", espacioId: "espacio-1" },
       orderBy: { createdAt: "desc" },
     });
   });
 
-  it("ignora un valor de rol invalido y consulta sin filtro", async () => {
+  it("filtrando por Estudiante, consulta por inscripcion en un curso del espacio (no por espacioId propio)", async () => {
+    mockSesion("auth-4b");
+    (prisma.users.findUnique as any).mockResolvedValue({
+      rol: "ADMINISTRADOR",
+      espacioId: "espacio-1",
+    });
+    (prisma.users.findMany as any).mockResolvedValue([]);
+
+    await UsuariosPage({ searchParams: Promise.resolve({ rol: "ESTUDIANTE" }) });
+
+    expect(prisma.users.findMany).toHaveBeenCalledWith({
+      where: {
+        rol: "ESTUDIANTE",
+        inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  });
+
+  it("ignora un valor de rol invalido y consulta sin filtro de rol (dentro del espacio)", async () => {
     mockSesion("auth-5");
-    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ADMINISTRADOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({
+      rol: "ADMINISTRADOR",
+      espacioId: "espacio-1",
+    });
     (prisma.users.findMany as any).mockResolvedValue([]);
 
     await UsuariosPage({ searchParams: Promise.resolve({ rol: "NO_EXISTE" }) });
 
     expect(prisma.users.findMany).toHaveBeenCalledWith({
-      where: undefined,
+      where: {
+        OR: [
+          { rol: { in: ["ADMINISTRADOR", "TUTOR"] }, espacioId: "espacio-1" },
+          {
+            rol: "ESTUDIANTE",
+            inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } },
+          },
+        ],
+      },
       orderBy: { createdAt: "desc" },
     });
   });

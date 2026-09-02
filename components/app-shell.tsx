@@ -10,6 +10,7 @@ import {
   GraduationCap,
   BookOpen,
   Search,
+  Building2,
   Menu,
   X,
   type LucideIcon,
@@ -18,7 +19,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type RolConocido = "ADMINISTRADOR" | "TUTOR" | "ESTUDIANTE";
+type RolConocido = "ADMINISTRADOR" | "TUTOR" | "ESTUDIANTE" | "SUPERADMIN";
 type Usuario = { nombre: string; apellido: string; rol: string };
 
 const NAV_POR_ROL: Record<RolConocido, { href: string; label: string; icon: LucideIcon }[]> = {
@@ -36,12 +37,17 @@ const NAV_POR_ROL: Record<RolConocido, { href: string; label: string; icon: Luci
     { href: "/estudiante", label: "Mis cursos", icon: BookOpen },
     { href: "/estudiante/buscar", label: "Buscar", icon: Search },
   ],
+  // US25: el Super Administrador solo gestiona espacios, no cursos ni
+  // usuarios individuales dentro de un espacio (eso le corresponde al
+  // Administrador de cada uno).
+  SUPERADMIN: [{ href: "/superadmin", label: "Espacios", icon: Building2 }],
 };
 
 const ETIQUETA_ROL: Record<RolConocido, string> = {
   ADMINISTRADOR: "Administrador",
   TUTOR: "Tutor",
   ESTUDIANTE: "Estudiante",
+  SUPERADMIN: "Super Administrador",
 };
 
 /**

@@ -4,8 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { CreateStudentForm } from "@/components/create-student-form";
 import { EditEmailForm } from "@/components/edit-email-form";
 import { EditUserNameForm } from "@/components/edit-user-name-form";
+import { ResetPasswordForm } from "@/components/reset-password-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
+import { Rol } from "@prisma/client";
 
 export default async function EstudiantesPage() {
   const supabase = await createClient();
@@ -23,8 +26,21 @@ export default async function EstudiantesPage() {
     redirect("/login");
   }
 
+  // Épica Multi-docente (US24): antes de esto, un Tutor veía (y podía
+  // editar/resetear la contraseña de) TODOS los Estudiantes de la
+  // plataforma, sin importar si tenían algo que ver con sus cursos — un
+  // vacío real, no solo un límite de la vista. Ahora se limita a los
+  // Estudiantes con al menos una inscripción en un curso de su mismo
+  // espacio (los Estudiantes son cuentas compartidas entre espacios, así
+  // que no tienen espacioId propio — se filtran por inscripción real, ver
+  // `lib/espacio-scope.ts`). Caso defensivo: todo Tutor existente quedó
+  // con espacioId asignado por la migración de la épica.
+  if (!usuarioActual.espacioId) {
+    redirect("/login");
+  }
+
   const estudiantes = await prisma.users.findMany({
-    where: { rol: "ESTUDIANTE" },
+    where: filtroUsuarioVisibleEnEspacio(usuarioActual.espacioId, Rol.ESTUDIANTE),
     orderBy: { createdAt: "desc" },
   });
 
@@ -72,6 +88,7 @@ export default async function EstudiantesPage() {
                         apellidoActual={estudiante.apellido}
                       />
                       <EditEmailForm usuarioId={estudiante.id} emailActual={estudiante.email} />
+                      <ResetPasswordForm usuarioId={estudiante.id} />
                     </div>
                   </td>
                 </tr>

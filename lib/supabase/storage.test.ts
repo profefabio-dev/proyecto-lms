@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const uploadMock = vi.fn();
 const removeMock = vi.fn();
 const createSignedUrlMock = vi.fn();
-const fromMock = vi.fn((_bucket: string) => ({
+const fromMock = vi.fn(() => ({
   upload: uploadMock,
   remove: removeMock,
   createSignedUrl: createSignedUrlMock,

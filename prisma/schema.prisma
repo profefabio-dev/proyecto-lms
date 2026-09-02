@@ -12,6 +12,7 @@ enum Rol {
   ADMINISTRADOR
   TUTOR
   ESTUDIANTE
+  SUPERADMIN
 }
 
 enum EstadoUsuario {
@@ -39,13 +40,40 @@ model Users {
   email     String        @unique
   rol       Rol
   estado    EstadoUsuario @default(ACTIVO)
+  // Épica Multi-docente (Backlog.md): obligatorio a nivel de aplicación
+  // solo para ADMINISTRADOR y TUTOR (cada uno pertenece a un único
+  // espacio, sin acceso a los datos de otro). SUPERADMIN y ESTUDIANTE no
+  // tienen espacioId — SUPERADMIN opera sobre todos los espacios (para
+  // crearlos/listarlos/desactivarlos, nunca para leer sus datos
+  // internos); un ESTUDIANTE es una cuenta única y compartida entre
+  // espacios, decisión tomada el 02/09/2026 para no obligarlo a crear una
+  // cuenta nueva por cada docente — su relación con un espacio queda dada
+  // por sus inscripciones (`CourseUsers`) a cursos de Tutores de ese
+  // espacio, no por este campo. Ver Diagrama_de_Arquitectura.md.
+  espacioId String?
   createdAt DateTime      @default(now())
 
+  espacio          Espacios?      @relation(fields: [espacioId], references: [id])
   cursosComoTutor  Courses[]      @relation("TutorCourses")
   inscripciones    CourseUsers[]
   contenidosVistos ContentViews[]
 
   @@map("users")
+}
+
+// Épica Multi-docente (Backlog.md, Sprint 7): un espacio = un docente o
+// institución. Administradores y Tutores pertenecen a exactamente un
+// espacio (Users.espacioId); los cursos lo heredan de su Tutor. Ver
+// Diagrama_de_Arquitectura.md, sección "Cambios previstos".
+model Espacios {
+  id        String        @id @default(uuid())
+  nombre    String
+  estado    EstadoUsuario @default(ACTIVO)
+  createdAt DateTime      @default(now())
+
+  usuarios Users[]
+
+  @@map("espacios")
 }
 
 model Courses {

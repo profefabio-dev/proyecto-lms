@@ -67,6 +67,16 @@ describe("DashboardPage (US01/US05/US13 - redireccion por rol)", () => {
     expect(redirect).toHaveBeenCalledWith("/estudiante");
   });
 
+  it("redirige a /superadmin si el rol es SUPERADMIN (US25)", async () => {
+    (createClient as any).mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-6" } } }) },
+    });
+    (prisma.users.findUnique as any).mockResolvedValue({ rol: "SUPERADMIN", estado: "ACTIVO" });
+
+    await expect(DashboardPage()).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirect).toHaveBeenCalledWith("/superadmin");
+  });
+
   it("redirige a /login con error si el usuario esta desactivado (US20)", async () => {
     (createClient as any).mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-5" } } }) },

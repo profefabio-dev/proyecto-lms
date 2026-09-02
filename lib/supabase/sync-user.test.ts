@@ -24,7 +24,12 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { createSyncedUser, updateSyncedUserEmail, setSyncedUserActiveState } from "./sync-user";
+import {
+  createSyncedUser,
+  updateSyncedUserEmail,
+  setSyncedUserActiveState,
+  resetSyncedUserPassword,
+} from "./sync-user";
 import { supabaseAdmin } from "./admin";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
@@ -61,6 +66,47 @@ describe("createSyncedUser (US21)", () => {
     expect(resultado.authId).toBe("auth-id-123");
     expect(prisma.users.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ authId: "auth-id-123" }),
+    });
+  });
+
+  it("pasa espacioId a Prisma cuando se recibe (épica Multi-docente, US24)", async () => {
+    (supabaseAdmin.auth.admin.createUser as any).mockResolvedValue({
+      data: { user: { id: "auth-id-123" } },
+      error: null,
+    });
+    (prisma.users.create as any).mockResolvedValue({ id: "db-id-456" });
+
+    await createSyncedUser({
+      email: "tutor@example.com",
+      password: "clave-segura",
+      nombre: "Test",
+      apellido: "User",
+      rol: Rol.TUTOR,
+      espacioId: "espacio-1",
+    });
+
+    expect(prisma.users.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ espacioId: "espacio-1" }),
+    });
+  });
+
+  it("deja espacioId sin definir cuando no se recibe (SUPERADMIN/ESTUDIANTE)", async () => {
+    (supabaseAdmin.auth.admin.createUser as any).mockResolvedValue({
+      data: { user: { id: "auth-id-999" } },
+      error: null,
+    });
+    (prisma.users.create as any).mockResolvedValue({ id: "db-id-999" });
+
+    await createSyncedUser({
+      email: "estudiante@example.com",
+      password: "clave-segura",
+      nombre: "Test",
+      apellido: "User",
+      rol: Rol.ESTUDIANTE,
+    });
+
+    expect(prisma.users.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ espacioId: undefined }),
     });
   });
 
@@ -196,6 +242,41 @@ describe("updateSyncedUserEmail (US22)", () => {
     expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenNthCalledWith(2, "auth-1", {
       email: "viejo@example.com",
     });
+  });
+});
+
+describe("resetSyncedUserPassword", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("llama a Auth con el authId y la contraseña nueva recibidos", async () => {
+    (supabaseAdmin.auth.admin.updateUserById as any).mockResolvedValue({ error: null });
+
+    await resetSyncedUserPassword({ authId: "auth-1", nuevoPassword: "clave-nueva-123" });
+
+    expect(supabaseAdmin.auth.admin.updateUserById).toHaveBeenCalledWith("auth-1", {
+      password: "clave-nueva-123",
+    });
+  });
+
+  it("no toca Prisma en ningun caso: la contraseña no vive en la tabla Users", async () => {
+    (supabaseAdmin.auth.admin.updateUserById as any).mockResolvedValue({ error: null });
+
+    await resetSyncedUserPassword({ authId: "auth-1", nuevoPassword: "clave-nueva-123" });
+
+    expect(prisma.users.update).not.toHaveBeenCalled();
+    expect(prisma.users.create).not.toHaveBeenCalled();
+  });
+
+  it("lanza un error si falla la actualizacion en Auth", async () => {
+    (supabaseAdmin.auth.admin.updateUserById as any).mockResolvedValue({
+      error: { message: "No se pudo actualizar" },
+    });
+
+    await expect(
+      resetSyncedUserPassword({ authId: "auth-1", nuevoPassword: "clave-nueva-123" })
+    ).rejects.toThrow(/No se pudo restablecer la contraseña en Supabase Auth/);
   });
 });
 

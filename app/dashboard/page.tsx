@@ -42,5 +42,11 @@ export default async function DashboardPage() {
       redirect("/tutor");
     case "ESTUDIANTE":
       redirect("/estudiante");
+    case "SUPERADMIN":
+      // US25: antes de agregar este caso, un Super Administrador que
+      // iniciaba sesión llegaba hasta acá y no pasaba a ningún lado — la
+      // función simplemente terminaba sin redirigir a nada, dejando una
+      // pantalla en blanco sin ningún error visible.
+      redirect("/superadmin");
   }
 }

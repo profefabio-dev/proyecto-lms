@@ -24,7 +24,7 @@ export function AssignStudentsForm({
 
   if (estudiantes.length === 0) {
     return (
-      <p className="text-gray-500 text-sm">
+      <p className="text-sm text-muted-foreground">
         Todos los estudiantes registrados ya están inscritos en este curso.
       </p>
     );
@@ -34,11 +34,22 @@ export function AssignStudentsForm({
     <form action={accion} className="space-y-4 max-w-md">
       <input type="hidden" name="courseId" value={courseId} />
 
-      <div className="space-y-2">
+      <div className="space-y-1 rounded-lg border p-2">
         {estudiantes.map((estudiante) => (
-          <label key={estudiante.id} className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="estudianteIds" value={estudiante.id} />
-            {estudiante.nombre} {estudiante.apellido} — {estudiante.email}
+          <label
+            key={estudiante.id}
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
+          >
+            <input
+              type="checkbox"
+              name="estudianteIds"
+              value={estudiante.id}
+              className="size-4 accent-primary"
+            />
+            <span className="font-medium">
+              {estudiante.nombre} {estudiante.apellido}
+            </span>
+            <span className="text-muted-foreground">— {estudiante.email}</span>
           </label>
         ))}
       </div>

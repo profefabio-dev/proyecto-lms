@@ -20,10 +20,15 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+vi.mock("@/lib/espacio-scope", () => ({
+  usuarioVisibleEnEspacio: vi.fn(),
+}));
+
 import { alternarEstadoUsuario } from "./toggle-user-status";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { setSyncedUserActiveState } from "@/lib/supabase/sync-user";
+import { usuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 
 function buildFormData(data: Record<string, string>) {
   const fd = new FormData();
@@ -44,6 +49,8 @@ function mockSesion(authUserId: string | null) {
 describe("alternarEstadoUsuario (US20/US23)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Por defecto, visible en el espacio salvo que un test diga lo contrario.
+    (usuarioVisibleEnEspacio as any).mockResolvedValue(true);
   });
 
   it("rechaza si no hay sesion activa", async () => {
@@ -59,7 +66,7 @@ describe("alternarEstadoUsuario (US20/US23)", () => {
 
   it("rechaza si quien llama no es Administrador", async () => {
     mockSesion("auth-1");
-    (prisma.users.findUnique as any).mockResolvedValue({ id: "admin-1", rol: "TUTOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "admin-1", rol: "TUTOR", espacioId: "espacio-1" });
 
     const resultado = await alternarEstadoUsuario(
       buildFormData({ usuarioId: "u1", accion: "desactivar" })
@@ -71,7 +78,7 @@ describe("alternarEstadoUsuario (US20/US23)", () => {
 
   it("rechaza una accion invalida", async () => {
     mockSesion("auth-1");
-    (prisma.users.findUnique as any).mockResolvedValue({ id: "admin-1", rol: "ADMINISTRADOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "admin-1", rol: "ADMINISTRADOR", espacioId: "espacio-1" });
 
     const resultado = await alternarEstadoUsuario(
       buildFormData({ usuarioId: "u1", accion: "borrar" })
@@ -83,7 +90,7 @@ describe("alternarEstadoUsuario (US20/US23)", () => {
 
   it("un Administrador no puede desactivar su propia cuenta", async () => {
     mockSesion("auth-1");
-    (prisma.users.findUnique as any).mockResolvedValue({ id: "admin-1", rol: "ADMINISTRADOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "admin-1", rol: "ADMINISTRADOR", espacioId: "espacio-1" });
 
     const resultado = await alternarEstadoUsuario(
       buildFormData({ usuarioId: "admin-1", accion: "desactivar" })
@@ -96,7 +103,7 @@ describe("alternarEstadoUsuario (US20/US23)", () => {
   it("rechaza si el usuario objetivo no existe", async () => {
     mockSesion("auth-1");
     (prisma.users.findUnique as any)
-      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR" })
+      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR", espacioId: "espacio-1" })
       .mockResolvedValueOnce(null);
 
     const resultado = await alternarEstadoUsuario(
@@ -110,8 +117,8 @@ describe("alternarEstadoUsuario (US20/US23)", () => {
   it("desactiva a un usuario existente", async () => {
     mockSesion("auth-1");
     (prisma.users.findUnique as any)
-      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR" })
-      .mockResolvedValueOnce({ id: "u1", rol: "ESTUDIANTE", authId: "a1" });
+      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR", espacioId: "espacio-1" })
+      .mockResolvedValueOnce({ id: "u1", rol: "ESTUDIANTE", espacioId: null, authId: "a1" });
     (setSyncedUserActiveState as any).mockResolvedValue(undefined);
 
     const resultado = await alternarEstadoUsuario(
@@ -129,8 +136,8 @@ describe("alternarEstadoUsuario (US20/US23)", () => {
   it("reactiva a un usuario existente", async () => {
     mockSesion("auth-1");
     (prisma.users.findUnique as any)
-      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR" })
-      .mockResolvedValueOnce({ id: "u1", rol: "TUTOR", authId: "a1" });
+      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR", espacioId: "espacio-1" })
+      .mockResolvedValueOnce({ id: "u1", rol: "TUTOR", espacioId: "espacio-1", authId: "a1" });
     (setSyncedUserActiveState as any).mockResolvedValue(undefined);
 
     const resultado = await alternarEstadoUsuario(
@@ -148,8 +155,8 @@ describe("alternarEstadoUsuario (US20/US23)", () => {
   it("propaga el error si setSyncedUserActiveState falla", async () => {
     mockSesion("auth-1");
     (prisma.users.findUnique as any)
-      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR" })
-      .mockResolvedValueOnce({ id: "u1", rol: "TUTOR", authId: "a1" });
+      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR", espacioId: "espacio-1" })
+      .mockResolvedValueOnce({ id: "u1", rol: "TUTOR", espacioId: "espacio-1", authId: "a1" });
     (setSyncedUserActiveState as any).mockRejectedValue(new Error("Auth no respondio"));
 
     const resultado = await alternarEstadoUsuario(
@@ -157,5 +164,34 @@ describe("alternarEstadoUsuario (US20/US23)", () => {
     );
 
     expect(resultado.success).toBe(false);
+  });
+
+  it("rechaza si el solicitante no tiene espacioId (US24, caso defensivo)", async () => {
+    mockSesion("auth-1");
+    (prisma.users.findUnique as any)
+      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR", espacioId: null })
+      .mockResolvedValueOnce({ id: "u1", rol: "TUTOR", espacioId: "espacio-1", authId: "a1" });
+
+    const resultado = await alternarEstadoUsuario(
+      buildFormData({ usuarioId: "u1", accion: "desactivar" })
+    );
+
+    expect(resultado.success).toBe(false);
+    expect(setSyncedUserActiveState).not.toHaveBeenCalled();
+  });
+
+  it("un Administrador no puede desactivar a un usuario de otro espacio (US24)", async () => {
+    mockSesion("auth-1");
+    (prisma.users.findUnique as any)
+      .mockResolvedValueOnce({ id: "admin-1", rol: "ADMINISTRADOR", espacioId: "espacio-1" })
+      .mockResolvedValueOnce({ id: "u1", rol: "TUTOR", espacioId: "espacio-2", authId: "a1" });
+    (usuarioVisibleEnEspacio as any).mockResolvedValue(false);
+
+    const resultado = await alternarEstadoUsuario(
+      buildFormData({ usuarioId: "u1", accion: "desactivar" })
+    );
+
+    expect(resultado.success).toBe(false);
+    expect(setSyncedUserActiveState).not.toHaveBeenCalled();
   });
 });

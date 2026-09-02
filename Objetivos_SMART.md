@@ -80,6 +80,8 @@
    confirmado visualmente por el docente en su propio navegador.
 4. Entregar la documentación ágil completa que piden las instrucciones del proyecto (este documento,
    descripción del proyecto, arquitectura C4, sprint planning, herramientas) para el 31/08/2026.
-5. Activar políticas de Row Level Security en Supabase para las tablas `Users` y `CourseUsers`, de
-   forma que la seguridad no dependa únicamente del código de la aplicación — objetivo propuesto,
-   pendiente de iniciar al cierre de este documento.
+5. Activar Row Level Security en las 6 tablas de Supabase para que la API REST pública que Supabase
+   genera automáticamente (`anon`/`authenticated`) deje de exponer datos sin pasar por la
+   autorización de la aplicación, sin afectar las consultas de Prisma — cumplido el 31/08/2026 con
+   una migración lista para aplicar; queda pendiente que el docente la ejecute contra la base de
+   datos real, único paso que no puede hacerse desde este entorno de trabajo.

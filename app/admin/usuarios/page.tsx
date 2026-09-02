@@ -5,10 +5,12 @@ import { prisma } from "@/lib/prisma";
 import type { Rol } from "@prisma/client";
 import { EditEmailForm } from "@/components/edit-email-form";
 import { EditUserNameForm } from "@/components/edit-user-name-form";
+import { ResetPasswordForm } from "@/components/reset-password-form";
 import { ToggleUserStatusForm } from "@/components/toggle-user-status-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 
 const ROLES_FILTRO: { valor: Rol | "TODOS"; etiqueta: string }[] = [
   { valor: "TODOS", etiqueta: "Todos" },
@@ -46,10 +48,19 @@ export default async function UsuariosPage({
     redirect("/login");
   }
 
+  // Épica Multi-docente (US24): un Administrador solo administra su propio
+  // espacio — nunca hay un Administrador sin espacioId en la práctica una
+  // vez aplicada la migración de la épica (todo Administrador existente
+  // quedó asignado al espacio por defecto), pero se valida de todas formas
+  // para no dejar pasar un caso raro sin manejar.
+  if (!usuarioActual.espacioId) {
+    redirect("/login");
+  }
+
   const filtroRol = esRolValido(rol) ? rol : undefined;
 
   const usuarios = await prisma.users.findMany({
-    where: filtroRol ? { rol: filtroRol } : undefined,
+    where: filtroUsuarioVisibleEnEspacio(usuarioActual.espacioId, filtroRol),
     orderBy: { createdAt: "desc" },
   });
 
@@ -124,6 +135,7 @@ export default async function UsuariosPage({
                         apellidoActual={usuario.apellido}
                       />
                       <EditEmailForm usuarioId={usuario.id} emailActual={usuario.email} />
+                      <ResetPasswordForm usuarioId={usuario.id} />
                       {usuario.id !== usuarioActual.id && (
                         <ToggleUserStatusForm usuarioId={usuario.id} estadoActual={usuario.estado} />
                       )}

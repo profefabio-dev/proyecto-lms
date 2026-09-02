@@ -4,8 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { CreateTutorForm } from "@/components/create-tutor-form";
 import { EditEmailForm } from "@/components/edit-email-form";
 import { EditUserNameForm } from "@/components/edit-user-name-form";
+import { ResetPasswordForm } from "@/components/reset-password-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { Rol } from "@prisma/client";
 
 export default async function TutoresPage() {
   // Esta página no tenía guarda de sesión/rol antes de este pase de
@@ -28,8 +30,15 @@ export default async function TutoresPage() {
     redirect("/login");
   }
 
+  // Épica Multi-docente (US24): un Administrador solo ve/gestiona los
+  // Tutores de su propio espacio. Caso defensivo — todo Administrador
+  // existente quedó con espacioId asignado por la migración de la épica.
+  if (!usuarioActual.espacioId) {
+    redirect("/login");
+  }
+
   const tutores = await prisma.users.findMany({
-    where: { rol: "TUTOR" },
+    where: { rol: Rol.TUTOR, espacioId: usuarioActual.espacioId },
     orderBy: { createdAt: "desc" },
   });
 
@@ -70,6 +79,7 @@ export default async function TutoresPage() {
                           apellidoActual={tutor.apellido}
                         />
                         <EditEmailForm usuarioId={tutor.id} emailActual={tutor.email} />
+                        <ResetPasswordForm usuarioId={tutor.id} />
                       </div>
                     </td>
                   </tr>

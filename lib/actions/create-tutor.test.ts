@@ -88,6 +88,23 @@ describe("crearTutor (US02)", () => {
     );
   });
 
+  it("pasa el espacioId del administrador que crea al tutor nuevo (US24/US26)", async () => {
+    (createClient as any).mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } } }) },
+    });
+    (prisma.users.findUnique as any).mockResolvedValue({
+      rol: "ADMINISTRADOR",
+      espacioId: "espacio-1",
+    });
+    (createSyncedUser as any).mockResolvedValue({ id: "db-1" });
+
+    await crearTutor(buildFormData({ nombre: "Ana", apellido: "Gomez", email: "ana@example.com" }));
+
+    expect(createSyncedUser).toHaveBeenCalledWith(
+      expect.objectContaining({ espacioId: "espacio-1" })
+    );
+  });
+
   it("propaga el error si createSyncedUser falla", async () => {
     (createClient as any).mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } } }) },

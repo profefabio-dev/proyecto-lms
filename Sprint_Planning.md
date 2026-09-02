@@ -75,13 +75,15 @@ sin agregar historias de negocio nuevas al backlog original.
 | Conectar el repositorio a Vercel para despliegue automático | Pendiente — depende de que el docente lo haga desde su cuenta de Vercel |
 | Primer pase de diseño visual (paleta de marca, header de navegación, botón de cerrar sesión, Cards/Badges) en las 11 pantallas protegidas | Hecho, confirmado visualmente por el docente |
 | Documentación ágil completa (este documento y los otros 4 que lo acompañan) | Hecho |
-| Row Level Security (RLS) en Supabase para `Users`/`CourseUsers` | Pendiente — propuesta como siguiente paso |
-| Lista de chequeo única para la ronda de validación manual pendiente (11 historias) | Pendiente |
+| Row Level Security (RLS) activado (sin políticas) en las 6 tablas de Supabase | Hecho — migración creada, pendiente que el docente la aplique con `prisma db execute` (requiere conexión real a la base de datos) |
+| Segundo pase de diseño visual (íconos, miniaturas de imagen de curso, estados vacíos) | Hecho |
+| Lista de chequeo única para la ronda de validación manual pendiente (12 historias) | Hecho — `Checklist_Validacion_Manual.md` ejecutada por el docente el 2026-08-31, sin fallos; las 23 historias del backlog quedan `Validado: Sí` |
 
 ### Capacity estimada para lo que resta del Sprint 6
 
-Con la velocidad promedio observada (~20 SP/sprint) y que Vercel/RLS/checklist de validación son
-tareas de configuración e infraestructura más que historias de negocio nuevas, se estima que el
-Sprint 6 puede cerrarse en la misma sesión de trabajo en la que se generó este documento, sujeto a
-que el docente complete las dos acciones que solo él puede hacer desde sus propias cuentas: conectar
-Vercel y confirmar el primer run de GitHub Actions.
+Con la validación manual ya cerrada (23/23 historias), lo único que le falta al Sprint 6 son tres
+acciones que solo el docente puede hacer desde sus propias cuentas y máquina, ninguna de las cuales
+requiere más trabajo de implementación: aplicar la migración de RLS contra la base de datos real
+(`prisma db execute`, ya documentado en `progress.md`), conectar el repositorio a Vercel, y confirmar
+el primer run en verde de GitHub Actions. El resto del Sprint Goal —diseño visual, documentación
+ágil, RLS del lado del código, y ahora la validación completa— ya está cerrado.

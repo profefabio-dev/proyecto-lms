@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +29,7 @@ export function LogoutButton() {
       onClick={handleClick}
       disabled={cargando}
     >
+      <LogOut className="size-4" aria-hidden="true" />
       {cargando ? "Saliendo..." : "Cerrar sesión"}
     </Button>
   );

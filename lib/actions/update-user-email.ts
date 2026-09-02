@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { updateSyncedUserEmail } from "@/lib/supabase/sync-user";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
+import { usuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 
 const actualizarEmailSchema = z.object({
   usuarioId: z.string().trim().min(1, "Falta el usuario a editar."),
@@ -59,11 +60,24 @@ export async function actualizarEmailUsuario(formData: FormData) {
   }
 
   // 3. Autorización: un Tutor solo puede editar el email de Estudiantes;
-  // un Administrador puede editar Tutores y Estudiantes.
-  const puedeEditar =
+  // un Administrador puede editar Tutores y Estudiantes. Además (US24), el
+  // usuario objetivo debe ser visible desde el espacio de quien solicita el
+  // cambio — un Administrador/Tutor de un espacio no puede editar a nadie
+  // de otro espacio aunque conozca su ID directamente.
+  if (!solicitante.espacioId) {
+    return {
+      success: false as const,
+      error: "No tienes permiso para editar usuarios.",
+    };
+  }
+
+  const puedeEditarRol =
     solicitante.rol === Rol.ADMINISTRADOR
       ? true
       : usuarioObjetivo.rol === Rol.ESTUDIANTE;
+
+  const puedeEditar =
+    puedeEditarRol && (await usuarioVisibleEnEspacio(usuarioObjetivo, solicitante.espacioId));
 
   if (!puedeEditar) {
     return {

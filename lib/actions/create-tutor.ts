@@ -64,6 +64,10 @@ export async function crearTutor(formData: FormData) {
       ...parsed.data,
       password: passwordTemporal,
       rol: Rol.TUTOR,
+      // Épica Multi-docente (US24/US26): el Tutor nuevo hereda el espacio
+      // del Administrador que lo crea — así un segundo espacio (US25) nunca
+      // termina mezclando sus Tutores con los del espacio de Fabio Aguirre.
+      espacioId: solicitante.espacioId ?? undefined,
     });
   } catch (error) {
     return {

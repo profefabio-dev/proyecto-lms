@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { setSyncedUserActiveState } from "@/lib/supabase/sync-user";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
+import { usuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 
 const alternarEstadoSchema = z.object({
   usuarioId: z.string().trim().min(1, "Falta el usuario."),
@@ -58,6 +59,16 @@ export async function alternarEstadoUsuario(formData: FormData) {
 
   if (!usuarioObjetivo) {
     return { success: false as const, error: "El usuario no existe." };
+  }
+
+  // Épica Multi-docente (US24): un Administrador solo puede desactivar/
+  // reactivar usuarios visibles desde su propio espacio — no a cualquier
+  // usuario de la plataforma aunque conozca su ID directamente.
+  if (
+    !solicitante.espacioId ||
+    !(await usuarioVisibleEnEspacio(usuarioObjetivo, solicitante.espacioId))
+  ) {
+    return { success: false as const, error: "No tienes permiso para editar este usuario." };
   }
 
   try {

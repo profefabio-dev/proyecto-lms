@@ -14,7 +14,10 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     users: {
       findUnique: vi.fn(),
-      groupBy: vi.fn(),
+      count: vi.fn(),
+    },
+    courseUsers: {
+      findMany: vi.fn(),
     },
     courses: {
       count: vi.fn(),
@@ -50,7 +53,7 @@ describe("AdminPage (US04)", () => {
 
     await expect(AdminPage()).rejects.toThrow("NEXT_REDIRECT");
     expect(redirect).toHaveBeenCalledWith("/login");
-    expect(prisma.users.groupBy).not.toHaveBeenCalled();
+    expect(prisma.users.count).not.toHaveBeenCalled();
     expect(prisma.courses.count).not.toHaveBeenCalled();
   });
 
@@ -60,27 +63,49 @@ describe("AdminPage (US04)", () => {
 
     await expect(AdminPage()).rejects.toThrow("NEXT_REDIRECT");
     expect(redirect).toHaveBeenCalledWith("/login");
-    expect(prisma.users.groupBy).not.toHaveBeenCalled();
+    expect(prisma.users.count).not.toHaveBeenCalled();
     expect(prisma.courses.count).not.toHaveBeenCalled();
   });
 
-  it("consulta el conteo de usuarios por rol, cursos activos y contenidos totales para un Administrador autenticado", async () => {
+  it("redirige a /login si el Administrador no tiene espacioId (US24, caso defensivo)", async () => {
+    mockSesion("auth-1b");
+    (prisma.users.findUnique as any).mockResolvedValue({ rol: "ADMINISTRADOR", espacioId: null });
+
+    await expect(AdminPage()).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirect).toHaveBeenCalledWith("/login");
+    expect(prisma.users.count).not.toHaveBeenCalled();
+  });
+
+  it("consulta los indicadores scoped al espacio del Administrador autenticado (US24)", async () => {
     mockSesion("auth-2");
-    (prisma.users.findUnique as any).mockResolvedValue({ id: "admin-1", rol: "ADMINISTRADOR" });
-    (prisma.users.groupBy as any).mockResolvedValue([
-      { rol: "TUTOR", _count: { _all: 2 } },
-      { rol: "ESTUDIANTE", _count: { _all: 5 } },
-    ]);
+    (prisma.users.findUnique as any).mockResolvedValue({
+      id: "admin-1",
+      rol: "ADMINISTRADOR",
+      espacioId: "espacio-1",
+    });
+    (prisma.users.count as any).mockResolvedValueOnce(1).mockResolvedValueOnce(2);
+    (prisma.courseUsers.findMany as any).mockResolvedValue([{ userId: "e1" }, { userId: "e2" }]);
     (prisma.courses.count as any).mockResolvedValue(3);
     (prisma.contents.count as any).mockResolvedValue(10);
 
     await AdminPage();
 
-    expect(prisma.users.groupBy).toHaveBeenCalledWith({
-      by: ["rol"],
-      _count: { _all: true },
+    expect(prisma.users.count).toHaveBeenNthCalledWith(1, {
+      where: { rol: "ADMINISTRADOR", espacioId: "espacio-1" },
     });
-    expect(prisma.courses.count).toHaveBeenCalledWith({ where: { estado: "PUBLICADO" } });
-    expect(prisma.contents.count).toHaveBeenCalledWith();
+    expect(prisma.users.count).toHaveBeenNthCalledWith(2, {
+      where: { rol: "TUTOR", espacioId: "espacio-1" },
+    });
+    expect(prisma.courseUsers.findMany).toHaveBeenCalledWith({
+      where: { course: { tutor: { espacioId: "espacio-1" } } },
+      distinct: ["userId"],
+      select: { userId: true },
+    });
+    expect(prisma.courses.count).toHaveBeenCalledWith({
+      where: { estado: "PUBLICADO", tutor: { espacioId: "espacio-1" } },
+    });
+    expect(prisma.contents.count).toHaveBeenCalledWith({
+      where: { course: { tutor: { espacioId: "espacio-1" } } },
+    });
   });
 });

@@ -9,10 +9,18 @@ interface CreateSyncedUserInput {
   nombre: string;
   apellido: string;
   rol: Rol;
+  /**
+   * Épica Multi-docente (Backlog.md, US24/US25): obligatorio en la práctica
+   * para ADMINISTRADOR/TUTOR (cada llamador debe pasar su propio espacio o
+   * el del espacio que está creando), ausente para SUPERADMIN y ESTUDIANTE.
+   * Opcional aquí a propósito para no romper la firma de esta función en
+   * los dos casos donde no aplica.
+   */
+  espacioId?: string;
 }
 
 export async function createSyncedUser(input: CreateSyncedUserInput) {
-  const { email, password, nombre, apellido, rol } = input;
+  const { email, password, nombre, apellido, rol, espacioId } = input;
 
   // 1. Crear el usuario en Supabase Auth (ahí es donde se valida el login)
   const { data: authData, error: authError } =
@@ -37,6 +45,7 @@ export async function createSyncedUser(input: CreateSyncedUserInput) {
         nombre,
         apellido,
         rol,
+        espacioId,
       },
     });
 
@@ -109,6 +118,39 @@ export async function updateSyncedUserEmail(input: UpdateSyncedUserEmailInput) {
     });
     throw new Error(
       `No se pudo actualizar el email en la base de datos, se revirtió el cambio en Auth: ${dbError}`
+    );
+  }
+}
+
+interface ResetSyncedUserPasswordInput {
+  authId: string;
+  nuevoPassword: string;
+}
+
+/**
+ * Recuperación de contraseña asistida por Admin/Tutor: la mayoría de
+ * Estudiantes son niños que olvidan su contraseña con frecuencia y no
+ * tienen una forma realista de usar un flujo de "olvidé mi contraseña" por
+ * correo propio. Esta función genera una contraseña nueva directamente en
+ * Supabase Auth (la Admin API no permite leer ni "ver" la contraseña
+ * actual — Supabase nunca la guarda en texto plano, solo su hash — así que
+ * la única operación posible es reemplazarla por una nueva). Solo toca
+ * Auth: a diferencia de `updateSyncedUserEmail`/`setSyncedUserActiveState`,
+ * no hay ningún campo de contraseña en la tabla `Users` que actualizar
+ * después, así que no hace falta ningún patrón de compensación.
+ */
+export async function resetSyncedUserPassword(
+  input: ResetSyncedUserPasswordInput
+): Promise<void> {
+  const { authId, nuevoPassword } = input;
+
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(authId, {
+    password: nuevoPassword,
+  });
+
+  if (error) {
+    throw new Error(
+      `No se pudo restablecer la contraseña en Supabase Auth: ${error.message}`
     );
   }
 }
