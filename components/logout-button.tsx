@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 // No existía ninguna forma de cerrar sesión en la interfaz antes de este
 // pase de diseño — se agrega junto con el header porque es donde
 // naturalmente vive este control.
-export function LogoutButton() {
+export function LogoutButton({ iconOnly = false }: { iconOnly?: boolean }) {
   const router = useRouter();
   const [cargando, setCargando] = useState(false);
 
@@ -25,12 +25,14 @@ export function LogoutButton() {
     <Button
       type="button"
       variant="outline"
-      size="sm"
+      size={iconOnly ? "icon-sm" : "sm"}
       onClick={handleClick}
       disabled={cargando}
+      title={iconOnly ? (cargando ? "Saliendo..." : "Cerrar sesión") : undefined}
+      aria-label={iconOnly ? "Cerrar sesión" : undefined}
     >
       <LogOut className="size-4" aria-hidden="true" />
-      {cargando ? "Saliendo..." : "Cerrar sesión"}
+      {!iconOnly && (cargando ? "Saliendo..." : "Cerrar sesión")}
     </Button>
   );
 }

@@ -18,6 +18,19 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // "Chunky": botón 3D presionable estilo Duolingo, para las llamadas a
+        // la acción principales del panel de Estudiante (pase de diseño de
+        // 2026-09-04). El borde inferior grueso se simula con box-shadow en
+        // vez de border-bottom real, para que no mueva el layout al
+        // "presionarse" — al soltar el shadow, el botón baja 4px con
+        // `active:translate-y-1` y queda plano, como si se hundiera.
+        chunky:
+          // El `!` en las dos utilidades de :active es necesario: la clase
+          // base de más arriba ya define `active:not-aria-[haspopup]:translate-y-px`,
+          // que por el `:not()` termina con más especificidad que un simple
+          // `active:translate-y-1` y si no se fuerza, gana esa y el botón
+          // "chunky" apenas se mueve 1px en vez de los 4px del efecto 3D.
+          "rounded-2xl bg-duo-green font-extrabold tracking-wide text-white uppercase shadow-[0_4px_0_var(--duo-green-shadow)] transition-transform hover:brightness-105 active:translate-y-1! active:shadow-none!",
       },
       size: {
         default:

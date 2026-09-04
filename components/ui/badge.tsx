@@ -16,6 +16,12 @@ const badgeVariants = cva(
         warning:
           "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
         destructive: "border-transparent bg-destructive/10 text-destructive",
+        // Insignia de logro (curso 100% completado), pase de diseño de
+        // 2026-09-04: dorado con relieve en vez del "success" plano, con un
+        // pequeño rebote al aparecer — se ve como algo que se "ganó", no
+        // solo un estado más de la lista.
+        achievement:
+          "animate-pop-in border-transparent bg-duo-gold px-3 py-1 font-bold text-white shadow-[0_2px_0_var(--duo-gold-shadow)]",
       },
     },
     defaultVariants: {
