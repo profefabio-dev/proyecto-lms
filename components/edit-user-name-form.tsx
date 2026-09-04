@@ -50,6 +50,11 @@ export function EditUserNameForm({
     <form action={formAction} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="usuarioId" value={usuarioId} />
       <Input
+        // Ver el comentario equivalente en EditEmailForm: el `key` evita la
+        // advertencia de consola "uncontrolled FieldControl" de Base UI
+        // cuando `nombreActual`/`apellidoActual` cambian (vía
+        // `revalidatePath`) mientras el input sigue montado.
+        key={nombreActual}
         name="nombre"
         type="text"
         defaultValue={nombreActual}
@@ -58,6 +63,7 @@ export function EditUserNameForm({
         className="h-8 w-32 text-xs"
       />
       <Input
+        key={apellidoActual}
         name="apellido"
         type="text"
         defaultValue={apellidoActual}

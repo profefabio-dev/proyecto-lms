@@ -49,6 +49,14 @@ export function EditEmailForm({
     <form action={formAction} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="usuarioId" value={usuarioId} />
       <Input
+        // `key` fuerza a React a montar una instancia nueva si `emailActual`
+        // cambia mientras el input sigue montado (por ejemplo, si
+        // `revalidatePath` trae el nuevo valor del Server Component padre en
+        // un render distinto al que recién apaga `editando`). Sin esto,
+        // Base UI advierte en consola "uncontrolled FieldControl" porque ve
+        // el mismo `Input` no controlado recibir un `defaultValue` distinto
+        // después de inicializado.
+        key={emailActual}
         name="nuevoEmail"
         type="email"
         defaultValue={emailActual}
