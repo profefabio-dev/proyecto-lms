@@ -177,10 +177,20 @@ function Sidebar({
             {!abierto && <span className="hidden md:inline">FA</span>}
           </span>
         </Link>
+        {/* Recomendación del docente evaluador (05/09/2026): en escritorio,
+            con el menú expandido, esta X y el botón de hamburguesa del
+            header hacían exactamente lo mismo (colapsar el menú) uno al
+            lado del otro, sin que la X aportara nada distinto. Ahora la X
+            solo existe en pantallas angostas (`md:hidden` fijo, ya no
+            condicionado a `abierto`), donde sí cumple un rol propio: cerrar
+            el panel superpuesto — ahí el botón de hamburguesa del header
+            queda tapado por el propio panel mientras está abierto, así que
+            la X es el único control alcanzable. En escritorio, el único
+            control para colapsar/expandir queda siendo la hamburguesa. */}
         <button
           type="button"
           onClick={onCerrar}
-          className={cn("shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground", !abierto && "md:hidden")}
+          className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
           aria-label="Cerrar menú"
         >
           <X className="size-5" aria-hidden="true" />
