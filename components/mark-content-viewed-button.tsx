@@ -24,17 +24,24 @@ export function MarkContentViewedButton({
   // `estado?.success` cubre el caso de que se acabe de marcar en esta
   // misma carga, antes de que revalidatePath refresque la página.
   if (visto || estado?.success) {
-    return <Badge variant="success">✓ Visto</Badge>;
+    return (
+      <Badge variant="success" className="px-3 py-1 text-sm">
+        ✓ Visto
+      </Badge>
+    );
   }
 
+  // Tamaño de botón subido de `xs` a `sm` (US31, cuarta vuelta, 05/09/2026):
+  // en las tarjetas de contenido, ahora bastante más grandes, un botón
+  // diminuto se veía fuera de proporción con el resto.
   return (
     <form action={formAction} className="inline-flex items-center gap-2">
       <input type="hidden" name="contentId" value={contentId} />
-      <Button type="submit" size="xs" variant="outline" disabled={isPending}>
+      <Button type="submit" size="sm" variant="outline" disabled={isPending}>
         {isPending ? "Guardando..." : "Marcar como visto"}
       </Button>
       {estado && !estado.success && (
-        <span className="text-xs text-red-600" role="alert">
+        <span className="text-sm text-red-600" role="alert">
           {estado.error}
         </span>
       )}

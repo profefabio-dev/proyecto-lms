@@ -17,29 +17,31 @@ type DocumentoConUrl = {
  */
 export function DocumentContentList({ documentos }: { documentos: DocumentoConUrl[] }) {
   return (
-    <ul className="space-y-4">
+    <ul className="space-y-5">
       {documentos.map((documento) => (
-        <li key={documento.id} className="space-y-2">
+        <li key={documento.id} className="space-y-2.5">
           {documento.url ? (
             <>
               <a
                 href={documento.url}
-                className="text-blue-600 underline"
+                className="text-lg font-medium text-blue-600 underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 {documento.nombre}
               </a>
               {esDocumentoPdf(documento.tipo) && (
+                // US31, cuarta vuelta (05/09/2026): otro escalón más de
+                // tamaño (antes 700px de alto, antes de eso 500px).
                 <iframe
                   src={documento.url}
                   title={`Previsualización de ${documento.nombre}`}
-                  className="h-[500px] w-full rounded border"
+                  className="h-[850px] w-full rounded border"
                 />
               )}
             </>
           ) : (
-            <p className="text-gray-500">
+            <p className="text-base text-muted-foreground">
               {documento.nombre} (no se pudo generar el enlace de descarga)
             </p>
           )}

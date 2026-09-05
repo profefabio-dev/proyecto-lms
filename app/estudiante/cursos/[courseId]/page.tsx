@@ -6,9 +6,11 @@ import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
-import { MarkContentViewedButton } from "@/components/mark-content-viewed-button";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
+import { CourseContentItem } from "@/components/course-content-item";
+import { CourseContentOutline } from "@/components/course-content-outline";
+import { calcularProgreso } from "@/lib/course-progress";
 
 export default async function CursoEstudiantePage({
   params,
@@ -78,6 +80,11 @@ export default async function CursoEstudiantePage({
 
   const idsVistos = new Set(vistos.map((visto) => visto.contentId));
 
+  // US31 (05/09/2026): resumen de avance (mismo cálculo que ya usa US19 en
+  // `/estudiante`), mostrado ahora en la barra lateral de la página junto
+  // con el índice de contenidos — ver `CourseContentOutline`.
+  const progreso = calcularProgreso(idsVistos.size, contenidosVisibles.length);
+
   // Las URLs de descarga son firmadas y de corta duración (US09/US16), así
   // que se generan en cada carga de la página en vez de guardarse.
   const contenidosConDocumentos = await Promise.all(
@@ -98,46 +105,77 @@ export default async function CursoEstudiantePage({
   );
 
   return (
-    <AppShell usuario={usuarioActual}>
-      <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{curso.titulo}</h1>
-          <p className="text-muted-foreground">{curso.descripcion}</p>
+    <AppShell
+      usuario={usuarioActual}
+      breadcrumbs={[{ label: "Mis cursos", href: "/estudiante" }, { label: curso.titulo }]}
+    >
+      {/* US31, segunda vuelta (05/09/2026): el docente confirmó que la
+          primera versión seguía "desaprovechando" la pantalla — mucho
+          espacio en blanco a los lados en monitores anchos, porque todo
+          quedaba en un único contenedor angosto centrado. En vez de
+          ensanchar las tarjetas de contenido (líneas de texto demasiado
+          largas para leer cómodo), ese ancho extra ahora lo ocupa una
+          barra lateral real: resumen de avance + índice de navegación
+          (`CourseContentOutline`), como haría cualquier LMS con ese
+          espacio disponible. */}
+      <main className="mx-auto max-w-6xl space-y-8 px-6 py-10">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{curso.titulo}</h1>
+          {curso.descripcion && (
+            <p className="text-balance text-muted-foreground">{curso.descripcion}</p>
+          )}
         </div>
 
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Contenido del curso</h2>
+        {contenidosConDocumentos.length === 0 ? (
+          <EmptyState icon={Inbox} message="Este curso todavía no tiene contenido publicado." />
+        ) : (
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+            <section className="order-2 space-y-4 lg:order-1">
+              <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
-          {contenidosConDocumentos.length === 0 ? (
-            <EmptyState icon={Inbox} message="Este curso todavía no tiene contenido publicado." />
-          ) : (
-            <ul className="space-y-4">
-              {contenidosConDocumentos.map((contenido) => (
-                <li key={contenido.id} className="space-y-2 rounded-lg border bg-card p-4">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-medium">{contenido.titulo}</h3>
-                    <MarkContentViewedButton
-                      contentId={contenido.id}
-                      visto={idsVistos.has(contenido.id)}
-                    />
-                  </div>
-                  {contenido.descripcion && (
-                    <p className="text-sm text-muted-foreground">{contenido.descripcion}</p>
-                  )}
-                  {contenido.tipo === "VIDEO" && (
-                    <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
-                  )}
-                  {contenido.tipo === "TEXTO" && (
-                    <MarkdownContent contenido={contenido.contenido} />
-                  )}
-                  {contenido.tipo === "DOCUMENTO" && (
-                    <DocumentContentList documentos={contenido.documentosConUrl} />
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+              <ul className="space-y-10">
+                {contenidosConDocumentos.map((contenido, index) => (
+                  <CourseContentItem
+                    key={contenido.id}
+                    numero={index + 1}
+                    index={index}
+                    titulo={contenido.titulo}
+                    descripcion={contenido.descripcion}
+                    tipo={contenido.tipo}
+                    contentId={contenido.id}
+                    visto={idsVistos.has(contenido.id)}
+                  >
+                    {contenido.tipo === "VIDEO" && (
+                      <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                    )}
+                    {contenido.tipo === "TEXTO" && (
+                      <MarkdownContent contenido={contenido.contenido} />
+                    )}
+                    {contenido.tipo === "DOCUMENTO" && (
+                      <DocumentContentList documentos={contenido.documentosConUrl} />
+                    )}
+                  </CourseContentItem>
+                ))}
+              </ul>
+            </section>
+
+            <aside className="order-1 lg:sticky lg:top-6 lg:order-2">
+              <CourseContentOutline
+                tituloCurso={curso.titulo}
+                progreso={progreso}
+                vistos={idsVistos.size}
+                total={contenidosVisibles.length}
+                items={contenidosConDocumentos.map((contenido, index) => ({
+                  id: contenido.id,
+                  numero: index + 1,
+                  titulo: contenido.titulo,
+                  tipo: contenido.tipo,
+                  visto: idsVistos.has(contenido.id),
+                }))}
+              />
+            </aside>
+          </div>
+        )}
       </main>
     </AppShell>
   );
