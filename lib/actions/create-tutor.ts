@@ -2,21 +2,17 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createSyncedUser } from "@/lib/supabase/sync-user";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
+import { generarPasswordTemporal } from "@/lib/auth/generar-password-temporal";
 
 const crearTutorSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre es obligatorio"),
   apellido: z.string().trim().min(2, "El apellido es obligatorio"),
   email: z.string().trim().email("Correo inválido"),
 });
-
-function generarPasswordTemporal() {
-  return randomBytes(9).toString("base64url");
-}
 
 export async function crearTutor(formData: FormData) {
   // 1. Verificar que quien llama sea un Administrador autenticado.

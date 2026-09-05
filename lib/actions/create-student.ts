@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { Rol } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { createSyncedUser } from "@/lib/supabase/sync-user";
+import { generarPasswordTemporal } from "@/lib/auth/generar-password-temporal";
 
 const crearEstudianteSchema = z.object({
   nombre: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -47,7 +47,7 @@ export async function crearEstudiante(
     return { success: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  const passwordTemporal = randomBytes(9).toString("base64url");
+  const passwordTemporal = generarPasswordTemporal();
 
   try {
     await createSyncedUser({

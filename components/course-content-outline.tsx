@@ -1,18 +1,13 @@
-import { Check, FileText, PlayCircle, Type as TypeIcon } from "lucide-react";
+import { Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-
-const ICONO_POR_TIPO = {
-  VIDEO: { Icon: PlayCircle, clase: "bg-duo-blue" },
-  DOCUMENTO: { Icon: FileText, clase: "bg-duo-orange" },
-  TEXTO: { Icon: TypeIcon, clase: "bg-duo-green" },
-} as const;
+import { ICONO_POR_TIPO, type TipoContenidoConIcono } from "@/lib/content-type-icon";
 
 type ItemIndice = {
   id: string;
   numero: number;
   titulo: string;
-  tipo: keyof typeof ICONO_POR_TIPO;
+  tipo: TipoContenidoConIcono;
   visto: boolean;
 };
 
@@ -26,6 +21,9 @@ type ItemIndice = {
 // enlaces internos — algo que un LMS de verdad pondría ahí (como el listado
 // de secciones a la izquierda en Canvas, la referencia que compartió el
 // docente), sin necesitar todavía el modelo de datos de secciones de US30.
+// El mapa ícono/color por tipo vive en `lib/content-type-icon.ts`,
+// compartido con `CourseContentItem` (antes estaba copiado igual en los dos
+// archivos).
 export function CourseContentOutline({
   tituloCurso,
   progreso,

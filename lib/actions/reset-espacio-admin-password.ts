@@ -5,15 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import { resetSyncedUserPassword } from "@/lib/supabase/sync-user";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
-import { randomBytes } from "node:crypto";
+import { generarPasswordTemporal } from "@/lib/auth/generar-password-temporal";
 
 const resetearPasswordSchema = z.object({
   usuarioId: z.string().trim().min(1, "Falta el usuario."),
 });
-
-function generarPasswordTemporal() {
-  return randomBytes(9).toString("base64url");
-}
 
 type ResultadoResetearPassword =
   | { success: true; passwordTemporal: string }

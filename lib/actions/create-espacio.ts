@@ -2,11 +2,11 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createSyncedUser } from "@/lib/supabase/sync-user";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
+import { generarPasswordTemporal } from "@/lib/auth/generar-password-temporal";
 
 const crearEspacioSchema = z.object({
   nombreEspacio: z.string().trim().min(2, "El nombre del espacio es obligatorio"),
@@ -14,10 +14,6 @@ const crearEspacioSchema = z.object({
   apellido: z.string().trim().min(2, "El apellido del administrador es obligatorio"),
   email: z.string().trim().email("Correo inválido"),
 });
-
-function generarPasswordTemporal() {
-  return randomBytes(9).toString("base64url");
-}
 
 type ResultadoCrearEspacio =
   | { success: true; passwordTemporal: string }

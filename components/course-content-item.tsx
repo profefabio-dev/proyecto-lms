@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { FileText, PlayCircle, Type as TypeIcon } from "lucide-react";
 import { MarkContentViewedButton } from "@/components/mark-content-viewed-button";
 import { cn } from "@/lib/utils";
+import { ICONO_POR_TIPO, type TipoContenidoConIcono } from "@/lib/content-type-icon";
 
 // US31 (05/09/2026): el docente evaluador señaló que la vista de contenidos
 // de un curso tenía "mucho espacio libre" y que "los contenidos como tal se
@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils";
 // más el cuerpo, sin jerarquía visual). Este componente le da a cada
 // contenido más peso: un ícono grande por tipo, un número de orden, título
 // más grande, y una tarjeta con más aire interno — en vez de una lista
-// plana de texto pequeño en un contenedor angosto.
+// plana de texto pequeño en un contenedor angosto. El mapa ícono/color por
+// tipo vive en `lib/content-type-icon.ts`, compartido con
+// `CourseContentOutline` (antes estaba copiado igual en los dos archivos).
 //
 // Tercera vuelta (mismo día): tras ver la versión con barra lateral, el
 // docente pidió explícitamente agrandar las tarjetas "al menos al doble" —
@@ -24,11 +26,6 @@ import { cn } from "@/lib/utils";
 // sube otro escalón completo en cada medida (círculo de ícono 24→28, ícono
 // 10→14, título 2xl/3xl→3xl/4xl, padding 8/10→10/12, espacio entre tarjetas
 // 8→10 en `page.tsx`).
-const ICONO_POR_TIPO = {
-  VIDEO: { Icon: PlayCircle, clase: "bg-duo-blue" },
-  DOCUMENTO: { Icon: FileText, clase: "bg-duo-orange" },
-  TEXTO: { Icon: TypeIcon, clase: "bg-duo-green" },
-} as const;
 
 // Server Component a propósito (sin "use client"): lo único interactivo de
 // un contenido es el botón "Marcar como visto", ya aislado en
@@ -48,7 +45,7 @@ export function CourseContentItem({
   index: number;
   titulo: string;
   descripcion: string | null;
-  tipo: keyof typeof ICONO_POR_TIPO;
+  tipo: TipoContenidoConIcono;
   contentId: string;
   visto: boolean;
   children: ReactNode;
