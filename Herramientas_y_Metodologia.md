@@ -10,11 +10,19 @@ El proyecto se trabajó con un **Scrum adaptado a un equipo de una sola persona*
 Andrés Aguirre, asistido por Claude de Anthropic como herramienta de generación de código bajo su
 dirección y revisión): sprints con objetivo propio (ver `Sprint_Planning.md`), un backlog priorizado
 con MoSCoW y estimado con Planning Poker en escala Fibonacci (`Backlog.md`), y una Definition of Done
-aplicada sin excepciones a cada historia. La diferencia frente a un Scrum de equipo completo es que
-no hay ceremonias síncronas entre personas (daily, retro en grupo) — se reemplazan por una disciplina
-de documentación escrita: cada cambio actualiza `Backlog.md` y `progress.md` en el mismo commit, lo
-que cumple la misma función de transparencia y trazabilidad que esas ceremonias buscan en un equipo
-más grande.
+aplicada sin excepciones a cada historia, desde las 23 historias del MVP hasta la épica Multi-docente
+(Sprints 7-8) y las mejoras operativas (`OP`). La diferencia frente a un Scrum de equipo completo es
+que no hay ceremonias síncronas entre personas (daily, retro en grupo) — se reemplazan por una
+disciplina de documentación escrita: cada cambio actualiza `Backlog.md` y `progress.md` en el mismo
+commit, lo que cumple la misma función de transparencia y trazabilidad que esas ceremonias buscan en
+un equipo más grande.
+
+**Revisión periódica de calidad de código (agregada el 05/09/2026):** además del lint/tipos/pruebas
+por Pull Request, el proyecto incorpora revisiones puntuales, a pedido del docente, en busca de
+código duplicado, inconsistencias de datos y posibles errores — no reemplazan al CI automático, sino
+que cubren lo que un pipeline no detecta por sí solo (dos funciones idénticas copiadas en archivos
+distintos, por ejemplo). La primera de estas revisiones, el 05/09/2026, encontró y corrigió dos
+duplicados reales (`generarPasswordTemporal()`, `ICONO_POR_TIPO`) sin ninguna regresión.
 
 ## Herramientas por categoría
 
@@ -25,14 +33,15 @@ más grande.
 | Diagramas | Excalidraw, Draw.io, Miro | Mermaid embebido directamente en `Diagrama_de_Arquitectura.md` | Un diagrama como texto se versiona, se revisa en el diff de un Pull Request, y renderiza automáticamente en GitHub — una herramienta visual externa dejaría el diagrama como una imagen desactualizable sin abrir otra app |
 | Control de versiones | Git + GitHub/GitLab | Git + GitHub (`github.com/profefabio-dev/proyecto-lms`) | Tal como se sugiere; un commit por historia o cambio, con mensajes descriptivos, nunca `git add -A` para evitar subir archivos sensibles por accidente |
 | CI/CD | GitHub Actions, GitLab CI, Jenkins | GitHub Actions (`.github/workflows/ci.yml`) | El repositorio ya vive en GitHub, así que Actions no agrega una integración externa nueva; corre lint, revisión de tipos, pruebas unitarias y build en cada Pull Request |
-| Despliegue (no listada explícitamente arriba, pero parte de la Fase 5 de `Guia_de_implementacion.md`) | — | Vercel (pendiente de conectar) | Integración nativa con Next.js y con GitHub — cada Pull Request obtiene un preview desplegado automáticamente |
+| Despliegue (no listada explícitamente arriba, pero parte de la Fase 5 de `Guia_de_implementacion.md`) | — | Vercel — conectado desde el 31/08/2026 | Integración nativa con Next.js y con GitHub — cada push a `main` despliega automáticamente a producción, y cada Pull Request obtiene un preview propio |
 
 ## Herramientas técnicas del producto (no de gestión del proyecto)
 
 Estas no están en la lista de "Herramientas Recomendadas" del enunciado porque son decisiones de
 stack del producto, no de proceso — se documentan en detalle en `Diagrama_de_Arquitectura.md`
 ("Stack tecnológico"): Next.js 16, TypeScript, Prisma, PostgreSQL/Supabase, Tailwind CSS v4,
-shadcn/ui, Zod, Vitest.
+shadcn/ui, Zod, Vitest, y `canvas-confetti` (gamificación del panel del Estudiante, agregada el
+04/09/2026).
 
 ## Pruebas y calidad
 
@@ -43,6 +52,10 @@ shadcn/ui, Zod, Vitest.
   `git stash -u` para distinguir errores genuinos de artefactos ya conocidos del entorno de
   desarrollo (ver nota en `Descripcion_del_Proyecto.md`, sección "Restricciones").
 - **Lint:** ESLint 9 con la configuración de `eslint-config-next`.
+- **Revisión de duplicación y consistencia de código:** puntual, a pedido del docente, comparando el
+  código real de GitHub (no un clon potencialmente desactualizado) y distinguiendo duplicación real de
+  repetición arquitectónica intencional antes de proponer una corrección (ver ejemplo del 05/09/2026 en
+  `progress.md`).
 - **Verificación manual:** en navegador real, sobre la máquina del docente, antes de marcar cualquier
   historia como `Validado: Sí` en `progress.md` — es la única verificación que puede agruparse y
   posponerse sin bloquear el avance a la siguiente historia.

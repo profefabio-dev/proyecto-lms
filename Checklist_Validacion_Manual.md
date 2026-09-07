@@ -7,6 +7,19 @@
 > Las otras 11 (US03, US04, US08, US10, US14, US15, US16, US17, US19, US20, US23) ya están
 > validadas — no aparecen aquí.
 
+> **Nota de estado (05/09/2026):** este checklist se ejecutó por completo el 2026-08-31, sin fallos —
+> las 23 historias del MVP quedaron `Validado: Sí` ese mismo día (ver `progress.md`). Se conserva aquí
+> tal cual, como registro histórico del recorrido que se siguió, no como una lista todavía pendiente
+> de ejecutar. La épica Multi-docente (US24-US28, cerrada el 02-03/09/2026) se validó por un camino
+> distinto — en navegador real contra datos de producción, historia por historia — documentado
+> directamente en `progress.md` y en `Backlog.md`, sin un checklist unificado como este porque cada
+> historia se probó en el momento en que se construyó. **Único punto sin confirmación explícita
+> registrada: OP01** (Administrador/Tutor restablece la contraseña de un usuario que la olvidó) quedó
+> implementada y en `Backlog.md` figura "Hecho (pendiente confirmación visual del docente)", pero no
+> se encontró un registro posterior de esa confirmación — si el docente ya la probó y no quedó
+> anotada, basta con una línea en `progress.md` confirmándolo; si no, es la única validación manual
+> real que sigue abierta en todo el proyecto.
+
 ## Cómo usar esta lista
 
 Está ordenada como **un solo recorrido continuo** (Admin → Tutor nuevo → Estudiante nuevo), no
@@ -80,3 +93,22 @@ ten listo un PDF o Word corto cualquiera para la prueba de subida de documentos.
 3. Con las 23 historias en `Validado: Sí`, el Sprint 6 queda cerrado del lado de "cola de
    validación pendiente" (ver `Sprint_Planning.md`) — solo faltarían Vercel y confirmar el primer
    run verde de GitHub Actions, ambas acciones que dependen de tus propias cuentas.
+
+---
+
+## Addendum (05/09/2026) — OP01, la única validación manual real que sigue abierta
+
+A diferencia de las 23 historias de arriba y de las 5 de la épica Multi-docente (todas con su
+confirmación explícita registrada en `progress.md`/`Backlog.md`), **OP01 no tiene un registro de
+confirmación visual del docente**, pese a estar implementada y en uso indirecto (OP02 y OP03 reusan la
+misma función `resetSyncedUserPassword`, y esos sí están confirmados). Un recorrido corto para
+cerrarla, si el docente no la probó ya de forma informal:
+
+- [ ] Como Administrador, restablece la contraseña de un Tutor o Estudiante cualquiera desde su
+      pantalla de gestión de usuarios. Confirma que se muestra una contraseña nueva una sola vez en
+      pantalla, y que ese usuario puede iniciar sesión con ella.
+- [ ] Como Tutor, restablece la contraseña de uno de sus Estudiantes (no debe poder hacerlo con un
+      Tutor u otro Administrador — confirmar que esa opción ni aparece).
+
+Al confirmar, anotar en `progress.md` (fila de OP01 en `Backlog.md`) la fecha y qué se probó, igual
+que el resto de historias — así deja de ser la única validación manual sin cerrar del proyecto.
