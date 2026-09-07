@@ -2,7 +2,35 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-09-05 — **Revisión general del proyecto a pedido del docente: se corrigieron dos duplicados de código y se sincronizó esta documentación con el estado real (estaba desactualizada desde el 02/09).**
+Última actualización: 2026-09-07 — **OP01 queda confirmada: el docente restableció en navegador real la contraseña de un Tutor y de un Estudiante como Administrador.**
+
+Como parte del cierre de la revisión general del 05/09 (ver entrada de abajo), quedaba pendiente la
+única validación manual del proyecto sin confirmación registrada: **OP01** (Administrador/Tutor
+restablece la contraseña de un usuario que la olvidó). El docente probó en `/admin/usuarios` (entorno
+local, `localhost:3000`) y confirmó: como Administrador, pudo restablecer la contraseña tanto de un
+Tutor (Elver Saldarriaga) como de un Estudiante (Carlos Andrés Gaviria), viendo el botón "Restablecer
+contraseña" disponible para ambos roles en la columna Acciones. La restricción del lado Tutor (solo
+puede restablecer la de sus Estudiantes, nunca la de otro Tutor o Administrador) ya estaba confirmada
+por revisión de código de `lib/actions/reset-user-password.ts` el mismo día, sin necesidad de prueba
+manual adicional — la lógica de autorización es la misma función, ya cubierta por pruebas unitarias.
+
+**Con esto, las 23 historias del MVP, las 5 de la épica Multi-docente y las 3 mejoras operativas
+(OP01-03) quedan con confirmación explícita registrada — no queda ninguna validación manual abierta
+en todo el proyecto.**
+
+Actualización anterior — 2026-09-07 — **Sincronización de los 6 documentos ágiles restantes de la raíz
+del repositorio** (`Descripcion_del_Proyecto.md`, `Sprint_Planning.md`, `Objetivos_SMART.md`,
+`Checklist_Validacion_Manual.md`, `Diagrama_de_Arquitectura.md`, `Herramientas_y_Metodologia.md`), que
+llevaban desactualizados desde fines de agosto tanto en el repo como en este Proyecto de Claude —
+describían el proyecto solo hasta "Sprint 7 (planificado)", sin la épica Multi-docente cerrada, OP01-03,
+el rediseño visual ni US29-31, y con Vercel marcado como "pendiente de conectar" pese a estar
+desplegado desde el 31/08. Reescritos con el estado real: Sprints 7-8 pasan de "planificado" a
+"cerrado" con evidencia de cierre; se agrega el rol Super Administrador a los diagramas C4; el modelo
+de datos de `Espacios` pasa de "cambio previsto" a arquitectura actual; se documentan OP01-03 y el
+rediseño visual como trabajo intersprint. Transferidos y confirmados en GitHub: commit `6403d13`, run
+[CI #19](https://github.com/profefabio-dev/proyecto-lms/actions/runs/34075209469) en verde.
+
+Actualización anterior — 2026-09-05 — **Revisión general del proyecto a pedido del docente: se corrigieron dos duplicados de código y se sincronizó esta documentación con el estado real (estaba desactualizada desde el 02/09).**
 
 El docente pidió revisar el proyecto completo en busca de errores y código duplicado antes de seguir con nuevas historias. Hallazgos y acciones:
 

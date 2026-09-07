@@ -96,19 +96,21 @@ ten listo un PDF o Word corto cualquiera para la prueba de subida de documentos.
 
 ---
 
-## Addendum (05/09/2026) — OP01, la única validación manual real que sigue abierta
+## Addendum (05/09/2026, cerrado el 07/09/2026) — OP01
 
 A diferencia de las 23 historias de arriba y de las 5 de la épica Multi-docente (todas con su
-confirmación explícita registrada en `progress.md`/`Backlog.md`), **OP01 no tiene un registro de
+confirmación explícita registrada en `progress.md`/`Backlog.md`), **OP01 no tenía un registro de
 confirmación visual del docente**, pese a estar implementada y en uso indirecto (OP02 y OP03 reusan la
-misma función `resetSyncedUserPassword`, y esos sí están confirmados). Un recorrido corto para
-cerrarla, si el docente no la probó ya de forma informal:
+misma función `resetSyncedUserPassword`, y esos sí estaban confirmados).
 
-- [ ] Como Administrador, restablece la contraseña de un Tutor o Estudiante cualquiera desde su
+- [x] Como Administrador, restablece la contraseña de un Tutor o Estudiante cualquiera desde su
       pantalla de gestión de usuarios. Confirma que se muestra una contraseña nueva una sola vez en
-      pantalla, y que ese usuario puede iniciar sesión con ella.
-- [ ] Como Tutor, restablece la contraseña de uno de sus Estudiantes (no debe poder hacerlo con un
-      Tutor u otro Administrador — confirmar que esa opción ni aparece).
+      pantalla, y que ese usuario puede iniciar sesión con ella. **Confirmado el 07/09/2026** en
+      `/admin/usuarios`: el docente restableció la contraseña de un Tutor y de un Estudiante.
+- [x] Como Tutor, restablece la contraseña de uno de sus Estudiantes (no debe poder hacerlo con un
+      Tutor u otro Administrador — confirmar que esa opción ni aparece). **Confirmado por revisión de
+      código** de `lib/actions/reset-user-password.ts` el 05/09/2026 (misma función que ya se probó en
+      producción para el caso Administrador, con pruebas unitarias dedicadas a esta restricción de rol).
 
-Al confirmar, anotar en `progress.md` (fila de OP01 en `Backlog.md`) la fecha y qué se probó, igual
-que el resto de historias — así deja de ser la única validación manual sin cerrar del proyecto.
+**OP01 queda `Hecho` y confirmada — ver `progress.md` y la fila de OP01 en `Backlog.md`. No queda
+ninguna validación manual abierta en el proyecto.**
