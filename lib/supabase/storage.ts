@@ -77,3 +77,53 @@ export async function crearUrlDescarga(
 
   return data.signedUrl;
 }
+
+/**
+ * Utilidades para la imagen de portada de un curso (corrección sobre US07:
+ * el docente pidió poder subir la imagen desde su computador, en vez de
+ * depender solo de pegar una URL externa).
+ *
+ * A diferencia del bucket "documentos", este bucket es público a propósito:
+ * `Courses.imagen` se guarda y se muestra como una URL directa y
+ * permanente (<img src={curso.imagen}>) en toda la aplicación, sin URLs
+ * firmadas. Por eso aquí se genera una URL pública fija al subir el
+ * archivo, en vez de `crearUrlDescarga`.
+ *
+ * IMPORTANTE (setup manual, una sola vez): el bucket "imagenes-cursos" debe
+ * existir en el proyecto de Supabase (Storage → New bucket → nombre
+ * "imagenes-cursos" → Public). Este código no lo crea automáticamente.
+ */
+
+export const BUCKET_IMAGENES_CURSO = "imagenes-cursos";
+
+export const TIPOS_IMAGEN_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"] as const;
+
+export const MAX_TAMANO_IMAGEN_BYTES = 5 * 1024 * 1024; // 5 MB
+
+export function esTipoImagenPermitido(mimeType: string): boolean {
+  return (TIPOS_IMAGEN_PERMITIDOS as readonly string[]).includes(mimeType);
+}
+
+export async function subirImagenCursoAStorage(
+  archivo: File
+): Promise<{ path: string; url: string }> {
+  const path = `${randomUUID()}-${sanearNombreArchivo(archivo.name)}`;
+
+  const { error } = await supabaseAdmin.storage
+    .from(BUCKET_IMAGENES_CURSO)
+    .upload(path, archivo, { contentType: archivo.type, upsert: false });
+
+  if (error) {
+    throw new Error(`No se pudo subir la imagen: ${error.message}`);
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabaseAdmin.storage.from(BUCKET_IMAGENES_CURSO).getPublicUrl(path);
+
+  return { path, url: publicUrl };
+}
+
+export async function eliminarImagenCursoDeStorage(path: string): Promise<void> {
+  await supabaseAdmin.storage.from(BUCKET_IMAGENES_CURSO).remove([path]);
+}

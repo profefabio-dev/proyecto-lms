@@ -10,9 +10,15 @@ import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
 import { ContentOrderControls } from "@/components/content-order-controls";
+import { SectionControls } from "@/components/section-controls";
+import { CreateSectionForm } from "@/components/create-section-form";
+import { RenameSectionForm } from "@/components/rename-section-form";
+import { SectionAssignSelect } from "@/components/section-assign-select";
+import { CourseStatusSelect } from "@/components/course-status-select";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
+import { agruparContenidoPorSeccion, contenidoSinSeccion } from "@/lib/group-content-by-section";
 
 export default async function CursoDetallePage({
   params,
@@ -45,6 +51,12 @@ export default async function CursoDetallePage({
       contenidos: {
         orderBy: { orden: "asc" },
         include: { documentos: true },
+      },
+      // US30: secciones plegables del curso, siempre en su propio orden —
+      // el contenido sin sección (`seccionId: null`) no aparece aquí, sigue
+      // viniendo de `curso.contenidos` como hasta ahora.
+      secciones: {
+        orderBy: { orden: "asc" },
       },
     },
   });
@@ -82,12 +94,25 @@ export default async function CursoDetallePage({
     })
   );
 
+  // US30: agrupa el contenido por sección para mostrarlo en bloques
+  // plegables; lo que nunca se asignó a una sección se sigue mostrando como
+  // hasta ahora, en una lista plana aparte. El `[...]` es una copia
+  // superficial, no afecta el resultado — evita que TypeScript infiera mal
+  // el tipo genérico cuando lo recibe directamente de una relación incluida.
+  const gruposDeSeccion = agruparContenidoPorSeccion(contenidosConDocumentos, [...curso.secciones]);
+  const contenidoSueltoTutor = contenidoSinSeccion(contenidosConDocumentos);
+  const opcionesDeSeccion = curso.secciones.map((seccion) => ({
+    id: seccion.id,
+    titulo: seccion.titulo,
+  }));
+
   return (
     <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
-      <div>
+      <div className="space-y-3">
         <h1 className="text-3xl font-bold tracking-tight">{curso.titulo}</h1>
         <p className="text-muted-foreground">{curso.descripcion}</p>
+        <CourseStatusSelect courseId={curso.id} estadoActual={curso.estado} />
       </div>
 
       <section className="space-y-4">
@@ -113,38 +138,139 @@ export default async function CursoDetallePage({
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
-        {contenidosConDocumentos.length === 0 ? (
+        {contenidosConDocumentos.length === 0 && curso.secciones.length === 0 ? (
           <EmptyState icon={Inbox} message="Este curso todavía no tiene contenido publicado." />
         ) : (
-          <ul className="space-y-4">
-            {contenidosConDocumentos.map((contenido, indice) => (
-              <li
-                key={contenido.id}
-                className={`space-y-2 rounded-lg border bg-card p-4 ${!contenido.visible ? "opacity-60" : ""}`}
+          <div className="space-y-4">
+            {/* US30: cada sección es un bloque plegable con su propio
+                encabezado (título editable, estado y controles) — el
+                contenido sin sección sigue igual que siempre, en la lista
+                plana de abajo. */}
+            {gruposDeSeccion.map(({ seccion, contenidos }, indiceSeccion) => (
+              <details
+                key={seccion.id}
+                open
+                className="space-y-4 rounded-lg border bg-card p-4"
               >
-                <h3 className="font-medium">{contenido.titulo}</h3>
-                <ContentOrderControls
-                  contentId={contenido.id}
-                  esPrimero={indice === 0}
-                  esUltimo={indice === contenidosConDocumentos.length - 1}
-                  visible={contenido.visible}
+                <summary className="cursor-pointer text-lg font-semibold">
+                  {seccion.titulo}
+                  {seccion.estado === "NO_DISPONIBLE" && (
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      (No disponible)
+                    </span>
+                  )}
+                  {seccion.esActual && (
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      (Semana actual)
+                    </span>
+                  )}
+                </summary>
+
+                <RenameSectionForm seccionId={seccion.id} tituloActual={seccion.titulo} />
+
+                <SectionControls
+                  seccionId={seccion.id}
+                  esPrimera={indiceSeccion === 0}
+                  esUltima={indiceSeccion === gruposDeSeccion.length - 1}
+                  estado={seccion.estado}
+                  esActual={seccion.esActual}
                 />
-                {contenido.descripcion && (
-                  <p className="text-sm text-muted-foreground">{contenido.descripcion}</p>
+
+                {contenidos.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Esta sección todavía no tiene contenido asignado.
+                  </p>
+                ) : (
+                  <ul className="space-y-4">
+                    {contenidos.map((contenido, indice) => (
+                      <li
+                        key={contenido.id}
+                        className={`space-y-2 rounded-lg border bg-background p-4 ${!contenido.visible ? "opacity-60" : ""}`}
+                      >
+                        <h3 className="font-medium">{contenido.titulo}</h3>
+                        <ContentOrderControls
+                          contentId={contenido.id}
+                          esPrimero={indice === 0}
+                          esUltimo={indice === contenidos.length - 1}
+                          visible={contenido.visible}
+                        />
+                        <SectionAssignSelect
+                          contentId={contenido.id}
+                          seccionIdActual={contenido.seccionId}
+                          secciones={opcionesDeSeccion}
+                        />
+                        {contenido.descripcion && (
+                          <p className="text-sm text-muted-foreground">{contenido.descripcion}</p>
+                        )}
+                        {contenido.tipo === "VIDEO" && (
+                          <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                        )}
+                        {contenido.tipo === "TEXTO" && (
+                          <MarkdownContent contenido={contenido.contenido} />
+                        )}
+                        {contenido.tipo === "DOCUMENTO" && (
+                          <DocumentContentList documentos={contenido.documentosConUrl} />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 )}
-                {contenido.tipo === "VIDEO" && (
-                  <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
-                )}
-                {contenido.tipo === "TEXTO" && (
-                  <MarkdownContent contenido={contenido.contenido} />
-                )}
-                {contenido.tipo === "DOCUMENTO" && (
-                  <DocumentContentList documentos={contenido.documentosConUrl} />
-                )}
-              </li>
+              </details>
             ))}
-          </ul>
+
+            {(contenidoSueltoTutor.length > 0 || curso.secciones.length === 0) && (
+              <div className="space-y-4">
+                {curso.secciones.length > 0 && (
+                  <h3 className="text-lg font-semibold">Sin sección</h3>
+                )}
+                {contenidoSueltoTutor.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Todo el contenido de este curso ya está asignado a una sección.
+                  </p>
+                ) : (
+                  <ul className="space-y-4">
+                    {contenidoSueltoTutor.map((contenido, indice) => (
+                      <li
+                        key={contenido.id}
+                        className={`space-y-2 rounded-lg border bg-card p-4 ${!contenido.visible ? "opacity-60" : ""}`}
+                      >
+                        <h3 className="font-medium">{contenido.titulo}</h3>
+                        <ContentOrderControls
+                          contentId={contenido.id}
+                          esPrimero={indice === 0}
+                          esUltimo={indice === contenidoSueltoTutor.length - 1}
+                          visible={contenido.visible}
+                        />
+                        <SectionAssignSelect
+                          contentId={contenido.id}
+                          seccionIdActual={contenido.seccionId}
+                          secciones={opcionesDeSeccion}
+                        />
+                        {contenido.descripcion && (
+                          <p className="text-sm text-muted-foreground">{contenido.descripcion}</p>
+                        )}
+                        {contenido.tipo === "VIDEO" && (
+                          <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                        )}
+                        {contenido.tipo === "TEXTO" && (
+                          <MarkdownContent contenido={contenido.contenido} />
+                        )}
+                        {contenido.tipo === "DOCUMENTO" && (
+                          <DocumentContentList documentos={contenido.documentosConUrl} />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
         )}
+
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Crear sección</h3>
+          <CreateSectionForm courseId={curso.id} />
+        </div>
 
         <div>
           <h3 className="mb-2 text-lg font-semibold">Publicar video</h3>

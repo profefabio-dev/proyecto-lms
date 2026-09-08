@@ -3,10 +3,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const uploadMock = vi.fn();
 const removeMock = vi.fn();
 const createSignedUrlMock = vi.fn();
+const getPublicUrlMock = vi.fn();
 const fromMock = vi.fn((_bucket: string) => ({
   upload: uploadMock,
   remove: removeMock,
   createSignedUrl: createSignedUrlMock,
+  getPublicUrl: getPublicUrlMock,
 }));
 
 vi.mock("./admin", () => ({
@@ -24,6 +26,10 @@ import {
   eliminarDocumentoDeStorage,
   crearUrlDescarga,
   BUCKET_DOCUMENTOS,
+  esTipoImagenPermitido,
+  subirImagenCursoAStorage,
+  eliminarImagenCursoDeStorage,
+  BUCKET_IMAGENES_CURSO,
 } from "./storage";
 
 function buildFile(name: string, type: string, content = "contenido") {
@@ -130,5 +136,64 @@ describe("crearUrlDescarga", () => {
     const url = await crearUrlDescarga("curso-1/algo.pdf");
 
     expect(url).toBeNull();
+  });
+});
+
+describe("esTipoImagenPermitido", () => {
+  it("acepta JPG, PNG y WEBP", () => {
+    expect(esTipoImagenPermitido("image/jpeg")).toBe(true);
+    expect(esTipoImagenPermitido("image/png")).toBe(true);
+    expect(esTipoImagenPermitido("image/webp")).toBe(true);
+  });
+
+  it("rechaza otros tipos (documentos, gif, etc.)", () => {
+    expect(esTipoImagenPermitido("application/pdf")).toBe(false);
+    expect(esTipoImagenPermitido("image/gif")).toBe(false);
+  });
+});
+
+describe("subirImagenCursoAStorage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("sube la imagen al bucket público y devuelve el path y la URL pública", async () => {
+    uploadMock.mockResolvedValue({ data: { path: "irrelevante" }, error: null });
+    getPublicUrlMock.mockReturnValue({
+      data: { publicUrl: "https://storage.test/imagenes-cursos/abc-portada.png" },
+    });
+
+    const archivo = buildFile("Portada curso.png", "image/png");
+    const resultado = await subirImagenCursoAStorage(archivo);
+
+    expect(fromMock).toHaveBeenCalledWith(BUCKET_IMAGENES_CURSO);
+    expect(uploadMock).toHaveBeenCalledTimes(1);
+    const [path, subido, opciones] = uploadMock.mock.calls[0];
+    expect(path).toMatch(/^.+-Portada_curso\.png$/);
+    expect(subido).toBe(archivo);
+    expect(opciones).toEqual({ contentType: "image/png", upsert: false });
+    expect(resultado).toEqual({
+      path,
+      url: "https://storage.test/imagenes-cursos/abc-portada.png",
+    });
+  });
+
+  it("lanza un error si Storage rechaza la subida", async () => {
+    uploadMock.mockResolvedValue({ data: null, error: { message: "bucket no existe" } });
+
+    const archivo = buildFile("portada.png", "image/png");
+
+    await expect(subirImagenCursoAStorage(archivo)).rejects.toThrow(/No se pudo subir la imagen/);
+  });
+});
+
+describe("eliminarImagenCursoDeStorage", () => {
+  it("llama a remove con el path indicado", async () => {
+    removeMock.mockResolvedValue({ data: null, error: null });
+
+    await eliminarImagenCursoDeStorage("abc-portada.png");
+
+    expect(fromMock).toHaveBeenCalledWith(BUCKET_IMAGENES_CURSO);
+    expect(removeMock).toHaveBeenCalledWith(["abc-portada.png"]);
   });
 });
