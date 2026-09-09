@@ -145,14 +145,18 @@ function Sidebar({
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-card transition-all duration-200",
+        // Menú lateral oscuro (pase de diseño de 2026-09-08, estilo Canvas
+        // LMS): `bg-sidebar`/`text-sidebar-foreground`/`border-sidebar-border`
+        // en vez de los tokens genéricos `bg-card`/`border` que antes hacían
+        // que este panel se viera igual que el resto de la página clara.
+        "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200",
         "w-64 md:translate-x-0",
         abierto ? "translate-x-0 md:w-64" : "-translate-x-full md:w-16"
       )}
     >
       <div
         className={cn(
-          "flex items-center gap-2 border-b px-4 py-4",
+          "flex items-center gap-2 border-b border-sidebar-border px-4 py-4",
           abierto ? "justify-between" : "md:justify-center md:px-2"
         )}
       >
@@ -163,14 +167,14 @@ function Sidebar({
             sin depender del ancho disponible. Colapsado (solo en desktop,
             ver arriba) se reduce a las iniciales dentro de un círculo. */}
         <Link href={inicioHref} className="flex min-w-0 flex-col leading-tight">
-          <span className={cn("text-xs font-medium text-muted-foreground", !abierto && "md:hidden")}>
+          <span className={cn("text-xs font-medium text-sidebar-foreground/60", !abierto && "md:hidden")}>
             Plataforma
           </span>
           <span
             className={cn(
-              "break-words text-base font-bold tracking-tight text-primary",
+              "break-words text-base font-bold tracking-tight text-sidebar-primary",
               !abierto &&
-                "md:flex md:size-8 md:items-center md:justify-center md:rounded-full md:bg-primary/10 md:text-xs md:break-normal"
+                "md:flex md:size-8 md:items-center md:justify-center md:rounded-full md:bg-sidebar-primary/15 md:text-xs md:break-normal"
             )}
           >
             {abierto ? "Fabio Aguirre" : <span className="md:hidden">Fabio Aguirre</span>}
@@ -190,7 +194,7 @@ function Sidebar({
         <button
           type="button"
           onClick={onCerrar}
-          className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+          className="shrink-0 rounded-md p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:hidden"
           aria-label="Cerrar menú"
         >
           <X className="size-5" aria-hidden="true" />
@@ -216,8 +220,8 @@ function Sidebar({
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 !abierto && "md:justify-center md:px-2",
                 activo
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-sidebar-primary/15 text-sidebar-primary"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               )}
             >
               <Icono className="size-4 shrink-0" aria-hidden="true" />
@@ -227,9 +231,12 @@ function Sidebar({
         })}
       </nav>
 
-      <div className={cn("space-y-3 border-t px-3 py-4", !abierto && "md:flex md:flex-col md:items-center md:px-2")}>
+      <div className={cn("space-y-3 border-t border-sidebar-border px-3 py-4", !abierto && "md:flex md:flex-col md:items-center md:px-2")}>
         <div className={cn("flex items-center gap-2", !abierto && "md:flex-col")}>
-          <Avatar className={cn(!abierto && "md:size-8")} title={!abierto ? `${usuario.nombre} ${usuario.apellido}` : undefined}>
+          <Avatar
+            className={cn("bg-sidebar-primary/20 text-sidebar-primary", !abierto && "md:size-8")}
+            title={!abierto ? `${usuario.nombre} ${usuario.apellido}` : undefined}
+          >
             <AvatarFallback>{iniciales(usuario.nombre, usuario.apellido)}</AvatarFallback>
           </Avatar>
           <div className={cn("min-w-0", !abierto && "md:hidden")}>
@@ -237,7 +244,7 @@ function Sidebar({
                 docente, ahora el nombre completo se ve siempre, envolviendo
                 en varias líneas si hace falta (el panel tiene ancho fijo de
                 16rem, así que no desborda). */}
-            <p className="text-sm font-medium break-words text-foreground">
+            <p className="text-sm font-medium break-words text-sidebar-foreground">
               {usuario.nombre} {usuario.apellido}
             </p>
             <Badge variant="secondary">{etiquetaRol}</Badge>

@@ -9,7 +9,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  /* Segunda vuelta de rediseño visual (2026-09-09): los títulos usan Geist
+     Sans (ya cargada en `app/layout.tsx` pero sin usar hasta ahora) en vez
+     de heredar la misma tipografía del cuerpo (Inter). Es el mismo
+     recurso que usan los LMS institucionales tipo Canvas para que el
+     texto normal y los encabezados se sientan como dos niveles
+     jerárquicos distintos, no como el mismo párrafo en negrita. */
+  --font-heading: var(--font-geist-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -87,14 +93,26 @@
   --chart-4: oklch(0.75 0.15 80);
   --chart-5: oklch(0.6 0.2 25);
   --radius: 0.75rem;
-  --sidebar: oklch(0.98 0.006 264);
-  --sidebar-foreground: oklch(0.18 0.02 264);
-  --sidebar-primary: oklch(0.52 0.19 264);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.93 0.03 264);
-  --sidebar-accent-foreground: oklch(0.28 0.05 264);
-  --sidebar-border: oklch(0.9 0.012 264);
-  --sidebar-ring: oklch(0.52 0.19 264);
+
+  /* Menú lateral oscuro — pase de diseño de 2026-09-08, a pedido del
+     docente ("el look general se siente básico", con Canvas LMS como
+     referencia). Canvas (y la mayoría de los LMS institucionales) usa una
+     franja de navegación siempre oscura pegada al borde izquierdo,
+     separada del resto de la interfaz (que sigue clara) — es la señal
+     visual más reconocible de ese estilo, y aquí se aplica solo al menú
+     lateral (`AppShell` → `Sidebar`) sin tocar el resto de la paleta clara
+     de la plataforma (fondos, tarjetas, formularios siguen igual). Antes
+     estos tokens eran casi idénticos al fondo claro general (`--sidebar`
+     apenas más oscuro que `--background`), así que el menú no se
+     distinguía del resto de la página en absoluto. */
+  --sidebar: oklch(0.24 0.03 264);
+  --sidebar-foreground: oklch(0.92 0.012 264);
+  --sidebar-primary: oklch(0.72 0.16 264);
+  --sidebar-primary-foreground: oklch(0.16 0.02 264);
+  --sidebar-accent: oklch(0.32 0.035 264);
+  --sidebar-accent-foreground: oklch(0.98 0.006 264);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.72 0.16 264);
 
   /* Paleta "gamificación" — pase de diseño de 2026-09-04. El indigo de
      arriba sigue siendo el color de marca de toda la plataforma (Admin,
@@ -169,6 +187,19 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Segunda vuelta de rediseño visual (2026-09-09): jerarquía tipográfica
+     consistente en toda la plataforma (Admin, Tutor, Estudiante) — todos
+     los encabezados usan la misma familia y el mismo tracking por
+     defecto, sin tener que repetir clases en cada página. Cualquier
+     clase de peso/tamaño que ya tenga un encabezado puntual sigue
+     ganando (las utilidades de Tailwind tienen más prioridad que esta
+     capa "base"), esto solo fija la tipografía y el tracking de fondo. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading tracking-tight;
   }
 }
 
