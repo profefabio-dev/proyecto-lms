@@ -11,6 +11,8 @@ import { EmptyState } from "@/components/empty-state";
 import { CourseContentItem } from "@/components/course-content-item";
 import { CourseContentOutline } from "@/components/course-content-outline";
 import { calcularProgreso } from "@/lib/course-progress";
+import { agruparContenidoPorSeccion, contenidoSinSeccion } from "@/lib/group-content-by-section";
+import { Badge } from "@/components/ui/badge";
 
 export default async function CursoEstudiantePage({
   params,
@@ -41,6 +43,11 @@ export default async function CursoEstudiantePage({
         orderBy: { orden: "asc" },
         include: { documentos: true },
       },
+      // US30: secciones plegables del curso, con su estado (fijado a mano
+      // por el Tutor) y la marca opcional de "semana actual".
+      secciones: {
+        orderBy: { orden: "asc" },
+      },
     },
   });
 
@@ -59,7 +66,24 @@ export default async function CursoEstudiantePage({
     notFound();
   }
 
-  const contenidosVisibles = curso.contenidos.filter((contenido) => contenido.visible);
+  // US30: el mapa de estado por sección decide, además de `visible`, si un
+  // contenido cuenta como accesible — el contenido de una sección "No
+  // disponible" queda tan oculto para el Estudiante como uno con
+  // `visible: false` (ni aparece en la lista, ni cuenta para el avance),
+  // hasta que el Tutor la marque Disponible. El contenido sin sección nunca
+  // se ve afectado por esto.
+  const estadoPorSeccion = new Map(curso.secciones.map((seccion) => [seccion.id, seccion.estado]));
+  const contenidosVisibles = curso.contenidos.filter((contenido) => {
+    if (!contenido.visible) {
+      return false;
+    }
+
+    if (contenido.seccionId && estadoPorSeccion.get(contenido.seccionId) === "NO_DISPONIBLE") {
+      return false;
+    }
+
+    return true;
+  });
 
   // US19 (rediseño): "visto" ya no se marca solo con abrir esta página —
   // eso marcaba TODOS los contenidos a la vez sin que el estudiante
@@ -104,6 +128,21 @@ export default async function CursoEstudiantePage({
     })
   );
 
+  // US30: agrupa el contenido accesible por sección para mostrarlo en
+  // bloques plegables; el contenido sin sección sigue igual que siempre, en
+  // la lista plana de abajo. Las secciones "No disponible" se muestran
+  // igual (título + insignia de estado), pero sin su contenido — ya se
+  // excluyó de `contenidosVisibles` más arriba.
+  const gruposDeSeccion = agruparContenidoPorSeccion(contenidosConDocumentos, [...curso.secciones]);
+  const contenidoSueltoEstudiante = contenidoSinSeccion(contenidosConDocumentos);
+  // El número de cada contenido (usado tanto en su tarjeta como en el
+  // índice de la barra lateral) refleja su posición en la lista completa,
+  // no la posición dentro de su sección — así el índice de navegación y las
+  // tarjetas siempre numeran igual, se muestren agrupadas o no.
+  const numeroPorContenido = new Map(
+    contenidosConDocumentos.map((contenido, index) => [contenido.id, index + 1])
+  );
+
   return (
     <AppShell
       usuario={usuarioActual}
@@ -126,37 +165,94 @@ export default async function CursoEstudiantePage({
           )}
         </div>
 
-        {contenidosConDocumentos.length === 0 ? (
+        {contenidosConDocumentos.length === 0 && curso.secciones.length === 0 ? (
           <EmptyState icon={Inbox} message="Este curso todavía no tiene contenido publicado." />
         ) : (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-            <section className="order-2 space-y-4 lg:order-1">
+            <section className="order-2 space-y-6 lg:order-1">
               <h2 className="text-xl font-semibold">Contenido del curso</h2>
 
-              <ul className="space-y-10">
-                {contenidosConDocumentos.map((contenido, index) => (
-                  <CourseContentItem
-                    key={contenido.id}
-                    numero={index + 1}
-                    index={index}
-                    titulo={contenido.titulo}
-                    descripcion={contenido.descripcion}
-                    tipo={contenido.tipo}
-                    contentId={contenido.id}
-                    visto={idsVistos.has(contenido.id)}
-                  >
-                    {contenido.tipo === "VIDEO" && (
-                      <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+              {/* US30: cada sección es un bloque plegable, con un
+                  indicador claro de estado (Disponible/No disponible/Semana
+                  actual) — solo la "semana actual" viene abierta por
+                  defecto, para que el Estudiante no tenga que desplazarse
+                  entre secciones que todavía no le tocan (el pedido
+                  original: "ubicar el material que necesito sin perderme
+                  entre espacios vacíos"). El contenido sin sección sigue
+                  igual que siempre: siempre visible, sin agrupar. */}
+              {gruposDeSeccion.map(({ seccion, contenidos }) => (
+                <details key={seccion.id} open={seccion.esActual} className="space-y-4">
+                  <summary className="flex cursor-pointer flex-wrap items-center gap-2 text-lg font-semibold">
+                    {seccion.titulo}
+                    {seccion.esActual && <Badge variant="success">Semana actual</Badge>}
+                    {seccion.estado === "NO_DISPONIBLE" && (
+                      <Badge variant="secondary">No disponible</Badge>
                     )}
-                    {contenido.tipo === "TEXTO" && (
-                      <MarkdownContent contenido={contenido.contenido} />
-                    )}
-                    {contenido.tipo === "DOCUMENTO" && (
-                      <DocumentContentList documentos={contenido.documentosConUrl} />
-                    )}
-                  </CourseContentItem>
-                ))}
-              </ul>
+                  </summary>
+
+                  {seccion.estado === "NO_DISPONIBLE" ? (
+                    <p className="text-sm text-muted-foreground">
+                      Todavía no está disponible — tu tutor la habilitará más adelante.
+                    </p>
+                  ) : contenidos.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      Esta sección todavía no tiene contenido.
+                    </p>
+                  ) : (
+                    <ul className="space-y-10">
+                      {contenidos.map((contenido, index) => (
+                        <CourseContentItem
+                          key={contenido.id}
+                          numero={numeroPorContenido.get(contenido.id) ?? index + 1}
+                          index={index}
+                          titulo={contenido.titulo}
+                          descripcion={contenido.descripcion}
+                          tipo={contenido.tipo}
+                          contentId={contenido.id}
+                          visto={idsVistos.has(contenido.id)}
+                        >
+                          {contenido.tipo === "VIDEO" && (
+                            <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                          )}
+                          {contenido.tipo === "TEXTO" && (
+                            <MarkdownContent contenido={contenido.contenido} />
+                          )}
+                          {contenido.tipo === "DOCUMENTO" && (
+                            <DocumentContentList documentos={contenido.documentosConUrl} />
+                          )}
+                        </CourseContentItem>
+                      ))}
+                    </ul>
+                  )}
+                </details>
+              ))}
+
+              {contenidoSueltoEstudiante.length > 0 && (
+                <ul className="space-y-10">
+                  {contenidoSueltoEstudiante.map((contenido, index) => (
+                    <CourseContentItem
+                      key={contenido.id}
+                      numero={numeroPorContenido.get(contenido.id) ?? index + 1}
+                      index={index}
+                      titulo={contenido.titulo}
+                      descripcion={contenido.descripcion}
+                      tipo={contenido.tipo}
+                      contentId={contenido.id}
+                      visto={idsVistos.has(contenido.id)}
+                    >
+                      {contenido.tipo === "VIDEO" && (
+                        <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
+                      )}
+                      {contenido.tipo === "TEXTO" && (
+                        <MarkdownContent contenido={contenido.contenido} />
+                      )}
+                      {contenido.tipo === "DOCUMENTO" && (
+                        <DocumentContentList documentos={contenido.documentosConUrl} />
+                      )}
+                    </CourseContentItem>
+                  ))}
+                </ul>
+              )}
             </section>
 
             <aside className="order-1 lg:sticky lg:top-6 lg:order-2">

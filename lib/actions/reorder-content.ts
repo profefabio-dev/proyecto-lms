@@ -15,6 +15,13 @@ import { prisma } from "@/lib/prisma";
  * vecino inmediato (el de mayor `orden` que sea menor, o el de menor `orden`
  * que sea mayor, según la dirección) dentro del mismo curso. Si ya está en
  * un extremo de la lista, no hay vecino y no se hace nada — no es un error.
+ *
+ * US30: el vecino se busca dentro de la misma sección (`seccionId`,
+ * incluyendo `null` para "sin sección") — si no, subir/bajar un contenido
+ * podría intercambiar su posición con uno de otra sección sin que eso se
+ * refleje en ningún cambio visible dentro de su propio grupo. Como todo el
+ * contenido de un curso que nunca usó secciones comparte `seccionId: null`,
+ * este filtro no cambia nada para esos cursos.
  */
 const moverContenidoSchema = z.object({
   contentId: z.string().min(1, "Contenido inválido"),
@@ -68,6 +75,7 @@ export async function moverContenido(
   const vecino = await prisma.contents.findFirst({
     where: {
       courseId: contenido.courseId,
+      seccionId: contenido.seccionId,
       orden: direccion === "arriba" ? { lt: contenido.orden } : { gt: contenido.orden },
     },
     orderBy: { orden: direccion === "arriba" ? "desc" : "asc" },

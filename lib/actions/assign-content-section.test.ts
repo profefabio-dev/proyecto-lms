@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { moverContenido } from "./reorder-content";
+import { asignarContenidoASeccion } from "./assign-content-section";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 
@@ -8,16 +8,16 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     users: { findUnique: vi.fn() },
     courses: { findUnique: vi.fn() },
-    contents: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
-    $transaction: vi.fn(),
+    contents: { findUnique: vi.fn(), update: vi.fn() },
+    secciones: { findUnique: vi.fn() },
   },
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-function buildFormData(contentId: string, direccion: string) {
+function buildFormData(contentId: string, seccionId: string) {
   const fd = new FormData();
   fd.append("contentId", contentId);
-  fd.append("direccion", direccion);
+  fd.append("seccionId", seccionId);
   return fd;
 }
 
@@ -28,7 +28,7 @@ function mockSesionTutor() {
   vi.mocked(prisma.users.findUnique).mockResolvedValue({ id: "tutor-1", rol: "TUTOR" } as any);
 }
 
-describe("moverContenido (US12)", () => {
+describe("asignarContenidoASeccion (US30)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -38,7 +38,7 @@ describe("moverContenido (US12)", () => {
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
     } as any);
 
-    const resultado = await moverContenido(null, buildFormData("cont-1", "arriba"));
+    const resultado = await asignarContenidoASeccion(null, buildFormData("cont-1", "seccion-1"));
 
     expect(resultado.success).toBe(false);
   });
@@ -49,7 +49,7 @@ describe("moverContenido (US12)", () => {
     } as any);
     vi.mocked(prisma.users.findUnique).mockResolvedValue({ id: "u1", rol: "ESTUDIANTE" } as any);
 
-    const resultado = await moverContenido(null, buildFormData("cont-1", "arriba"));
+    const resultado = await asignarContenidoASeccion(null, buildFormData("cont-1", "seccion-1"));
 
     expect(resultado.success).toBe(false);
   });
@@ -58,7 +58,7 @@ describe("moverContenido (US12)", () => {
     mockSesionTutor();
     vi.mocked(prisma.contents.findUnique).mockResolvedValue(null);
 
-    const resultado = await moverContenido(null, buildFormData("cont-1", "arriba"));
+    const resultado = await asignarContenidoASeccion(null, buildFormData("cont-1", "seccion-1"));
 
     expect(resultado.success).toBe(false);
   });
@@ -68,112 +68,96 @@ describe("moverContenido (US12)", () => {
     vi.mocked(prisma.contents.findUnique).mockResolvedValue({
       id: "cont-1",
       courseId: "curso-1",
-      orden: 1,
-      seccionId: null,
     } as any);
     vi.mocked(prisma.courses.findUnique).mockResolvedValue({
       id: "curso-1",
       tutorId: "otro-tutor",
     } as any);
 
-    const resultado = await moverContenido(null, buildFormData("cont-1", "arriba"));
+    const resultado = await asignarContenidoASeccion(null, buildFormData("cont-1", "seccion-1"));
 
     expect(resultado.success).toBe(false);
   });
 
-  it("no hace nada si ya está en el extremo (sin vecino)", async () => {
+  it("rechaza si la sección elegida es de otro curso", async () => {
     mockSesionTutor();
     vi.mocked(prisma.contents.findUnique).mockResolvedValue({
       id: "cont-1",
       courseId: "curso-1",
-      orden: 0,
-      seccionId: null,
     } as any);
     vi.mocked(prisma.courses.findUnique).mockResolvedValue({
       id: "curso-1",
       tutorId: "tutor-1",
     } as any);
-    vi.mocked(prisma.contents.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.secciones.findUnique).mockResolvedValue({
+      id: "seccion-1",
+      courseId: "otro-curso",
+    } as any);
 
-    const resultado = await moverContenido(null, buildFormData("cont-1", "arriba"));
+    const resultado = await asignarContenidoASeccion(null, buildFormData("cont-1", "seccion-1"));
 
-    expect(resultado.success).toBe(true);
-    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(resultado.success).toBe(false);
+    expect(prisma.contents.update).not.toHaveBeenCalled();
   });
 
-  it("intercambia el orden con el vecino al mover hacia arriba", async () => {
+  it("asigna el contenido a la sección cuando todo es válido", async () => {
     mockSesionTutor();
     vi.mocked(prisma.contents.findUnique).mockResolvedValue({
-      id: "cont-2",
-      courseId: "curso-1",
-      orden: 1,
-      seccionId: null,
-    } as any);
-    vi.mocked(prisma.courses.findUnique).mockResolvedValue({
-      id: "curso-1",
-      tutorId: "tutor-1",
-    } as any);
-    vi.mocked(prisma.contents.findFirst).mockResolvedValue({
       id: "cont-1",
       courseId: "curso-1",
-      orden: 0,
-    } as any);
-    vi.mocked(prisma.$transaction).mockResolvedValue([{}, {}] as any);
-
-    const resultado = await moverContenido(null, buildFormData("cont-2", "arriba"));
-
-    expect(resultado.success).toBe(true);
-    expect(prisma.contents.findFirst).toHaveBeenCalledWith({
-      where: { courseId: "curso-1", seccionId: null, orden: { lt: 1 } },
-      orderBy: { orden: "desc" },
-    });
-    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
-  });
-
-  it("US30: busca el vecino dentro de la misma sección, no en todo el curso", async () => {
-    mockSesionTutor();
-    vi.mocked(prisma.contents.findUnique).mockResolvedValue({
-      id: "cont-2",
-      courseId: "curso-1",
-      orden: 3,
-      seccionId: "seccion-1",
     } as any);
     vi.mocked(prisma.courses.findUnique).mockResolvedValue({
       id: "curso-1",
       tutorId: "tutor-1",
     } as any);
-    vi.mocked(prisma.contents.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.secciones.findUnique).mockResolvedValue({
+      id: "seccion-1",
+      courseId: "curso-1",
+    } as any);
 
-    const resultado = await moverContenido(null, buildFormData("cont-2", "arriba"));
+    const resultado = await asignarContenidoASeccion(null, buildFormData("cont-1", "seccion-1"));
 
     expect(resultado.success).toBe(true);
-    expect(prisma.contents.findFirst).toHaveBeenCalledWith({
-      where: { courseId: "curso-1", seccionId: "seccion-1", orden: { lt: 3 } },
-      orderBy: { orden: "desc" },
+    expect(prisma.contents.update).toHaveBeenCalledWith({
+      where: { id: "cont-1" },
+      data: { seccionId: "seccion-1" },
     });
-    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('deja el contenido "Sin sección" cuando se envía vacío', async () => {
+    mockSesionTutor();
+    vi.mocked(prisma.contents.findUnique).mockResolvedValue({
+      id: "cont-1",
+      courseId: "curso-1",
+    } as any);
+    vi.mocked(prisma.courses.findUnique).mockResolvedValue({
+      id: "curso-1",
+      tutorId: "tutor-1",
+    } as any);
+
+    const resultado = await asignarContenidoASeccion(null, buildFormData("cont-1", ""));
+
+    expect(resultado.success).toBe(true);
+    expect(prisma.secciones.findUnique).not.toHaveBeenCalled();
+    expect(prisma.contents.update).toHaveBeenCalledWith({
+      where: { id: "cont-1" },
+      data: { seccionId: null },
+    });
   });
 
   it("propaga el error si la base de datos falla", async () => {
     mockSesionTutor();
     vi.mocked(prisma.contents.findUnique).mockResolvedValue({
-      id: "cont-2",
+      id: "cont-1",
       courseId: "curso-1",
-      orden: 1,
-      seccionId: null,
     } as any);
     vi.mocked(prisma.courses.findUnique).mockResolvedValue({
       id: "curso-1",
       tutorId: "tutor-1",
     } as any);
-    vi.mocked(prisma.contents.findFirst).mockResolvedValue({
-      id: "cont-1",
-      courseId: "curso-1",
-      orden: 0,
-    } as any);
-    vi.mocked(prisma.$transaction).mockRejectedValue(new Error("fallo db"));
+    vi.mocked(prisma.contents.update).mockRejectedValue(new Error("fallo db"));
 
-    const resultado = await moverContenido(null, buildFormData("cont-2", "arriba"));
+    const resultado = await asignarContenidoASeccion(null, buildFormData("cont-1", ""));
 
     expect(resultado.success).toBe(false);
   });

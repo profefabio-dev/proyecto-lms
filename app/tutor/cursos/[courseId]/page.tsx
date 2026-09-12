@@ -15,6 +15,7 @@ import { CreateSectionForm } from "@/components/create-section-form";
 import { RenameSectionForm } from "@/components/rename-section-form";
 import { SectionAssignSelect } from "@/components/section-assign-select";
 import { CourseStatusSelect } from "@/components/course-status-select";
+import { EditContentForm } from "@/components/edit-content-form";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
@@ -199,6 +200,14 @@ export default async function CursoDetallePage({
                           seccionIdActual={contenido.seccionId}
                           secciones={opcionesDeSeccion}
                         />
+                        <EditContentForm
+                          contentId={contenido.id}
+                          tipo={contenido.tipo}
+                          tituloActual={contenido.titulo}
+                          descripcionActual={contenido.descripcion}
+                          contenidoActual={contenido.contenido}
+                          nombreArchivoActual={contenido.documentosConUrl[0]?.nombre}
+                        />
                         {contenido.descripcion && (
                           <p className="text-sm text-muted-foreground">{contenido.descripcion}</p>
                         )}
@@ -245,6 +254,14 @@ export default async function CursoDetallePage({
                           contentId={contenido.id}
                           seccionIdActual={contenido.seccionId}
                           secciones={opcionesDeSeccion}
+                        />
+                        <EditContentForm
+                          contentId={contenido.id}
+                          tipo={contenido.tipo}
+                          tituloActual={contenido.titulo}
+                          descripcionActual={contenido.descripcion}
+                          contenidoActual={contenido.contenido}
+                          nombreArchivoActual={contenido.documentosConUrl[0]?.nombre}
                         />
                         {contenido.descripcion && (
                           <p className="text-sm text-muted-foreground">{contenido.descripcion}</p>

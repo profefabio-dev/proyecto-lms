@@ -97,6 +97,7 @@ describe("CursoEstudiantePage (US15)", () => {
       titulo: "Curso",
       descripcion: "desc",
       contenidos: [],
+      secciones: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue(null);
 
@@ -116,9 +117,10 @@ describe("CursoEstudiantePage (US15)", () => {
       titulo: "Curso",
       descripcion: "desc",
       contenidos: [
-        { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true },
-        { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false },
+        { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true, seccionId: null },
+        { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false, seccionId: null },
       ],
+      secciones: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
 
@@ -128,7 +130,10 @@ describe("CursoEstudiantePage (US15)", () => {
 
     expect(prisma.courses.findUnique).toHaveBeenCalledWith({
       where: { id: "curso-1" },
-      include: { contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } } },
+      include: {
+        contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } },
+        secciones: { orderBy: { orden: "asc" } },
+      },
     });
   });
 
@@ -140,9 +145,10 @@ describe("CursoEstudiantePage (US15)", () => {
       titulo: "Curso",
       descripcion: "desc",
       contenidos: [
-        { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true },
-        { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false },
+        { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true, seccionId: null },
+        { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false, seccionId: null },
       ],
+      secciones: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
     (prisma.contentViews.findMany as any).mockResolvedValue([{ contentId: "c1" }]);
@@ -163,11 +169,38 @@ describe("CursoEstudiantePage (US15)", () => {
       titulo: "Curso",
       descripcion: "desc",
       contenidos: [],
+      secciones: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
 
     await CursoEstudiantePage(buildParams("curso-1"));
 
     expect(prisma.contentViews.findMany).not.toHaveBeenCalled();
+  });
+
+  it("US30: el contenido de una sección No disponible no cuenta como visible ni se consulta como visto", async () => {
+    mockSesion("auth-2");
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "est-1", rol: "ESTUDIANTE" });
+    (prisma.courses.findUnique as any).mockResolvedValue({
+      id: "curso-1",
+      titulo: "Curso",
+      descripcion: "desc",
+      contenidos: [
+        { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true, seccionId: "sec-1" },
+        { id: "c2", titulo: "Video 2", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true, seccionId: "sec-2" },
+      ],
+      secciones: [
+        { id: "sec-1", titulo: "Semana 1", orden: 0, estado: "DISPONIBLE", esActual: false },
+        { id: "sec-2", titulo: "Semana 2", orden: 1, estado: "NO_DISPONIBLE", esActual: false },
+      ],
+    });
+    (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
+
+    await CursoEstudiantePage(buildParams("curso-1"));
+
+    expect(prisma.contentViews.findMany).toHaveBeenCalledWith({
+      where: { userId: "est-1", contentId: { in: ["c1"] } },
+      select: { contentId: true },
+    });
   });
 });

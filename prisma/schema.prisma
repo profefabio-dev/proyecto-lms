@@ -32,6 +32,14 @@ enum TipoContenido {
   DOCUMENTO
 }
 
+// US30: estado de una sección, fijado a mano por el Tutor (mismo patrón que
+// Contents.visible en US12) — no se calcula por fecha, porque no todos los
+// cursos siguen un calendario semanal real.
+enum EstadoSeccion {
+  DISPONIBLE
+  NO_DISPONIBLE
+}
+
 model Users {
   id        String        @id @default(uuid())
   authId    String?       @unique
@@ -88,8 +96,39 @@ model Courses {
   tutor      Users         @relation("TutorCourses", fields: [tutorId], references: [id])
   inscritos  CourseUsers[]
   contenidos Contents[]
+  secciones  Secciones[]
 
   @@map("courses")
+}
+
+// US30: agrupa el contenido de un curso en secciones plegables con estado
+// (Disponible/No disponible) y una marca opcional de "semana actual", según
+// lo acordado con el docente (08/09/2026):
+// - Entidad nueva en vez de reutilizar campos existentes, para no forzar un
+//   concepto de "semana" sobre cursos que no lo necesitan.
+// - `estado` lo fija el Tutor a mano (mismo patrón que Contents.visible en
+//   US12), no se calcula por fecha.
+// - `esActual` es exclusiva por curso (una sola sección "semana actual" a la
+//   vez) — la exclusividad se aplica en `lib/actions/mark-current-section.ts`,
+//   no con una restricción de base de datos, porque Postgres no tiene una
+//   forma simple de expresar "a lo sumo una fila en TRUE por courseId" sin un
+//   índice parcial adicional que no aporta valor para este volumen de datos.
+// - El contenido de los cursos ya existentes queda sin sección
+//   (`Contents.seccionId` es opcional) y sigue viéndose igual que hoy: lista
+//   plana, siempre visible, sin agrupar.
+model Secciones {
+  id        String        @id @default(uuid())
+  courseId  String
+  titulo    String
+  orden     Int           @default(0)
+  estado    EstadoSeccion @default(DISPONIBLE)
+  esActual  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  course     Courses    @relation(fields: [courseId], references: [id])
+  contenidos Contents[]
+
+  @@map("secciones")
 }
 
 model CourseUsers {
@@ -114,8 +153,13 @@ model Contents {
   contenido   String
   orden       Int           @default(0)
   visible     Boolean       @default(true)
+  // US30: sección a la que pertenece este contenido, opcional (ver
+  // `Secciones` arriba) — sin sección asignada, el contenido se comporta
+  // exactamente igual que antes de US30 (lista plana, siempre visible).
+  seccionId   String?
 
   course     Courses        @relation(fields: [courseId], references: [id])
+  seccion    Secciones?     @relation(fields: [seccionId], references: [id])
   documentos Documents[]
   vistos     ContentViews[]
 
