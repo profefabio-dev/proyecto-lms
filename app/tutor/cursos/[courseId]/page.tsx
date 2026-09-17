@@ -86,9 +86,15 @@ export default async function CursoDetallePage({
   // por espacio en `/tutor/estudiantes`, correctamente). Se revierte al
   // comportamiento original: cualquier estudiante del sistema que todavía
   // no esté inscrito en este curso puntual.
+  // 17/09/2026, pedido por el docente: un estudiante con matrícula
+  // cancelada (desactivado por un Administrador, US20) no debe seguir
+  // apareciendo como candidato para asignar a un curso nuevo — solo se
+  // excluye de este selector, su historial y su inscripción en cursos
+  // donde ya estaba no se tocan.
   const estudiantesDisponibles = await prisma.users.findMany({
     where: {
       rol: "ESTUDIANTE",
+      estado: "ACTIVO",
       id: idsInscritos.length > 0 ? { notIn: idsInscritos } : undefined,
     },
     orderBy: { nombre: "asc" },

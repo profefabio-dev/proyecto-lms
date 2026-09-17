@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { Rol } from "@prisma/client";
+import { Rol, EstadoUsuario } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 
@@ -61,8 +61,14 @@ export async function asignarEstudiantes(
   // qué espacio se creó — un Estudiante es una cuenta global compartida a
   // propósito. Se revierte a la validación original: cualquier usuario
   // con rol Estudiante es un candidato válido.
+  // 17/09/2026, pedido por el docente: un estudiante con matrícula
+  // cancelada (desactivado por un Administrador, US20) no debe poder
+  // asignarse a un curso nuevo — mismo criterio que ya se aplica en la
+  // página al armar `estudiantesDisponibles`, repetido aquí del lado del
+  // servidor por si el ID llega directo en la petición sin pasar por la
+  // interfaz.
   const estudiantesValidos = await prisma.users.findMany({
-    where: { id: { in: estudianteIds }, rol: Rol.ESTUDIANTE },
+    where: { id: { in: estudianteIds }, rol: Rol.ESTUDIANTE, estado: EstadoUsuario.ACTIVO },
     select: { id: true },
   });
 

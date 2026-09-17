@@ -2,7 +2,34 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-09-17 — **El Tutor ya puede quitar (desinscribir) uno o varios estudiantes de un curso, con doble confirmación explícita.**
+Última actualización: 2026-09-17 — **Se confirma que "Desactivar" (US20) ya cubre el caso de matrícula cancelada, y se corrige un vacío: los estudiantes desactivados seguían apareciendo como candidatos en "Asignar estudiantes".**
+
+El docente preguntó cómo controlar qué estudiantes de una carga masiva (US29) terminan realmente creados y/o inscritos, ante el caso de subir un listado sin querer agregar a todos. Se le explicó, revisando el código real, que esto ya está cubierto **antes** de confirmar la carga: en el paso de revisión (`components/bulk-import-students-form.tsx`) cada fila tiene un checkbox `incluido` (y hay botones "Seleccionar todos"/"Deseleccionar todos" por grupo detectado), y `confirmarCarga()` solo envía al servidor las filas marcadas; además el selector de curso incluye la opción "Sin inscribir (crear solamente)" para crear estudiantes sin inscribirlos en ningún curso. No hace falta ningún cambio de código para ese caso.
+
+De ahí surgió una necesidad real y distinta: **estudiantes que cancelan matrícula definitivamente**, para los que mantener un registro sin usar "no sería bueno". Se preguntó explícitamente al docente (1) qué debe pasar con la cuenta y (2) quién puede hacerlo, y eligió: **desactivar la cuenta** (no borrarla) y que siga siendo **solo el Administrador**, como ya es hoy. Revisando `lib/actions/toggle-user-status.ts` se confirmó que el mecanismo existente (US20/US23, `/admin/usuarios`) ya cumple exactamente eso: revoca el acceso (no puede iniciar sesión), conserva intacto el historial y las notas, es reversible, está restringido a `Rol.ADMINISTRADOR`, no permite que un Administrador se desactive a sí mismo, y respeta el alcance de espacio (US24). **No hizo falta construir nada nuevo para esta parte.**
+
+**Vacío real encontrado y corregido:** un estudiante desactivado por esta vía seguía apareciendo como candidato para asignar a un curso nuevo en "Asignar estudiantes" — justo el tipo de registro innecesario que el docente quería evitar. Se corrigió en dos capas:
+- `app/tutor/cursos/[courseId]/page.tsx`: la consulta que arma `estudiantesDisponibles` ahora exige `estado: "ACTIVO"` además de `rol: "ESTUDIANTE"`.
+- `lib/actions/assign-students.ts`: la validación server-side `estudiantesValidos` ahora exige `estado: EstadoUsuario.ACTIVO` (se agregó `EstadoUsuario` al import de `@prisma/client`), como defensa adicional por si el ID llega directo a la Server Action sin pasar por el selector de la página.
+
+En ningún caso se toca el historial del estudiante ni sus inscripciones ya existentes en otros cursos — solo deja de ofrecerse como candidato nuevo mientras esté desactivado. Se revisó además `app/tutor/estudiantes/page.tsx`: ya muestra un badge de `estado` por estudiante, así que el Tutor puede ver cuáles están inactivos sin cambios adicionales.
+
+**Verificación en la máquina del docente:** `npx tsc --noEmit`: 0 errores (ya no aparece el error antes pendiente sobre el campo `grado` en `lib/supabase/sync-user.ts` — esto sugiere que la migración `20260916190000_add_grado_a_estudiante` y la regeneración del cliente de Prisma ya se aplicaron, pero no se pudo confirmar directamente el estado de la base de datos desde esta sesión por una restricción de red al ejecutar `npx prisma migrate status`; conviene que el docente lo confirme). `npx eslint` limpio en los dos archivos tocados. `npx vitest run lib/actions/assign-students.test.ts`: 6/6 pruebas existentes pasan sin ningún cambio (no había ninguna que fijara la forma exacta del `where` de `prisma.users.findMany`). La suite completa (`npx vitest run`) no llegó a terminar dentro del tiempo disponible en esta sesión por el tamaño ya alcanzado por el proyecto; dado que el cambio es acotado a estas dos consultas y su prueba directa pasa sin modificaciones, el riesgo de regresión es bajo, pero queda pendiente correrla completa cuando el docente pueda.
+
+**Pendiente:**
+- Confirmar si la migración de `grado` ya quedó aplicada en la base de datos real (ver nota de verificación arriba).
+- Correr `npx vitest run` completo cuando se pueda, para confirmar sin dudas que no hay regresiones en el resto del proyecto.
+- Sigue sin hacerse commit ni push de este cambio — es trabajo nuevo, separado del commit `f94fdb2` ya subido a `main`.
+- Sigue pendiente probar en navegador real "quitar estudiantes de un curso" (US11, entrada de abajo).
+
+
+Actualización anterior — 2026-09-17 — **Commit y push a `main`: queda subido a GitHub todo el trabajo acumulado de estos días (US29, grado/color por grupo, y quitar estudiantes de un curso).**
+
+El docente hizo el commit y push desde su propia terminal PowerShell (commit `f94fdb2`, 22 archivos, 2356 inserciones): carga masiva de estudiantes (US29) con sus correcciones, el campo `grado`/color por grupo en "Asignar estudiantes", la opción de quitar estudiantes de un curso (ver la entrada de abajo), y la reversión del filtro de espacio que rompía la asignación de estudiantes nuevos. Con esto, todo lo documentado en las entradas de abajo desde el 15/09/2026 queda reflejado en `main` en GitHub — ya no hay trabajo pendiente de subir de estos días.
+
+**Pendiente:** sigue faltando que el docente corra `npx prisma migrate dev` en su propia terminal para aplicar la migración de `grado` a la base de datos real y regenerar el cliente de Prisma; y probar en navegador real la nueva opción de quitar estudiantes.
+
+Actualización anterior — 2026-09-17 — **El Tutor ya puede quitar (desinscribir) uno o varios estudiantes de un curso, con doble confirmación explícita.**
 
 El docente probó la asignación de estudiantes (ya rediseñada con grupos por grado y color) y confirmó que se agregan bien, pero notó dos vacíos seguidos en la misma sesión: (1) "si se agregó un estudiante y se quiere eliminar, no hay la opción de eliminarlo" — pidió agregar la opción, con doble confirmación para evitar errores ("que se pregunte dos veces") y soporte para borrado masivo; y, al revisar la sección "Estudiantes inscritos" de la página de detalle de un curso, confirmó que el vacío real estaba ahí específicamente: "una vez sean asignados a un curso también debería dejarse eliminar porque no tienen la opción" — esa lista era un `<ul>` plano, sin ninguna acción.
 

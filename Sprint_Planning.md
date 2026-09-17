@@ -2,8 +2,9 @@
 
 > Sprint Goal, Sprint Backlog, capacity planning y Definition of Done. Los Sprints 1 a 8 ya se
 > cerraron — se documentan aquí en retrospectiva, con datos reales tomados de
-> [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md). El Sprint 6 cerró el 2026-09-01, y
-> los Sprints 7-8 (épica Multi-docente) el 2026-09-03.
+> [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md). El Sprint 6 cerró el 2026-09-01, los
+> Sprints 7-8 (épica Multi-docente) el 2026-09-03, y el Sprint 9 (US30) queda cerrado del lado de
+> construcción el 2026-09-08 — pendiente solo de la migración y la confirmación manual del docente.
 
 ## Definition of Done
 
@@ -44,11 +45,13 @@ sprint a sprint:
 | **Subtotal MVP** | **23 historias** | **101 SP** |
 | 7 | US24, US25, US26 | 19 |
 | 8 | US27, US28 | 8 |
-| **Total** | **28 historias** | **128 SP** |
+| 9 | US30 | 8 |
+| **Total** | **29 historias** | **136 SP** |
 
-**Velocidad promedio observada (28 historias, 7 sprints con SP asignados): ~18-20 SP por sprint.** La
-épica Multi-docente (Sprints 7-8, 27 SP en total) se mantuvo dentro de ese rango, confirmando que la
-estimación basada en velocidad observada (en vez de horas-persona teóricas) sigue siendo confiable.
+**Velocidad promedio observada (29 historias, 8 sprints con SP asignados): ~18-20 SP por sprint.** La
+épica Multi-docente (Sprints 7-8, 27 SP en total) y US30 (Sprint 9, 8 SP) se mantuvieron dentro de ese
+rango, confirmando que la estimación basada en velocidad observada (en vez de horas-persona teóricas)
+sigue siendo confiable.
 
 ## Sprints 1 a 5 (cerrados)
 
@@ -160,10 +163,15 @@ espacio completo). **Cumplido en su totalidad — 8 SP.**
 **Con el Sprint 8 cerrado, la épica Multi-docente completa (US24-US28) queda `Hecho` — 27 SP, 5
 historias, cero regresiones sobre el MVP.**
 
-## Sprint 9 (a definir) — feedback visual externo y siguiente historia de negocio
+## Sprint 9 (cerrado del lado de construcción el 08/09/2026) — secciones plegables (US30)
 
-> No es un sprint formalmente planificado todavía — se documenta aquí lo que ya pasó fuera de
-> cualquier épica planificada, y lo que queda por decidir.
+> Incluye también el trabajo intersprint hecho entre el 02 y el 05/09/2026, documentado aquí antes de
+> que este sprint tuviera Sprint Goal propio.
+
+**Sprint Goal:** que el contenido de un curso se pueda organizar en secciones plegables con estado
+(Disponible/No disponible) y una marca opcional de "semana actual", sin afectar en nada a los cursos
+que nunca usen esta función — cierra **US30**, la historia elegida entre las dos "por decidir" del
+sprint anterior (la otra, US29, queda para un sprint futuro).
 
 ### Trabajo ya hecho (fuera de backlog, entre el 02 y el 05/09/2026)
 
@@ -174,21 +182,38 @@ historias, cero regresiones sobre el MVP.**
 | Corrección de UX: se quita la X duplicada del menú lateral en escritorio (redundante con el botón de hamburguesa) | Hecho el 05/09/2026 |
 | Revisión de calidad de código: dos duplicados reales corregidos (`generarPasswordTemporal`, `ICONO_POR_TIPO`) y sincronización de la documentación de la raíz del repositorio | Hecho el 05/09/2026 |
 
-### Por decidir
+### Sprint Backlog — US30 (decidido el 08/09/2026, construido el mismo día)
 
-- **US29** (carga masiva de estudiantes por Excel/PDF) o **US30** (secciones plegables estilo Canvas,
-  a partir del feedback del docente evaluador externo) — ninguna tiene sprint asignado. US29 está
-  completamente definida y no depende de ninguna decisión de diseño pendiente; US30 necesita antes
-  decidir el modelo de datos (¿entidad "Sección/Módulo" nueva, o agrupación solo visual?).
-- Una vez elegida, se planifica formalmente como Sprint 9 con su propio Sprint Goal, siguiendo la
-  misma lógica de capacity planning basada en velocidad observada (~18-20 SP).
+Antes de construir, se resolvieron con el docente las tres decisiones de diseño que este sprint tenía
+pendientes desde su definición (ver `Backlog.md`): modelo de datos (nueva entidad `Secciones`, no
+agrupación solo visual), quién fija el estado de una sección (el Tutor, a mano — mismo patrón que
+US12, no por fecha), y qué pasa con el contenido de los cursos que ya existen (queda sin sección, sin
+forzar nada, se sigue viendo igual que siempre).
+
+| Tarea | Estado |
+|---|---|
+| Migración de `prisma/schema.prisma`: entidad `Secciones` (`courseId`, `título`, `orden`, `estado`, `esActual`) + enum `EstadoSeccion`; `Contents.seccionId` opcional | Hecho — migración `20260908120000_add_secciones` escrita a mano (no se pudo generar con `prisma migrate dev` desde esta sesión de nube, sin red hacia `binaries.prisma.sh`); **pendiente que el docente la aplique en su propia máquina** |
+| Server Actions: crear/renombrar/eliminar/reordenar una sección, alternar su estado, marcar/desmarcar la semana actual, asignar un contenido a una sección | Hecho — 7 acciones nuevas, cada una con sus pruebas unitarias, mismo patrón ya establecido (Zod + autorización server-side + `revalidatePath`) |
+| `moverContenido` (US12) ajustada para reordenar dentro de la misma sección, no en todo el curso | Hecho — sin efecto sobre cursos que nunca usan secciones (todo su contenido comparte `seccionId: null`) |
+| UI del Tutor (`app/tutor/cursos/[courseId]/page.tsx`): secciones plegables con controles de gestión, contenido agrupado, contenido sin sección igual que siempre | Hecho |
+| UI del Estudiante (`app/estudiante/cursos/[courseId]/page.tsx`): secciones plegables con insignia de estado, la "semana actual" abierta por defecto, contenido de una sección No disponible oculto y fuera del cálculo de avance | Hecho |
+
+**Verificación:** `eslint` limpio; `tsc --noEmit` sin ninguna categoría de error nueva frente al mismo
+ruido ya conocido del cliente de Prisma sin generar en este entorno; `vitest run` sin regresiones
+reales (todo lo nuevo que falla en este entorno de nube es el mismo límite ya conocido del enum `Rol`);
+`next build` compiló todo el código nuevo antes del bloqueo de red de fuentes ya conocido — ver detalle
+completo en `progress.md`.
+
+**Pendiente para cerrar del todo — acciones manuales del docente, no se pueden hacer desde esta
+sesión:** aplicar la migración `20260908120000_add_secciones` en su propia base de datos, y confirmar
+en navegador real el flujo completo (crear una sección, asignarle contenido, alternar su estado y la
+semana actual, y verlo reflejado del lado del Estudiante).
 
 ### Notas de planificación
 
-- Este sprint (una vez definido) puede depender de que el docente aplique una migración de esquema en
-  su propia máquina si se elige US30 (posible entidad "Sección/Módulo") — mismo patrón que las
-  migraciones anteriores, no puede ejecutarse desde una sesión de Claude en la nube.
 - Las tres vueltas del rediseño visual y las cuatro rondas de US31 no se planificaron como sprint
   formal porque fueron iteración directa sobre feedback en vivo del docente en su propio navegador,
   no historias con criterios de aceptación fijados de antemano — se documentan igual, con la misma
   Definition of Done (pruebas, verificación, documentación en el mismo cambio).
+- **US29** (carga masiva de estudiantes por Excel/PDF) sigue sin sprint asignado — queda para un
+  sprint futuro, ya completamente definida y sin ninguna decisión de diseño pendiente.
