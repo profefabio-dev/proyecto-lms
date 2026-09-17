@@ -7,6 +7,7 @@ import { EditEmailForm } from "@/components/edit-email-form";
 import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { ResetPasswordForm } from "@/components/reset-password-form";
 import { ToggleUserStatusForm } from "@/components/toggle-user-status-form";
+import { BulkImportStudentsForm } from "@/components/bulk-import-students-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -73,6 +74,11 @@ export default async function UsuariosPage({
             Listado de todos los administradores, tutores y estudiantes registrados.
           </p>
         </div>
+
+        {/* US29: un Administrador crea estudiantes sin inscribirlos a
+            ningún curso (eso lo hace después un Tutor, criterio 10) —
+            por eso este formulario nunca recibe la prop `cursos`. */}
+        <BulkImportStudentsForm />
 
         <nav className="flex flex-wrap gap-2 text-sm" aria-label="Filtrar por rol">
           {ROLES_FILTRO.map(({ valor, etiqueta }) => {

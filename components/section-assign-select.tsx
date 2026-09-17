@@ -28,7 +28,17 @@ export function SectionAssignSelect({
   return (
     <form action={accion} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="contentId" value={contentId} />
+      {/* `key={seccionIdActual ?? "sin-seccion"}` es necesario, no cosmético:
+          mismo problema que en CourseStatusSelect (OP05). React reinicia el
+          <select> a su `defaultValue` al enviar el formulario, y al no ser
+          un campo controlado no vuelve a aplicar un `defaultValue` nuevo
+          sobre un nodo ya existente. Sin esta key, tras mover el contenido
+          con éxito el desplegable se quedaba mostrando la sección anterior
+          aunque el cambio sí se hubiera guardado. Con la key, en cuanto
+          `seccionIdActual` cambia, React reemplaza el nodo con el valor
+          correcto. */}
       <select
+        key={seccionIdActual ?? "sin-seccion"}
         name="seccionId"
         defaultValue={seccionIdActual ?? ""}
         aria-label="Sección de este contenido"

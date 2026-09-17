@@ -51,6 +51,16 @@ export async function asignarEstudiantes(
     return { success: false, error: "Este curso no existe o no te pertenece." };
   }
 
+  // Revertido el 16/09/2026: el filtro de espacio agregado hoy mismo por
+  // error impedía asignar cualquier estudiante que no tuviera ya una
+  // inscripción previa en el espacio del tutor — es decir, ningún
+  // estudiante recién creado (US06 o la carga masiva de US29) podía
+  // asignarse nunca a ningún curso. El diseño ya documentado de esta
+  // épica (`Backlog.md`, US26) permite explícitamente que un Tutor de
+  // cualquier espacio asigne a un estudiante existente, sin importar en
+  // qué espacio se creó — un Estudiante es una cuenta global compartida a
+  // propósito. Se revierte a la validación original: cualquier usuario
+  // con rol Estudiante es un candidato válido.
   const estudiantesValidos = await prisma.users.findMany({
     where: { id: { in: estudianteIds }, rol: Rol.ESTUDIANTE },
     select: { id: true },

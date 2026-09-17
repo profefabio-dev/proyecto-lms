@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CreateStudentForm } from "@/components/create-student-form";
+import { BulkImportStudentsForm } from "@/components/bulk-import-students-form";
 import { EditEmailForm } from "@/components/edit-email-form";
 import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { ResetPasswordForm } from "@/components/reset-password-form";
@@ -44,12 +45,22 @@ export default async function EstudiantesPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  // US29: para poder inscribir de una vez a los estudiantes que se
+  // creen desde la carga masiva, sin repetir el paso manual de US11.
+  const cursos = await prisma.courses.findMany({
+    where: { tutorId: usuarioActual.id },
+    select: { id: true, titulo: true },
+    orderBy: { titulo: "asc" },
+  });
+
   return (
     <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
         <h1 className="text-3xl font-bold tracking-tight">Gestión de Estudiantes</h1>
 
         <CreateStudentForm />
+
+        <BulkImportStudentsForm cursos={cursos} />
 
         <div className="overflow-hidden rounded-lg border">
           <table className="w-full text-sm border-collapse">

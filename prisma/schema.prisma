@@ -48,6 +48,15 @@ model Users {
   email     String        @unique
   rol       Rol
   estado    EstadoUsuario @default(ACTIVO)
+  // US29 (carga masiva), 16/09/2026: grado/grupo detectado en la hoja
+  // de origen del Excel al crear el estudiante (ej. "6A") — antes se
+  // extraía solo para mostrarlo en la vista previa y para inscripción,
+  // sin guardarse (decisión explícita del 15/09/2026). Se revirtió esa
+  // decisión a pedido del docente para poder distinguir visualmente a
+  // los estudiantes por grado en la lista de "Asignar estudiantes" (ver
+  // `lib/group-color.ts`). Opcional: un estudiante creado a mano (US06)
+  // o desde un archivo sin columna de grado no tiene ningún valor aquí.
+  grado     String?
   // Épica Multi-docente (Backlog.md): obligatorio a nivel de aplicación
   // solo para ADMINISTRADOR y TUTOR (cada uno pertenece a un único
   // espacio, sin acceso a los datos de otro). SUPERADMIN y ESTUDIANTE no

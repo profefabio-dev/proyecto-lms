@@ -17,10 +17,18 @@ interface CreateSyncedUserInput {
    * los dos casos donde no aplica.
    */
   espacioId?: string;
+  /**
+   * US29 (carga masiva), 16/09/2026: grado/grupo detectado en la hoja de
+   * origen del Excel (ej. "6A"), para poder distinguir estudiantes por
+   * grupo en "Asignar estudiantes" (ver `lib/group-color.ts`). Opcional:
+   * ausente para un estudiante creado a mano (US06) o sin esa columna en
+   * el archivo.
+   */
+  grado?: string;
 }
 
 export async function createSyncedUser(input: CreateSyncedUserInput) {
-  const { email, password, nombre, apellido, rol, espacioId } = input;
+  const { email, password, nombre, apellido, rol, espacioId, grado } = input;
 
   // 1. Crear el usuario en Supabase Auth (ahí es donde se valida el login)
   const { data: authData, error: authError } =
@@ -46,6 +54,7 @@ export async function createSyncedUser(input: CreateSyncedUserInput) {
         apellido,
         rol,
         espacioId,
+        grado,
       },
     });
 

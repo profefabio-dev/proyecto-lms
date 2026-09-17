@@ -3,6 +3,7 @@ import { GraduationCap, Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AssignStudentsForm } from "@/components/assign-students-form";
+import { UnenrollStudentsForm } from "@/components/unenroll-students-form";
 import { CreateVideoContentForm } from "@/components/create-video-content-form";
 import { UploadDocumentForm } from "@/components/upload-document-form";
 import { CreateTextContentForm } from "@/components/create-text-content-form";
@@ -68,6 +69,23 @@ export default async function CursoDetallePage({
 
   const idsInscritos = curso.inscritos.map((inscripcion) => inscripcion.userId);
 
+  // Corrección del 16/09/2026: la revisión de seguridad de esta misma
+  // mañana había agregado aquí el filtro de espacio de US24
+  // (`filtroUsuarioVisibleEnEspacio`), pensando que era la misma fuga que
+  // ya se corrigió en `/tutor/estudiantes`. Era un error: ese filtro exige
+  // que el estudiante ya tenga una inscripción previa para considerarlo
+  // "visible", así que ningún estudiante recién creado (por US06 o por la
+  // carga masiva de US29) podía asignarse nunca a ningún curso, en ningún
+  // espacio — la función quedó inservible. Además, el diseño ya
+  // documentado de esta épica (`Backlog.md`, US26) dice explícitamente que
+  // un estudiante creado en un espacio **debe poder** ser asignado después
+  // por un Tutor de otro espacio distinto, sin duplicar su cuenta — un
+  // Estudiante es una cuenta global compartida, a propósito, y este
+  // selector es un buscador de ese universo global de estudiantes para
+  // inscribir, no un listado de "mis estudiantes" (eso sí sigue filtrado
+  // por espacio en `/tutor/estudiantes`, correctamente). Se revierte al
+  // comportamiento original: cualquier estudiante del sistema que todavía
+  // no esté inscrito en este curso puntual.
   const estudiantesDisponibles = await prisma.users.findMany({
     where: {
       rol: "ESTUDIANTE",
@@ -121,13 +139,23 @@ export default async function CursoDetallePage({
         {curso.inscritos.length === 0 ? (
           <EmptyState icon={GraduationCap} message="Aún no hay estudiantes inscritos en este curso." />
         ) : (
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            {curso.inscritos.map((inscripcion) => (
-              <li key={inscripcion.id}>
-                {inscripcion.user.nombre} {inscripcion.user.apellido} — {inscripcion.user.email}
-              </li>
-            ))}
-          </ul>
+          // Corrección de UX (16/09/2026), pedida por el docente: "una vez
+          // sean asignados a un curso también debería dejarse eliminar
+          // porque no tienen la opción" — antes esto era una lista sin
+          // ninguna acción. `UnenrollStudentsForm` solo quita la
+          // inscripción a ESTE curso (con doble confirmación, individual o
+          // en bloque); nunca toca la cuenta del estudiante ni su relación
+          // con otros cursos (decisión explícita del docente, ver el
+          // comentario en `lib/actions/unenroll-students.ts`).
+          <UnenrollStudentsForm
+            courseId={curso.id}
+            estudiantes={curso.inscritos.map((inscripcion) => ({
+              id: inscripcion.user.id,
+              nombre: inscripcion.user.nombre,
+              apellido: inscripcion.user.apellido,
+              email: inscripcion.user.email,
+            }))}
+          />
         )}
       </section>
 
