@@ -53,6 +53,18 @@ const SIN_GRUPO = {
   insignia: "bg-muted text-muted-foreground",
 } as const;
 
+/**
+ * US34: color propio para marcar, en la vista previa de la carga masiva, a
+ * un estudiante que ya existe en la plataforma. A propósito no es ninguno
+ * de los 8 colores de grupo de arriba ni uno con significado ya asignado
+ * (verde, ámbar, rojo), y se aplica como fondo de la fila + insignia — no
+ * como línea a la izquierda — para que no se confunda con el color de grado.
+ */
+export const COLOR_ESTUDIANTE_EXISTENTE = {
+  fila: "bg-fuchsia-50 dark:bg-fuchsia-500/10",
+  insignia: "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-500/15 dark:text-fuchsia-400",
+} as const;
+
 export function colorDeGrupo(grupo: string | null | undefined): {
   borde: string;
   insignia: string;

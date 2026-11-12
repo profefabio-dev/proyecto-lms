@@ -10,7 +10,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     users: { findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
     courses: { findUnique: vi.fn() },
-    courseUsers: { createMany: vi.fn() },
+    courseUsers: { createMany: vi.fn(), findMany: vi.fn() },
   },
 }));
 vi.mock("@/lib/supabase/sync-user");
@@ -40,6 +40,7 @@ function buildFormData(data: Record<string, string>) {
 describe("previsualizarCargaEstudiantes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.users.findMany).mockResolvedValue([]);
   });
 
   it("rechaza si no hay sesión", async () => {
@@ -95,7 +96,43 @@ describe("previsualizarCargaEstudiantes", () => {
     expect(resultado.success).toBe(true);
     if (resultado.success) {
       expect(resultado.grupos).toHaveLength(1);
+      expect(resultado.existentes).toEqual([]);
     }
+  });
+
+  it("US34: devuelve solo las claves del archivo que ya existen, sin distinguir mayúsculas", async () => {
+    mockSesion("TUTOR");
+    vi.mocked(parsearArchivoEstudiantes).mockResolvedValue({
+      grupos: [
+        {
+          nombre: "6A",
+          estudiantes: [
+            { nombre: "Carlos", apellido: "Gaviria" },
+            { nombre: "Ana", apellido: "Torres" },
+          ],
+        },
+      ],
+      advertencias: [],
+    });
+    vi.mocked(prisma.users.findMany).mockResolvedValue([
+      { nombre: "ANA ", apellido: "torres" },
+      { nombre: "Otro", apellido: "Estudiante" },
+    ] as any);
+    const fd = new FormData();
+    fd.append("archivo", new File(["contenido"], "listado.xlsx"));
+
+    const resultado = await previsualizarCargaEstudiantes(null, fd);
+
+    expect(resultado.success).toBe(true);
+    if (resultado.success) {
+      // Solo viaja la coincidencia con el propio archivo — nunca el resto
+      // de estudiantes de la plataforma.
+      expect(resultado.existentes).toEqual(["ana|torres"]);
+    }
+    expect(prisma.users.findMany).toHaveBeenCalledWith({
+      where: { rol: "ESTUDIANTE" },
+      select: { nombre: true, apellido: true },
+    });
   });
 });
 
@@ -104,6 +141,7 @@ describe("confirmarCargaEstudiantes", () => {
     vi.clearAllMocks();
     vi.mocked(prisma.users.findMany).mockResolvedValue([]);
     vi.mocked(prisma.users.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.courseUsers.findMany).mockResolvedValue([]);
   });
 
   it("rechaza si no hay sesión", async () => {
@@ -169,6 +207,116 @@ describe("confirmarCargaEstudiantes", () => {
       expect(resultado.creados[0].nombre).toBe("Carlos");
       expect(resultado.omitidos).toHaveLength(1);
       expect(resultado.omitidos[0].nombre).toBe("Ana");
+      expect(resultado.existentesMatriculados).toEqual([]);
+    }
+    expect(prisma.courseUsers.createMany).not.toHaveBeenCalled();
+  });
+
+  it("US34: matricula en el curso al estudiante que ya existe, sin crearle otra cuenta", async () => {
+    mockSesion("TUTOR");
+    vi.mocked(prisma.courses.findUnique).mockResolvedValue({ id: "c1", tutorId: "user-1" } as any);
+    vi.mocked(prisma.users.findFirst)
+      .mockResolvedValueOnce(null) // Carlos no existe
+      .mockResolvedValueOnce({ id: "ya-existe", estado: "ACTIVO" } as any); // Ana ya existe
+    vi.mocked(createSyncedUser).mockResolvedValue({ id: "nuevo-1" } as any);
+
+    const resultado = await confirmarCargaEstudiantes(
+      null,
+      buildFormData({
+        estudiantes: JSON.stringify([
+          { nombre: "Carlos", apellido: "Gaviria" },
+          { nombre: "Ana", apellido: "Torres" },
+        ]),
+        courseId: "c1",
+      })
+    );
+
+    expect(resultado.success).toBe(true);
+    if (resultado.success) {
+      expect(resultado.creados).toHaveLength(1);
+      expect(resultado.inscritos).toBe(1);
+      expect(resultado.omitidos).toEqual([]);
+      expect(resultado.existentesMatriculados).toEqual([
+        { nombre: "Ana", apellido: "Torres", yaInscrito: false },
+      ]);
+    }
+    expect(createSyncedUser).toHaveBeenCalledTimes(1);
+    expect(prisma.courseUsers.createMany).toHaveBeenCalledWith({
+      data: [
+        { courseId: "c1", userId: "nuevo-1" },
+        { courseId: "c1", userId: "ya-existe" },
+      ],
+    });
+  });
+
+  it("US34: no vuelve a inscribir al existente que ya estaba en el curso", async () => {
+    mockSesion("TUTOR");
+    vi.mocked(prisma.courses.findUnique).mockResolvedValue({ id: "c1", tutorId: "user-1" } as any);
+    vi.mocked(prisma.users.findFirst).mockResolvedValue({ id: "ya-existe", estado: "ACTIVO" } as any);
+    vi.mocked(prisma.courseUsers.findMany).mockResolvedValue([{ userId: "ya-existe" }] as any);
+
+    const resultado = await confirmarCargaEstudiantes(
+      null,
+      buildFormData({
+        estudiantes: JSON.stringify([{ nombre: "Ana", apellido: "Torres" }]),
+        courseId: "c1",
+      })
+    );
+
+    expect(resultado.success).toBe(true);
+    if (resultado.success) {
+      expect(resultado.existentesMatriculados).toEqual([
+        { nombre: "Ana", apellido: "Torres", yaInscrito: true },
+      ]);
+    }
+    expect(createSyncedUser).not.toHaveBeenCalled();
+    expect(prisma.courseUsers.createMany).not.toHaveBeenCalled();
+  });
+
+  it("US34: no matricula a un existente con la cuenta desactivada", async () => {
+    mockSesion("TUTOR");
+    vi.mocked(prisma.courses.findUnique).mockResolvedValue({ id: "c1", tutorId: "user-1" } as any);
+    vi.mocked(prisma.users.findFirst).mockResolvedValue({
+      id: "ya-existe",
+      estado: "INACTIVO",
+    } as any);
+
+    const resultado = await confirmarCargaEstudiantes(
+      null,
+      buildFormData({
+        estudiantes: JSON.stringify([{ nombre: "Ana", apellido: "Torres" }]),
+        courseId: "c1",
+      })
+    );
+
+    expect(resultado.success).toBe(true);
+    if (resultado.success) {
+      expect(resultado.existentesMatriculados).toEqual([]);
+      expect(resultado.omitidos).toHaveLength(1);
+      expect(resultado.omitidos[0].motivo).toContain("desactivada");
+    }
+    expect(prisma.courseUsers.createMany).not.toHaveBeenCalled();
+  });
+
+  it("US34: si falla la inscripción, el existente se informa como omitido", async () => {
+    mockSesion("TUTOR");
+    vi.mocked(prisma.courses.findUnique).mockResolvedValue({ id: "c1", tutorId: "user-1" } as any);
+    vi.mocked(prisma.users.findFirst).mockResolvedValue({ id: "ya-existe", estado: "ACTIVO" } as any);
+    vi.mocked(prisma.courseUsers.createMany).mockRejectedValueOnce(new Error("fallo de BD"));
+
+    const resultado = await confirmarCargaEstudiantes(
+      null,
+      buildFormData({
+        estudiantes: JSON.stringify([{ nombre: "Ana", apellido: "Torres" }]),
+        courseId: "c1",
+      })
+    );
+
+    expect(resultado.success).toBe(true);
+    if (resultado.success) {
+      expect(resultado.existentesMatriculados).toEqual([]);
+      expect(resultado.omitidos).toHaveLength(1);
+      expect(resultado.omitidos[0].motivo).toContain("no se pudo matricular");
     }
   });
 

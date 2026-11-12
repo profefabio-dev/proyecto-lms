@@ -16,6 +16,10 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
     },
+    // US29: la página también lista los cursos del Tutor para la carga masiva.
+    courses: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 
@@ -82,6 +86,7 @@ describe("EstudiantesPage", () => {
       espacioId: "espacio-1",
     });
     (prisma.users.findMany as any).mockResolvedValue([]);
+    (prisma.courses.findMany as any).mockResolvedValue([]);
 
     await EstudiantesPage();
 

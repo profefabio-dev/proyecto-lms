@@ -2,7 +2,25 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-09-23 — **Conversación sobre comercialización del producto: gestión de estudiantes retirados/cambiados de colegio, y modelo de cuenta compartida vs duplicada entre docentes. Se propone US34.**
+Última actualización: 2026-11-12 — **US34 implementada (la carga masiva marca a los estudiantes que ya existen y permite matricularlos), y se corrigen dos pruebas unitarias desactualizadas. Pendiente de probar en navegador.**
+
+**US34 — qué cambió:**
+- `lib/actions/bulk-import-students.ts`: `previsualizarCargaEstudiantes` ahora devuelve `existentes`, las claves (nombre+apellido, sin espacios sobrantes ni distinción de mayúsculas — `lib/clave-estudiante.ts`, archivo nuevo) de las filas del archivo que coinciden con un estudiante ya registrado. Se consulta una sola vez el nombre y apellido de los estudiantes y se cruza en memoria; al cliente solo viajan las coincidencias con su propio archivo, nunca el listado de la plataforma. `confirmarCargaEstudiantes` ya no omite siempre al duplicado: si el Tutor eligió un curso propio, el estudiante existente se matricula en él con su cuenta de siempre (se consulta antes si ya estaba inscrito, para no chocar con la restricción única de `CourseUsers` y para informarlo tal cual); sin curso, o si lo sube un Administrador, la fila se omite como antes. Un existente con `estado` distinto de `ACTIVO` no se matricula y queda en omitidos con ese motivo (mismo criterio que la corrección de US20 del 17/09). El resultado trae un campo nuevo, `existentesMatriculados` (con `yaInscrito` por estudiante). Si la inscripción falla, los existentes se informan como omitidos para asignarlos a mano.
+- `components/bulk-import-students-form.tsx`: cada fila existente se muestra con fondo e insignia "Ya existe"; un aviso arriba de la lista dice cuántos son y qué pasará según haya o no curso elegido; el botón de confirmar separa cuántos se crean y cuántos existentes se matriculan; el resumen final lista aparte a los existentes. La marca se recalcula con el texto actual de la fila, así que desaparece si el Tutor corrige el nombre a uno distinto.
+- `lib/group-color.ts`: nuevo `COLOR_ESTUDIANTE_EXISTENTE` (fucsia), a propósito fuera de la paleta de grupos y de los colores con significado propio, y aplicado como fondo de fila — no como línea a la izquierda — para no confundirse con el color de grado.
+
+**Límite conocido, sin cambios:** la coincidencia sigue siendo por nombre y apellido, con las fallas ya documentadas (acentos, "Apellidos, Nombres" invertido). Eso es lo que resolvería US35 (documento de identidad), todavía sin construir.
+
+**Pruebas corregidas (no eran fallas del código de la aplicación):** la suite completa, que no se había podido correr entera desde el 17/09, daba 394 de 396. `app/tutor/estudiantes/page.test.ts` no simulaba la consulta de cursos que la página hace desde US29; `lib/actions/mark-current-section.test.ts` afirmaba que `update` no se llamaba, cuando la transacción en forma de arreglo sí lo invoca — ahora verifica las dos operaciones con sus argumentos.
+
+**Verificación:** `vitest run` completo: 401 de 401 (5 pruebas nuevas de US34). `eslint` limpio en los archivos tocados. `tsc --noEmit` solo reporta `LayoutProps` en `app/layout.tsx`, un tipo que genera Next.js al compilar y que no existe en esta copia de trabajo — no viene de este cambio.
+
+**Pendiente:**
+- Probar US34 en navegador real: no se pudo porque `prisma migrate status` falló con `tenant/user postgres.… not found` — la base de datos de Supabase rechazó la conexión (posiblemente el proyecto está pausado por inactividad). Por lo mismo sigue sin confirmarse que la migración de `grado` esté aplicada.
+- Siguen abiertos del 20-22/09: qué no convenció al docente de "agregar y quitar estudiantes" (US11) y si el formulario manual (US06) debe avisar de duplicados por nombre y apellido.
+
+
+Actualización anterior — 2026-09-23 — **Conversación sobre comercialización del producto: gestión de estudiantes retirados/cambiados de colegio, y modelo de cuenta compartida vs duplicada entre docentes. Se propone US34.**
 
 Pensando en comercializar la plataforma para instituciones educativas, el docente planteó varios escenarios hipotéticos, sin pedir cambios de código todavía:
 
