@@ -2,7 +2,80 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-09-17 — **Se confirma que "Desactivar" (US20) ya cubre el caso de matrícula cancelada, y se corrige un vacío: los estudiantes desactivados seguían apareciendo como candidatos en "Asignar estudiantes".**
+Última actualización: 2026-09-23 — **Conversación sobre comercialización del producto: gestión de estudiantes retirados/cambiados de colegio, y modelo de cuenta compartida vs duplicada entre docentes. Se propone US34.**
+
+Pensando en comercializar la plataforma para instituciones educativas, el docente planteó varios escenarios hipotéticos, sin pedir cambios de código todavía:
+
+- **Estudiante que termina el año o se cambia de colegio:** se le explicó la diferencia entre los dos casos ya resueltos — "termina el año" es desinscribir de un curso puntual (ampliación de US11 del 16-17/09), "se cambia de colegio para siempre" es desactivar la cuenta (US20, ya decidido el 17/09 y solo para Administrador) — y que hoy no existe ningún borrado real de estudiante expuesto en la aplicación, a propósito, por el modelo de cuenta compartida (US26).
+- **Cuenta compartida vs duplicada por Tutor:** se confirmó que compartida (una cuenta por estudiante real) es más conveniente en código y recursos — evita duplicar contraseñas para menores (ver OP01), unifica el progreso (US19) y escala con personas reales, no con personas × tutores. Se le señaló también el matiz real para comercializar a varias instituciones: hoy lo compartido es **a nivel de toda la plataforma**, no solo dentro de un mismo colegio — el selector de "Asignar estudiantes" ya tiene documentada una fuga pendiente (nota de US24 en `Backlog.md`) que muestra nombre/correo de estudiantes de otras instituciones sin relación. Se recomendó no duplicar por Tutor, pero sí acotar esa visibilidad a nivel de institución antes de vender a más de un colegio.
+- **US34 (propuesta):** que en la vista previa de la carga masiva (US29), un estudiante que ya existe en la plataforma se marque con un color/insignia distintivo en vez de omitirse en silencio, permitiendo igual matricularlo en el curso de esa carga sin duplicar su cuenta. Se agregó a `Backlog.md` ("Propuesto / por planificar"), sin construir todavía.
+
+- **US35 (propuesta, misma conversación):** el docente preguntó si crear estudiantes por correo (en vez de documento de identidad, con opción de cambiarlo después) es mejor o no. Se le explicó que no son intercambiables: el correo es el identificador de **login** (obligatorio porque lo exige Supabase Auth, ya editable vía US22) y no se puede reemplazar sin terminar generando igual un correo interno por debajo; el documento de identidad sería mejor como clave de **deduplicación**, más confiable que el cruce actual por nombre (US29 criterio 8), que ya tiene fallas documentadas. Se agregó **US35** a `Backlog.md` para agregar `documentoIdentidad` como campo aparte, único y opcional, sin reemplazar el correo — con la nota de que es un dato sensible de un menor y debe tratarse con cuidado (no exponerlo en URLs ni pantallas de uso general).
+
+Nada de esto se implementó — es exploración de producto para retomar más adelante. Sin cambios de código en esta entrada.
+
+
+Actualización anterior — 2026-09-22 — **Se borran definitivamente los 110 estudiantes de prueba cargados por Excel/PDF sin ninguna actividad real; el listado queda solo con cuentas reales.**
+
+El docente pidió dejar el listado de estudiantes "en blanco", borrando a los cargados mediante el archivo de Excel de prueba. Se creó `scripts/borrar-carga-excel.ts`, con un criterio más directo y confiable que el del script anterior (`borrar-listado-1.ts`, que cruzaba nombres contra un archivo específico): identifica en la base de datos, sin depender de ningún Excel, a **todo** estudiante con `rol = ESTUDIANTE` y email terminado en `@estudiantes-lms.local` — ese dominio solo lo genera automáticamente la carga masiva (US29, `lib/auth/generar-email-interno.ts`); un estudiante creado a mano (US06) siempre tiene un email real escrito por el Tutor/Administrador. Mismo patrón de seguridad que el script anterior: dry run por defecto, separa a quien tenga inscripciones o vistas de contenido reales y no lo toca salvo `--forzar-todos`, y solo borra con `--confirmar` explícito (borra `CourseUsers`/`ContentViews`, la cuenta de Supabase Auth y por último la fila de `Users`).
+
+El docente corrió el dry run: 110 estudiantes sin ninguna actividad (de un total con ese dominio de email un poco mayor, con 2 casos aparte que sí tienen inscripción real — los mismos que ya se habían identificado antes, YOHANNY VALERIA AGUACHE VILLA y YURI SALOME LAZO QUICENO). Confirmó borrar solo esos 110, dejando intactos a los 2 con actividad real (sin `--forzar-todos`). Corrido con `--confirmar` en su máquina: **"Listo: 110 estudiantes borrados definitivamente (Users + Supabase Auth)."**
+
+Con esto, el listado de estudiantes queda con las 2 cuentas de prueba manuales de siempre (Ana Perez, carlos andres gaviria) más los 2 estudiantes reales que sí llegaron a inscribirse — ya no quedan cuentas sueltas de la carga de prueba.
+
+**Pendiente:** sigue sin explicarse la baja de 184 a 115 estudiantes documentada el 19/09 (69 registros que desaparecieron antes de que se ejecutara cualquier script de esta sesión) — con este borrado adicional de 110 ya no es posible reconstruir esa diferencia desde los datos actuales; si el docente recuerda haber hecho algo manual en esos días, conviene anotarlo aquí para cerrar el tema. Siguen abiertos también: qué no lo convenció de "agregar y quitar estudiantes" (US11) y si el formulario manual de crear estudiante (US06) debe validar duplicados por nombre/apellido igual que la carga masiva.
+
+
+Actualización anterior — 2026-09-21 — **Se propone US33: personalización del perfil de Tutor (reseña, foto y colores).**
+
+El docente pidió, como tarea a futuro, que cada Tutor pueda personalizar su rol: una reseña breve, una foto de perfil (en un formato común) y algunos colores que se reflejen en su página. Hoy `Users` no tiene ningún campo para esto (ni foto, ni reseña, ni color) — se agregó **US33** a `Backlog.md` ("Propuesto / por planificar"), sin construir todavía. Queda para retomar la conversación mañana.
+
+
+Actualización anterior — 2026-09-20 — **Se precisa cómo se maneja hoy la creación de un estudiante por distintos docentes: la carga masiva sí detecta duplicados por nombre y apellido, el formulario manual no.**
+
+El docente preguntó explícitamente qué pasa si un estudiante ya existe (creado por un Tutor) y otro Tutor distinto intenta crear "su" perfil de nuevo: si le avisa, si queda duplicado, o si cada curso necesita su propia carga de estudiantes. Se revisó el código real de las dos vías de creación:
+- **Carga masiva (US29, `lib/actions/bulk-import-students.ts`):** antes de crear cada fila, busca en **toda la plataforma** (sin filtrar por espacio) un estudiante con el mismo nombre y apellido (sin distinguir mayúsculas); si existe, omite la fila (no crea cuenta nueva) y lo informa en el resumen ("Ya existe un estudiante con este nombre y apellido"). No inscribe automáticamente al estudiante ya existente en el curso nuevo — solo evita el duplicado.
+- **Formulario manual "Crear estudiante" (US06, `lib/actions/create-student.ts`):** no verifica nombre ni apellido en absoluto. Lo único que impide un duplicado real es que el email es único en la base de datos (`Users.email @unique`); como el email de un estudiante cargado masivamente es uno interno autogenerado, un segundo Tutor que no lo conozca y use cualquier otro correo **sí crearía una cuenta duplicada del mismo alumno, sin ningún aviso**. Si por coincidencia usara el mismo email, Supabase Auth rechaza la creación pero el Tutor solo ve un error genérico ("No se pudo crear el estudiante. Intenta de nuevo."), sin que se le diga que es porque ya existe.
+- **Para inscribir a un curso a un estudiante que ya existe (creado por otro docente):** no hace falta crearlo ni cargar ningún listado nuevo — como el estudiante es una cuenta única y global (US26), cualquier Tutor lo busca y lo asigna directamente desde "Asignar estudiantes" (US11), donde el selector muestra a todos los estudiantes de la plataforma.
+
+**Pendiente:** el docente dijo que lo piensa y decide mañana si quiere que el formulario manual (US06) tenga la misma verificación de duplicado por nombre+apellido que ya tiene la carga masiva (mostrando el estudiante existente en vez de un error genérico) — no se creó ninguna historia nueva en `Backlog.md` todavía, queda solo documentado aquí para no perder el análisis.
+
+
+Actualización anterior — 2026-09-19 — **Se descarta `listado_1.xls` como origen de los estudiantes cargados actualmente; se detecta una baja sin explicar de 184 a 115 estudiantes; se propone US32 (inventario de Grupos).**
+
+El docente corrió `scripts/borrar-listado-1.ts` en modo simulación: de los 229 nombres de `listado_1.xls`, solo 2 coinciden con estudiantes reales en la plataforma, y ambos tienen inscripción real (no se borrarían sin `--forzar-todos`). Esto confirma la sospecha ya anotada: `listado_1.xls` nunca llegó a guardarse como carga masiva (por el encabezado con doble espacio que en su momento no se reconocía) — no es la fuente de los estudiantes de prueba que el docente quiere limpiar.
+
+El docente volvió a correr `scripts/listar-estudiantes.ts` y el nuevo total es **115 estudiantes**, frente a los 184 documentados el 18/09 — una baja de 69 registros sin que se haya ejecutado ningún `--confirmar` desde ningún script de esta sesión. El grupo que ya no aparece es el que tenía una marca de tiempo distinta (creado entre las 10:57 y 11:09 del 16/09); el grupo que sí sigue (113 registros, creados entre las 03:06 y 03:10 del 16/09) se cruzó contra los nombres reales de ambos archivos usando la misma lógica de `dividirNombreApellido`/`normalizarTexto`, y resultó ser, casi en su totalidad (111 de 113, más 2 compartidos con `listado_1.xls`), del archivo **`listado_2.xls`** — no de `listado_1.xls`. Se le preguntó al docente qué pasó con los 69 registros que ya no están (si los borró él manualmente u otra causa) — sigue sin respuesta, pendiente de aclarar antes de tocar el grupo de 113 restantes.
+
+**US32 (inventario de Grupos):** a partir de una captura de otro LMS que el docente compartió (pantalla de gestión de estudiantes con pestañas Estudiantes/Profesores/Grupos/Clases y carga manual/CSV/Excel/PDF), se conversó qué implicaría un inventario de Grupos propio en esta plataforma. Revisando el código real se confirmó que `grado` hoy es solo un campo de texto libre en `Users`, sin listado ni gestión propia, y que los 113 estudiantes actuales tienen `grado` vacío porque la persistencia de ese campo (`lib/actions/bulk-import-students.ts`) se agregó el 16/09/2026 después de esa carga — no es un error nuevo, solo un dato pendiente de completarse en una carga futura. El docente pidió dejarlo anotado: se agregó **US32** a `Backlog.md` (sección "Propuesto / por planificar"), sin construir todavía.
+
+**Pendiente:**
+- Confirmar con el docente qué pasó con los 69 estudiantes que ya no aparecen, antes de decidir qué hacer con los 113 restantes de `listado_2.xls`.
+- Una vez aclarado eso, identificar con el docente cuáles de esos 113 son realmente "primer ejemplo" a borrar y con qué criterio (solo los de 0 actividad, o todos).
+- US32 (inventario de Grupos) queda sin estimar ni priorizar, a la espera de que el docente decida si entra en un próximo sprint.
+- Sigue pendiente correr `npx vitest run` completo (documentado el 17/09) y que el docente detalle qué no lo convenció de "agregar y quitar estudiantes" (documentado el 18/09).
+
+
+Actualización anterior — 2026-09-18 — **Script listo para borrar definitivamente a los estudiantes del primer listado de prueba de carga masiva (`listado_1.xls`); pendiente que el docente lo corra.**
+
+El docente subió `listado_1.xls` (archivo real del sistema SAE del colegio, 8 grupos, 229 estudiantes) para identificar cuáles quedaron en la plataforma desde su primera prueba de la carga masiva (US29) y ya no necesita, confirmando explícitamente: "bórralos todos, estos archivos los puedo reemplazar en cualquier momento" — sin importar que 71 de esos 229 nombres también aparezcan en un listado posterior (`listado_2.xls`, 182 estudiantes, con anotaciones de "ALERTA").
+
+**Se creó `scripts/borrar-listado-1.ts`** (no se pudo consultar la base de datos real desde el puente a la máquina del docente por falta de salida de red — el motor de Prisma tampoco corre ahí por estar compilado para Windows — así que el cruce se hizo trayendo el Excel a esta sesión, parseándolo con la misma lógica de `dividirNombreApellido`/`normalizarTexto` de `lib/parse-student-file.ts`, y embebiendo los 229 nombres ya normalizados en el script para que el propio docente lo corra donde sí hay acceso real). El script:
+- Por defecto solo simula (dry run): muestra cuántas coincidencias encontró y la lista completa, sin borrar nada.
+- Separa aparte a cualquier coincidencia que tenga inscripciones o vistas de contenido reales (actividad real) y NO la borra salvo que se pase `--forzar-todos` — última red de seguridad ante un posible falso positivo en el cruce de nombres.
+- Al confirmar con `--confirmar`, borra tanto la fila en `Users` como la cuenta correspondiente en Supabase Auth (`supabaseAdmin.auth.admin.deleteUser`), y de paso cualquier `CourseUsers`/`ContentViews` asociado (no debería haber, ya que se espera que sean cuentas sin uso).
+
+**Pendiente:** el docente va a correr el script (primero sin `--confirmar` para revisar la lista, y compartirla antes de confirmar) — quedó para mañana, hoy se deja así. Sin cambios de código de producción en esta entrada, solo el script de limpieza puntual.
+
+
+Actualización anterior — 2026-09-18 — **El docente marca "agregar y quitar estudiantes de un curso" para revisión posterior: no quedó conforme con el resultado actual.**
+
+Sin más detalle todavía sobre qué específicamente no lo convence, el docente indicó explícitamente que este punto debe revisarse más adelante. Queda documentado para no perderlo. Las funciones ya construidas hasta ahora (asignar estudiantes por curso agrupado por grado, US11; quitar/desinscribir estudiantes de un curso con doble confirmación) siguen probadas y en pie por ahora — es un llamado a revisar la experiencia/resultado, no una falla puntual reportada.
+
+**Pendiente:** que el docente detalle qué no lo satisface de "agregar y quitar estudiantes" (la interfaz, el flujo de confirmación, el agrupamiento por grado, algo del comportamiento, u otra cosa) para poder trabajarlo en una próxima sesión.
+
+
+Actualización anterior — 2026-09-17 — **Se confirma que "Desactivar" (US20) ya cubre el caso de matrícula cancelada, y se corrige un vacío: los estudiantes desactivados seguían apareciendo como candidatos en "Asignar estudiantes".**
 
 El docente preguntó cómo controlar qué estudiantes de una carga masiva (US29) terminan realmente creados y/o inscritos, ante el caso de subir un listado sin querer agregar a todos. Se le explicó, revisando el código real, que esto ya está cubierto **antes** de confirmar la carga: en el paso de revisión (`components/bulk-import-students-form.tsx`) cada fila tiene un checkbox `incluido` (y hay botones "Seleccionar todos"/"Deseleccionar todos" por grupo detectado), y `confirmarCarga()` solo envía al servidor las filas marcadas; además el selector de curso incluye la opción "Sin inscribir (crear solamente)" para crear estudiantes sin inscribirlos en ningún curso. No hace falta ningún cambio de código para ese caso.
 
@@ -14,10 +87,9 @@ De ahí surgió una necesidad real y distinta: **estudiantes que cancelan matrí
 
 En ningún caso se toca el historial del estudiante ni sus inscripciones ya existentes en otros cursos — solo deja de ofrecerse como candidato nuevo mientras esté desactivado. Se revisó además `app/tutor/estudiantes/page.tsx`: ya muestra un badge de `estado` por estudiante, así que el Tutor puede ver cuáles están inactivos sin cambios adicionales.
 
-**Verificación en la máquina del docente:** `npx tsc --noEmit`: 0 errores (ya no aparece el error antes pendiente sobre el campo `grado` en `lib/supabase/sync-user.ts` — esto sugiere que la migración `20260916190000_add_grado_a_estudiante` y la regeneración del cliente de Prisma ya se aplicaron, pero no se pudo confirmar directamente el estado de la base de datos desde esta sesión por una restricción de red al ejecutar `npx prisma migrate status`; conviene que el docente lo confirme). `npx eslint` limpio en los dos archivos tocados. `npx vitest run lib/actions/assign-students.test.ts`: 6/6 pruebas existentes pasan sin ningún cambio (no había ninguna que fijara la forma exacta del `where` de `prisma.users.findMany`). La suite completa (`npx vitest run`) no llegó a terminar dentro del tiempo disponible en esta sesión por el tamaño ya alcanzado por el proyecto; dado que el cambio es acotado a estas dos consultas y su prueba directa pasa sin modificaciones, el riesgo de regresión es bajo, pero queda pendiente correrla completa cuando el docente pueda.
+**Verificación en la máquina del docente:** `npx tsc --noEmit`: 0 errores (el docente confirmó que ya corrió `npx prisma migrate dev` para aplicar la migración `20260916190000_add_grado_a_estudiante` — coincide con que el error ya no aparece). `npx eslint` limpio en los dos archivos tocados. `npx vitest run lib/actions/assign-students.test.ts`: 6/6 pruebas existentes pasan sin ningún cambio (no había ninguna que fijara la forma exacta del `where` de `prisma.users.findMany`). La suite completa (`npx vitest run`) no llegó a terminar dentro del tiempo disponible en esta sesión por el tamaño ya alcanzado por el proyecto; dado que el cambio es acotado a estas dos consultas y su prueba directa pasa sin modificaciones, el riesgo de regresión es bajo, pero queda pendiente correrla completa cuando el docente pueda.
 
 **Pendiente:**
-- Confirmar si la migración de `grado` ya quedó aplicada en la base de datos real (ver nota de verificación arriba).
 - Correr `npx vitest run` completo cuando se pueda, para confirmar sin dudas que no hay regresiones en el resto del proyecto.
 - Sigue sin hacerse commit ni push de este cambio — es trabajo nuevo, separado del commit `f94fdb2` ya subido a `main`.
 - Sigue pendiente probar en navegador real "quitar estudiantes de un curso" (US11, entrada de abajo).
