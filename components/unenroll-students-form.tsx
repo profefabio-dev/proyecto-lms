@@ -143,13 +143,13 @@ export function UnenrollStudentsForm({
       )}
 
       {estado && !estado.success && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {estado.error}
         </p>
       )}
 
       {estado && estado.success && (
-        <p className="text-sm text-green-700">
+        <p className="text-sm text-success">
           {estado.quitados} estudiante(s) quitado(s) del curso.
         </p>
       )}

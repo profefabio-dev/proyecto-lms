@@ -22,10 +22,10 @@ export type EstadoCursoEstudiante = {
 export function obtenerEstadoEstudiante(estado: EstadoCurso): EstadoCursoEstudiante {
   switch (estado) {
     case "PUBLICADO":
-      return { label: "Activo", className: "bg-green-100 text-green-800" };
+      return { label: "Activo", className: "bg-success-soft text-success" };
     case "ARCHIVADO":
-      return { label: "Finalizado", className: "bg-gray-200 text-gray-700" };
+      return { label: "Finalizado", className: "bg-muted text-muted-foreground" };
     case "BORRADOR":
-      return { label: "Borrador", className: "bg-yellow-100 text-yellow-800" };
+      return { label: "Borrador", className: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400" };
   }
 }

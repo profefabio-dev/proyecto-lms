@@ -55,7 +55,7 @@ export function CourseStatusSelect({
         {enviando ? "Guardando..." : "Cambiar estado"}
       </Button>
       {estado && !estado.success && (
-        <p role="alert" className="w-full text-xs text-red-600">
+        <p role="alert" className="w-full text-xs text-destructive">
           {estado.error}
         </p>
       )}

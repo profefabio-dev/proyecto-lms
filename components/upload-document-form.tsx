@@ -41,13 +41,13 @@ export function UploadDocumentForm({ courseId }: { courseId: string }) {
       </Button>
 
       {estado && !estado.success && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {estado.error}
         </p>
       )}
 
       {estado && estado.success && (
-        <p className="text-sm text-green-700">Documento publicado correctamente.</p>
+        <p className="text-sm text-success">Documento publicado correctamente.</p>
       )}
     </form>
   );

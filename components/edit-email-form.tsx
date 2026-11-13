@@ -69,12 +69,12 @@ export function EditEmailForm({
       <button
         type="button"
         onClick={() => setEditando(false)}
-        className="text-xs text-gray-500 underline"
+        className="text-xs text-muted-foreground underline"
       >
         Cancelar
       </button>
       {estado && !estado.success && (
-        <p className="w-full text-xs text-red-600" role="alert">
+        <p className="w-full text-xs text-destructive" role="alert">
           {estado.error}
         </p>
       )}

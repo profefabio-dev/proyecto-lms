@@ -485,7 +485,7 @@ export function BulkImportStudentsForm({
         )}
 
         {errorConfirmar && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-destructive">
             {errorConfirmar}
           </p>
         )}
@@ -524,7 +524,7 @@ export function BulkImportStudentsForm({
         {previsualizando ? "Leyendo archivo..." : "Ver vista previa"}
       </Button>
       {previsualizacion && !previsualizacion.success && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {previsualizacion.error}
         </p>
       )}

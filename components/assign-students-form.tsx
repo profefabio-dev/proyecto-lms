@@ -126,13 +126,13 @@ export function AssignStudentsForm({
       </Button>
 
       {estado && !estado.success && (
-        <p role="alert" className="text-red-600 text-sm">
+        <p role="alert" className="text-destructive text-sm">
           {estado.error}
         </p>
       )}
 
       {estado && estado.success && (
-        <p className="text-green-700 text-sm">
+        <p className="text-success text-sm">
           {estado.asignados} estudiante(s) asignado(s) correctamente.
         </p>
       )}

@@ -7,7 +7,7 @@ export function YoutubeEmbed({ url, titulo }: { url: string; titulo: string }) {
     // No debería pasar (la URL ya se valida al crear el contenido), pero
     // si el dato quedó corrupto no queremos tronar la página del curso.
     return (
-      <p className="text-sm text-red-600">
+      <p className="text-sm text-destructive">
         No se pudo cargar este video: el enlace guardado no es válido.
       </p>
     );

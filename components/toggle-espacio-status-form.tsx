@@ -42,7 +42,7 @@ export function ToggleEspacioStatusForm({
             : "Reactivar"}
       </Button>
       {estado && !estado.success && (
-        <span className="text-xs text-red-600" role="alert">
+        <span className="text-xs text-destructive" role="alert">
           {estado.error}
         </span>
       )}

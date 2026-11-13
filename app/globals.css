@@ -45,6 +45,12 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  /* Paquete 1 de interfaz (2026-11-12): los mensajes de éxito usaban verdes
+     fijos de Tailwind (`text-green-700`, `bg-green-50`...) que no cambiaban
+     en modo oscuro. Ahora salen de estos tres tokens. */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-border: var(--success-border);
   --color-duo-green: var(--duo-green);
   --color-duo-green-shadow: var(--duo-green-shadow);
   --color-duo-orange: var(--duo-orange);
@@ -93,6 +99,12 @@
   --chart-4: oklch(0.75 0.15 80);
   --chart-5: oklch(0.6 0.2 25);
   --radius: 0.75rem;
+
+  /* Éxito (texto / fondo suave / borde) — contraste de texto sobre el fondo
+     suave por encima de 4.5:1. */
+  --success: oklch(0.42 0.11 150);
+  --success-soft: oklch(0.97 0.035 150);
+  --success-border: oklch(0.88 0.07 150);
 
   /* Menú lateral oscuro — pase de diseño de 2026-09-08, a pedido del
      docente ("el look general se siente básico", con Canvas LMS como
@@ -159,6 +171,9 @@
   --chart-3: oklch(0.75 0.13 150);
   --chart-4: oklch(0.8 0.13 80);
   --chart-5: oklch(0.65 0.18 25);
+  --success: oklch(0.8 0.14 150);
+  --success-soft: oklch(0.27 0.05 150);
+  --success-border: oklch(0.4 0.08 150);
   --sidebar: oklch(0.19 0.013 264);
   --sidebar-foreground: oklch(0.96 0.006 264);
   --sidebar-primary: oklch(0.68 0.17 264);

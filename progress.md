@@ -2,7 +2,19 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-12 — **Revisión de seguridad: se corrigen tres problemas graves (tablas abiertas a internet, contraseñas de scripts en el repositorio público y Next.js con vulnerabilidad crítica). Base de datos migrada a una cuenta nueva de Supabase.**
+Última actualización: 2026-11-12 — **Interfaz, paquete 1 (base visual y estados): raíz sin plantilla, pantallas de no encontrada / error / carga, y colores fijos pasados al tema.**
+
+Tras la revisión general de interfaz de hoy (pedido del docente: "se ve poco profesional"), se hizo el primer paquete de tres:
+- **Página raíz `/`:** era la plantilla de ejemplo de Next.js (logo, "Templates", "Deploy"). Ahora redirige a `/dashboard`, que manda a cada rol a su panel; sin sesión, el middleware lleva a `/login`. Se borró `public/` (los cinco SVG de la plantilla, ya sin uso).
+- **Pantallas de estado nuevas:** `app/not-found.tsx` (404 con salida al inicio), `app/error.tsx` (error inesperado con "Intentar de nuevo"; no muestra `error.message` al usuario), `app/global-error.tsx` (si falla el layout raíz) y `app/loading.tsx` (indicador de carga que respeta `prefers-reduced-motion`). Las tres primeras comparten `components/status-screen.tsx`, con el mismo fondo y rótulo que el login. En esta versión de Next.js el reintento se llama `retry`, no `reset` (ver `node_modules/next/dist/docs`).
+- **Colores al tema:** 55 usos de colores fijos de Tailwind en 25 archivos pasaron a tokens: `text-red-600` → `text-destructive`; verdes de éxito → tres tokens nuevos (`--success`, `--success-soft`, `--success-border`, con versión oscura en `app/globals.css`); `text-gray-500` → `text-muted-foreground`; `text-blue-600` → `text-primary`. Los estados de curso de `lib/course-status.ts` (y su prueba) ahora usan los mismos tokens. Se dejó el ámbar de "Borrador" y del progreso, que es semántico (advertencia).
+
+**Verificación:** `vitest run` 401/401; `eslint` 0 errores; `next build --webpack` correcto. En pantalla (escritorio y 375 px, sin desborde): la página 404 se ve y responde con código 404 y enlace a `/dashboard`, y `/` redirige a `/login`. **No verificado en pantalla:** `error.tsx`, `global-error.tsx`, `loading.tsx`, el modo oscuro y los mensajes de éxito/error de los formularios (están detrás del inicio de sesión).
+
+**Siguen pendientes los paquetes 2 (celular: controles de 44 px y tablas que no se corten) y 3 (pulido de los paneles de Tutor, Admin y Estudiante).**
+
+
+Actualización anterior — 2026-11-12 — **Revisión de seguridad: se corrigen tres problemas graves (tablas abiertas a internet, contraseñas de scripts en el repositorio público y Next.js con vulnerabilidad crítica). Base de datos migrada a una cuenta nueva de Supabase.**
 
 **Corregido:**
 - **RLS en `espacios`, `secciones` y `_prisma_migrations`** (migración `20261112200000_rls_espacios_secciones`, ya aplicada en el proyecto nuevo). Esas tablas se crearon después de la migración que activó RLS y se podían leer y modificar desde internet con la clave pública. Verificado: la clave pública ahora ve 0 filas en las nueve tablas. La aplicación no se ve afectada (usa Prisma y service_role).
