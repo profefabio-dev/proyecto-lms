@@ -4,6 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Paquete 2 de interfaz (2026-11-12): "touch" aplica en pantallas táctiles
+   (`pointer: coarse`: celulares y tablets) y también en ventanas angostas
+   (< 640 px), para agrandar las zonas de toque sin cambiar la densidad de
+   escritorio. Uso: `touch:h-11`. */
+@custom-variant touch (@media (pointer: coarse), (max-width: 639px));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -202,6 +208,25 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Zonas de toque de al menos 44 px en pantallas táctiles / angostas para
+     los controles de formulario que no pasan por un componente (hay unos 20
+     formularios con <select>, <input> y <textarea> sueltos). Es `min-height`
+     a propósito: gana sobre cualquier `h-*` ya puesto, sin tocar cada
+     archivo. Los checkbox/radio se agrandan a 20 px (su fila completa ya es
+     una etiqueta clicable). Los <input type="file"> se dejan: su botón
+     interno ya tiene su propio tamaño. */
+  @media (pointer: coarse), (max-width: 639px) {
+    select,
+    textarea,
+    input:not([type="checkbox"], [type="radio"], [type="file"], [type="hidden"]) {
+      min-height: 2.75rem;
+    }
+    input[type="checkbox"],
+    input[type="radio"] {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
   }
   /* Segunda vuelta de rediseño visual (2026-09-09): jerarquía tipográfica
      consistente en toda la plataforma (Admin, Tutor, Estudiante) — todos

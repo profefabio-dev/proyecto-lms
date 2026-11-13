@@ -70,12 +70,12 @@ export function UnenrollStudentsForm({
       <ul className="max-h-72 space-y-0.5 overflow-y-auto text-sm">
         {estudiantes.map((estudiante) => (
           <li key={estudiante.id}>
-            <label className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
+            <label className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted touch:py-2.5">
               <input
                 type="checkbox"
                 checked={seleccionados.has(estudiante.id)}
                 onChange={() => alternar(estudiante.id)}
-                className="size-4 shrink-0 accent-primary"
+                className="size-4 shrink-0 accent-primary touch:size-5"
               />
               <span className="truncate">
                 {estudiante.nombre} {estudiante.apellido}{" "}

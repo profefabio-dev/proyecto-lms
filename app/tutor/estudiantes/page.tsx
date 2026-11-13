@@ -62,8 +62,8 @@ export default async function EstudiantesPage() {
 
         <BulkImportStudentsForm cursos={cursos} />
 
-        <div className="overflow-hidden rounded-lg border">
-          <table className="w-full text-sm border-collapse">
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-[36rem] text-sm border-collapse">
             <thead>
               <tr className="text-left border-b bg-muted/50">
                 <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre</th>

@@ -102,8 +102,8 @@ export default async function UsuariosPage({
           })}
         </nav>
 
-        <div className="overflow-hidden rounded-lg border">
-          <table className="w-full border-collapse text-sm">
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-[36rem] border-collapse text-sm">
             <thead>
               <tr className="border-b bg-muted/50 text-left">
                 <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre</th>

@@ -2,7 +2,18 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-12 — **Interfaz, paquete 1 (base visual y estados): raíz sin plantilla, pantallas de no encontrada / error / carga, y colores fijos pasados al tema.**
+Última actualización: 2026-11-12 — **Interfaz, paquete 2 (celular): el menú lateral ya no arranca abierto sobre el contenido, controles táctiles de 44 px y tablas con desplazamiento horizontal.**
+
+- **Error real corregido — menú abierto en celular.** `AppShell` tenía un solo estado (`abierto`, iniciado en `true`) para escritorio y celular, así que en un teléfono el menú aparecía desplegado ENCIMA del contenido al cargar cada página — y como cada página monta su propio `AppShell`, **reaparecía abierto en cada navegación**. Ahora son dos estados: `expandido` (escritorio, arranca expandido como siempre) y `movilAbierto` (celular, arranca cerrado y se cierra solo al navegar). El botón de hamburguesa decide cuál alternar según el ancho de la ventana; su etiqueta accesible pasó a "Mostrar u ocultar el menú".
+- **Zonas de toque.** Nueva variante de Tailwind `touch:` en `app/globals.css` (pantallas `pointer: coarse` o ventanas de menos de 640 px). `Button`: default 44 px, lg 48, sm 40, xs 36 (iconos igual). Los `<input>`, `<select>` y `<textarea>` sueltos (unos 20 formularios) y el componente `Input` suben a 44 px con una regla global de `min-height`, sin editar cada archivo; los checkbox a 20 px y sus filas a ~40 px; enlaces del menú 44 px. En escritorio nada cambia.
+- **Tablas.** Las de Admin (usuarios, tutores), Tutor (estudiantes), Superadmin y la carga masiva (resumen y vista previa) usaban `overflow-hidden`, que cortaba columnas en pantallas angostas; ahora tienen `overflow-x-auto` y un ancho mínimo, así que se desplazan en vez de aplastarse.
+
+**Verificación:** `vitest run` 401/401, `eslint` 0 errores, `next build --webpack` correcto. Con una página de demostración temporal (ya borrada) en 375 px: menú cerrado al cargar, se abre con su fondo oscurecido; botones 44/40/36 px, icono 44×44, campos y selector 44 px, casilla 20 px, enlaces del menú 44 px; la página no desborda y la tabla se desplaza (341 de 576 px). En escritorio: menú expandido al cargar, se colapsa a riel con un clic y los controles siguen en su tamaño compacto. **No verificado:** las pantallas reales con sesión iniciada (Tutor, Admin, Estudiante) ni el modo táctil real (el emulador usa clics de ratón; `pointer: coarse` se comprobó solo por el ancho).
+
+**Detectado y dejado para el paquete 3:** el botón "Cerrar sesión" sobre el menú oscuro se ve casi blanco (variante `outline`) y, con el menú colapsado, queda como un cuadro blanco sin icono visible.
+
+
+Actualización anterior — 2026-11-12 — **Interfaz, paquete 1 (base visual y estados): raíz sin plantilla, pantallas de no encontrada / error / carga, y colores fijos pasados al tema.**
 
 Tras la revisión general de interfaz de hoy (pedido del docente: "se ve poco profesional"), se hizo el primer paquete de tres:
 - **Página raíz `/`:** era la plantilla de ejemplo de Next.js (logo, "Templates", "Deploy"). Ahora redirige a `/dashboard`, que manda a cada rol a su panel; sin sesión, el middleware lleva a `/login`. Se borró `public/` (los cinco SVG de la plantilla, ya sin uso).

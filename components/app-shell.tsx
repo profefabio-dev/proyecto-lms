@@ -74,22 +74,46 @@ export function AppShell({
   breadcrumbs?: BreadcrumbItem[];
   children: React.ReactNode;
 }) {
-  const [abierto, setAbierto] = useState(true);
+  // Paquete 2 de interfaz (2026-11-12): antes había un solo estado
+  // (`abierto`, iniciado en true) para los dos modos. En celular eso hacía
+  // que el menú arrancara desplegado ENCIMA del contenido en cada página —
+  // y como cada página monta su propio AppShell, reaparecía abierto en cada
+  // navegación. Ahora son dos estados independientes:
+  //  - `expandido` (solo escritorio, md+): menú ancho o riel de íconos;
+  //    arranca expandido, como siempre.
+  //  - `movilAbierto` (solo celular, < md): panel superpuesto; arranca
+  //    cerrado y se cierra solo al navegar (la página siguiente lo monta
+  //    de nuevo cerrado).
+  const [expandido, setExpandido] = useState(true);
+  const [movilAbierto, setMovilAbierto] = useState(false);
+
+  function alternarMenu() {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      setExpandido((v) => !v);
+    } else {
+      setMovilAbierto((v) => !v);
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
       {/* Fondo oscurecido: solo tiene efecto en pantallas angostas (md:hidden) —
           ahí el menú se superpone al contenido en vez de correrlo. */}
-      {abierto && (
+      {movilAbierto && (
         <button
           type="button"
           aria-label="Cerrar menú"
           className="fixed inset-0 z-40 bg-black/40 md:hidden"
-          onClick={() => setAbierto(false)}
+          onClick={() => setMovilAbierto(false)}
         />
       )}
 
-      <Sidebar usuario={usuario} abierto={abierto} onCerrar={() => setAbierto(false)} />
+      <Sidebar
+        usuario={usuario}
+        abierto={expandido}
+        movilAbierto={movilAbierto}
+        onCerrar={() => setMovilAbierto(false)}
+      />
 
       {/* Reserva el ancho del menú en pantallas anchas: 16rem expandido,
           4rem (riel de íconos) colapsado. En pantallas angostas queda
@@ -98,7 +122,7 @@ export function AppShell({
         aria-hidden="true"
         className={cn(
           "hidden shrink-0 transition-[width] duration-200 md:block",
-          abierto ? "w-64" : "w-16"
+          expandido ? "w-64" : "w-16"
         )}
       />
 
@@ -106,9 +130,9 @@ export function AppShell({
         <div className="flex min-w-0 items-center gap-3 border-b bg-card px-4 py-3">
           <button
             type="button"
-            onClick={() => setAbierto((v) => !v)}
-            className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-            aria-label={abierto ? "Colapsar menú" : "Expandir menú"}
+            onClick={alternarMenu}
+            className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground touch:p-3"
+            aria-label="Mostrar u ocultar el menú"
           >
             <Menu className="size-5" aria-hidden="true" />
           </button>
@@ -131,10 +155,14 @@ export function AppShell({
 function Sidebar({
   usuario,
   abierto,
+  movilAbierto,
   onCerrar,
 }: {
   usuario: Usuario;
+  /** Escritorio: menú expandido (true) o riel de íconos (false). */
   abierto: boolean;
+  /** Celular: panel superpuesto visible (true) u oculto (false). */
+  movilAbierto: boolean;
   onCerrar: () => void;
 }) {
   const pathname = usePathname();
@@ -151,7 +179,8 @@ function Sidebar({
         // que este panel se viera igual que el resto de la página clara.
         "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200",
         "w-64 md:translate-x-0",
-        abierto ? "translate-x-0 md:w-64" : "-translate-x-full md:w-16"
+        movilAbierto ? "translate-x-0" : "-translate-x-full",
+        abierto ? "md:w-64" : "md:w-16"
       )}
     >
       <div
@@ -194,7 +223,7 @@ function Sidebar({
         <button
           type="button"
           onClick={onCerrar}
-          className="shrink-0 rounded-md p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:hidden"
+          className="shrink-0 rounded-md p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground touch:p-2.5 md:hidden"
           aria-label="Cerrar menú"
         >
           <X className="size-5" aria-hidden="true" />
@@ -217,7 +246,7 @@ function Sidebar({
               href={enlace.href}
               title={!abierto ? enlace.label : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors touch:py-3",
                 !abierto && "md:justify-center md:px-2",
                 activo
                   ? "bg-sidebar-primary/15 text-sidebar-primary"

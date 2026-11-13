@@ -211,8 +211,8 @@ export function BulkImportStudentsForm({
         </p>
 
         {resultadoFinal.creados.length > 0 && (
-          <div className="overflow-hidden rounded-md border">
-            <table className="w-full border-collapse text-xs">
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full min-w-[28rem] border-collapse text-xs">
               <thead>
                 <tr className="border-b bg-muted/50 text-left">
                   <th className="py-1.5 pl-3 pr-2">Nombre</th>
@@ -390,7 +390,8 @@ export function BulkImportStudentsForm({
                   </Button>
                 </summary>
 
-                <table className="w-full border-collapse text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[22rem] border-collapse text-sm">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
                       <th className="py-1.5 pl-2 pr-2"></th>
@@ -462,6 +463,7 @@ export function BulkImportStudentsForm({
                     })}
                   </tbody>
                 </table>
+                </div>
               </details>
             );
           })}
