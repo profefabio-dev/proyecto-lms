@@ -1,8 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import {
+  BookOpen,
+  FileText,
+  GraduationCap,
+  ShieldCheck,
+  UserCog,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Rol } from "@prisma/client";
 
@@ -55,12 +65,12 @@ export default async function AdminPage() {
       prisma.contents.count({ where: { course: { tutor: { espacioId } } } }),
     ]);
 
-  const indicadores = [
-    { etiqueta: "Administradores", valor: administradores },
-    { etiqueta: "Tutores", valor: tutores },
-    { etiqueta: "Estudiantes", valor: estudiantesInscritos.length },
-    { etiqueta: "Cursos activos", valor: cursosActivos },
-    { etiqueta: "Contenidos totales", valor: totalContenidos },
+  const indicadores: { etiqueta: string; valor: number; icon: LucideIcon }[] = [
+    { etiqueta: "Administradores", valor: administradores, icon: ShieldCheck },
+    { etiqueta: "Tutores", valor: tutores, icon: UserCog },
+    { etiqueta: "Estudiantes", valor: estudiantesInscritos.length, icon: GraduationCap },
+    { etiqueta: "Cursos activos", valor: cursosActivos, icon: BookOpen },
+    { etiqueta: "Contenidos totales", valor: totalContenidos, icon: FileText },
   ];
 
   return (
@@ -72,21 +82,29 @@ export default async function AdminPage() {
           className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
           aria-label="Indicadores generales"
         >
-          {indicadores.map((indicador) => (
-            <Card key={indicador.etiqueta}>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{indicador.etiqueta}</p>
-                <p className="text-2xl font-bold">{indicador.valor}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {indicadores.map((indicador) => {
+            const Icono = indicador.icon;
+            return (
+              <Card key={indicador.etiqueta}>
+                <CardContent>
+                  <div className="flex items-center gap-2">
+                    <Icono className="size-4 text-primary" aria-hidden="true" />
+                    <p className="text-sm text-muted-foreground">{indicador.etiqueta}</p>
+                  </div>
+                  <p className="text-2xl font-bold">{indicador.valor}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </section>
 
-        <div className="flex flex-col gap-2">
-          <Link href="/admin/tutores" className="font-medium text-primary hover:underline">
+        <div className="flex flex-wrap gap-3">
+          <Link href="/admin/tutores" className={buttonVariants({ variant: "outline" })}>
+            <UserCog aria-hidden="true" />
             Gestionar tutores
           </Link>
-          <Link href="/admin/usuarios" className="font-medium text-primary hover:underline">
+          <Link href="/admin/usuarios" className={buttonVariants({ variant: "outline" })}>
+            <Users aria-hidden="true" />
             Ver todos los usuarios
           </Link>
         </div>

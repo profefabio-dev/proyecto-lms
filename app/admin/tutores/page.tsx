@@ -7,6 +7,7 @@ import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { ResetPasswordForm } from "@/components/reset-password-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { etiquetaEstado } from "@/lib/etiquetas";
 import { Rol } from "@prisma/client";
 
 export default async function TutoresPage() {
@@ -65,10 +66,10 @@ export default async function TutoresPage() {
                 {tutores.map((tutor) => (
                   <tr key={tutor.id} className="border-b last:border-b-0 hover:bg-muted/30">
                     <td className="py-2 pr-4 pl-4">{tutor.nombre} {tutor.apellido}</td>
-                    <td className="py-2 pr-4 break-all">{tutor.email}</td>
+                    <td className="min-w-[13rem] py-2 pr-4 break-all">{tutor.email}</td>
                     <td className="py-2 pr-4">
                       <Badge variant={tutor.estado === "ACTIVO" ? "success" : "secondary"}>
-                        {tutor.estado}
+                        {etiquetaEstado(tutor.estado)}
                       </Badge>
                     </td>
                     <td className="py-2 pr-4">

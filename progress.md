@@ -2,7 +2,16 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-12 — **Interfaz, paquete 2 (celular): el menú lateral ya no arranca abierto sobre el contenido, controles táctiles de 44 px y tablas con desplazamiento horizontal.**
+Última actualización: 2026-11-12 — **Interfaz, paquete 3 (parcial): botón de cerrar sesión legible, rol y estado con texto legible, panel de Administrador con iconos y accesos rápidos.**
+
+- `components/logout-button.tsx`: usa los colores del menú oscuro (antes casi blanco sobre blanco, y un cuadro vacío con el menú colapsado). Verificado en pantalla.
+- `lib/etiquetas.ts` (nuevo): "Estudiante"/"Activo"/"Desactivado" en vez de "ESTUDIANTE"/"ACTIVO"/"INACTIVO" en las tablas de usuarios, tutores y estudiantes; el rol de `/admin/usuarios` pasa a insignia. Columna de correo con ancho mínimo (se partía letra por letra). Verificado en pantalla como Administrador.
+- Panel de Administrador: iconos en las cinco tarjetas y accesos rápidos como botones (igual que el de Tutor, que también estrena los botones; **ese no se vio en pantalla**).
+
+**Verificación:** vitest 401/401, eslint 0 errores, build correcto. **Sin revisar en pantalla:** paneles y detalle de curso de Tutor y de Estudiante (solo se inició sesión como Administrador), y el flujo de US34 con un Excel real. **Pendiente del paquete 3:** pulido de las vistas de Tutor y Estudiante.
+
+
+Actualización anterior — 2026-11-12 — **Interfaz, paquete 2 (celular): el menú lateral ya no arranca abierto sobre el contenido, controles táctiles de 44 px y tablas con desplazamiento horizontal.**
 
 - **Error real corregido — menú abierto en celular.** `AppShell` tenía un solo estado (`abierto`, iniciado en `true`) para escritorio y celular, así que en un teléfono el menú aparecía desplegado ENCIMA del contenido al cargar cada página — y como cada página monta su propio `AppShell`, **reaparecía abierto en cada navegación**. Ahora son dos estados: `expandido` (escritorio, arranca expandido como siempre) y `movilAbierto` (celular, arranca cerrado y se cierra solo al navegar). El botón de hamburguesa decide cuál alternar según el ancho de la ventana; su etiqueta accesible pasó a "Mostrar u ocultar el menú".
 - **Zonas de toque.** Nueva variante de Tailwind `touch:` en `app/globals.css` (pantallas `pointer: coarse` o ventanas de menos de 640 px). `Button`: default 44 px, lg 48, sm 40, xs 36 (iconos igual). Los `<input>`, `<select>` y `<textarea>` sueltos (unos 20 formularios) y el componente `Input` suben a 44 px con una regla global de `min-height`, sin editar cada archivo; los checkbox a 20 px y sus filas a ~40 px; enlaces del menú 44 px. En escritorio nada cambia.
