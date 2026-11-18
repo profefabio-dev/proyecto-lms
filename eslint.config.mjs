@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".claude/**",
+    ".codex/**",
   ]),
   // Los archivos de prueba mockean Prisma/Supabase con "as any" a propósito
   // (convención documentada en progress.md) — sin esto, `npm run lint` falla

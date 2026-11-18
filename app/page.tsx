@@ -17,11 +17,11 @@ import {
   FileCheck2,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { cn } from "@/lib/utils";
 
 // Cursos de muestra si la base de datos aún no tiene cursos publicados
 const CURSOS_DESTACADOS_DEFAULT = [
@@ -29,7 +29,7 @@ const CURSOS_DESTACADOS_DEFAULT = [
     id: "demo-1",
     titulo: "Pensamiento Computacional y Algoritmos",
     descripcion:
-      "Desarrolla la lógica de programación mediante resolución de problemas, diagramas de flujo y estructuras básicas de código.",
+      "Desarrolla la lógica mediante resolución de problemas, diagramas de flujo y estructuras básicas de código.",
     tag: "Fundamentos",
     nivel: "Iniciación",
     modulos: "8 Módulos",
@@ -39,7 +39,7 @@ const CURSOS_DESTACADOS_DEFAULT = [
     id: "demo-2",
     titulo: "Desarrollo Web Moderno con React y Next.js",
     descripcion:
-      "Aprende a construir aplicaciones web completas, diseño responsivo, componentes interactivos y despliegue en la nube.",
+      "Aprende a construir aplicaciones web completas, diseño responsivo y componentes interactivos.",
     tag: "Desarrollo Web",
     nivel: "Intermedio",
     modulos: "12 Módulos",
@@ -49,7 +49,7 @@ const CURSOS_DESTACADOS_DEFAULT = [
     id: "demo-3",
     titulo: "Bases de Datos y Gestión de la Información",
     descripcion:
-      "Diseña esquemas relacionales, consultas SQL optimizadas y conexión segura con aplicaciones y servicios modernos.",
+      "Diseña esquemas relacionales, consultas estructuradas y conexión segura con aplicaciones modernas.",
     tag: "Datos & Backend",
     nivel: "Intermedio",
     modulos: "6 Módulos",
@@ -59,7 +59,7 @@ const CURSOS_DESTACADOS_DEFAULT = [
     id: "demo-4",
     titulo: "Robótica Educativa, IoT y Automatización",
     descripcion:
-      "Proyectos prácticos integrando sensores, actuadores y microcontroladores para solucionar retos del mundo real.",
+      "Proyectos prácticos integrando sensores, actuadores y microcontroladores para solucionar retos reales.",
     tag: "Tecnología & Hardware",
     nivel: "Práctico",
     modulos: "10 Módulos",
@@ -120,13 +120,13 @@ export default async function Home() {
       <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/85 backdrop-blur-md transition-all">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-105">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-105">
               <GraduationCap className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
               <span className="font-heading text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
                 Plataforma Educativa
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
               </span>
               <span className="text-xs text-muted-foreground font-medium">
                 Prof. Fabio Andrés Aguirre
@@ -151,17 +151,25 @@ export default async function Home() {
 
           <div className="flex items-center gap-3">
             {usuarioAutenticado ? (
-              <Link href="/dashboard" className={cn(buttonVariants(), "gap-2 font-medium")}>
-                  Ir a mi Panel
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+              <Link href="/dashboard" className={cn(buttonVariants(), "gap-2 font-medium min-h-11 touch:min-h-11")}>
+                Ir a mi Panel
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             ) : (
               <>
-                <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "hidden sm:inline-flex")}>Acceso</Link>
-                <Link href="/login" className={cn(buttonVariants(), "gap-2 shadow-sm font-semibold")}>
-                    Ingresar al Campus
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+                <Link
+                  href="/login"
+                  className={cn(buttonVariants({ variant: "ghost" }), "hidden sm:inline-flex min-h-11 touch:min-h-11")}
+                >
+                  Acceso
+                </Link>
+                <Link
+                  href="/login"
+                  className={cn(buttonVariants(), "gap-2 shadow-xs font-semibold min-h-11 touch:min-h-11")}
+                >
+                  Ingresar al Campus
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </>
             )}
           </div>
@@ -188,30 +196,36 @@ export default async function Home() {
 
                 <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12]">
                   Aprende tecnología con{" "}
-                  <span className="bg-gradient-to-r from-primary via-indigo-500 to-sky-500 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-primary via-indigo-500 to-duo-blue bg-clip-text text-transparent">
                     propósito, práctica y seguimiento continuo
                   </span>
                 </h1>
 
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
                   Un campus virtual diseñado para transformar la curiosidad en habilidades reales.
-                  Accede a contenidos interactivos, proyectos aplicados, progreso gamificado y
-                  acompañamiento docente permanente.
+                  Accede a contenidos interactivos, proyectos guiados, progreso gamificado y
+                  acompañamiento docente.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto pt-2">
-                  <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "h-12 px-7 text-base font-semibold shadow-md gap-2")}>
-                      {usuarioAutenticado ? "Entrar al Campus Virtual" : "Comenzar Ahora"}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                  <Link
+                    href="/login"
+                    className={cn(buttonVariants({ size: "lg" }), "h-12 min-h-11 touch:min-h-11 px-7 text-base font-semibold shadow-xs gap-2")}
+                  >
+                    {usuarioAutenticado ? "Entrar al Campus Virtual" : "Comenzar Ahora"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
 
-                  <a href="#cursos" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 px-6 text-base font-medium")}>
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Explorar Cursos
-                    </a>
+                  <a
+                    href="#cursos"
+                    className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 min-h-11 touch:min-h-11 px-6 text-base font-medium")}
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Explorar Cursos
+                  </a>
                 </div>
 
-                {/* Métricas destacadas */}
+                {/* Métricas del entorno */}
                 <div className="grid grid-cols-3 gap-6 pt-6 border-t border-border/60 w-full max-w-lg mt-2">
                   <div>
                     <p className="font-heading text-2xl font-bold text-foreground">100%</p>
@@ -228,19 +242,19 @@ export default async function Home() {
                 </div>
               </div>
 
-              {/* Columna Derecha: Tarjeta interactiva con vista previa visual */}
+              {/* Columna Derecha: Tarjeta interactiva con vista previa visual (Ejemplo) */}
               <div className="lg:col-span-5 relative">
                 <div className="relative mx-auto w-full max-w-md lg:max-w-none">
                   {/* Tarjeta principal flotante */}
                   <div className="rounded-2xl border border-border/80 bg-card/95 p-6 shadow-2xl backdrop-blur-sm transition-all hover:shadow-primary/5">
                     <div className="flex items-center justify-between border-b border-border/60 pb-4 mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                        <div className="h-9 w-9 rounded-lg bg-success-soft text-success flex items-center justify-center font-bold">
                           <Code2 className="h-5 w-5" />
                         </div>
                         <div>
                           <p className="font-heading text-sm font-semibold text-foreground">
-                            Mi Ruta de Aprendizaje
+                            Mi Ruta de Aprendizaje (Ejemplo)
                           </p>
                           <p className="text-xs text-muted-foreground">Progreso general de ciclo</p>
                         </div>
@@ -253,12 +267,12 @@ export default async function Home() {
                     {/* Barra de progreso de ejemplo */}
                     <div className="space-y-2 mb-6">
                       <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-foreground">Avance curricular</span>
+                        <span className="text-foreground">Avance curricular (Ejemplo)</span>
                         <span className="text-primary">78% Completado</span>
                       </div>
                       <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-indigo-500 rounded-full transition-all duration-1000"
+                          className="h-full bg-gradient-to-r from-primary to-duo-blue rounded-full transition-all duration-1000"
                           style={{ width: "78%" }}
                         />
                       </div>
@@ -268,13 +282,13 @@ export default async function Home() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40">
                         <div className="flex items-center gap-3">
-                          <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                          <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                           <div className="text-xs">
                             <p className="font-medium text-foreground">Semana 1: Fundamentos & Lógica</p>
                             <p className="text-muted-foreground">Completado</p>
                           </div>
                         </div>
-                        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full dark:bg-emerald-950/40">
+                        <span className="text-xs font-semibold text-success bg-success-soft px-2 py-0.5 rounded-full">
                           100%
                         </span>
                       </div>
@@ -287,7 +301,12 @@ export default async function Home() {
                             <p className="text-primary font-medium">En curso actualmente</p>
                           </div>
                         </div>
-                        <Link href="/login" className={buttonVariants({ variant: "default", size: "xs" })}>Continuar</Link>
+                        <Link
+                          href="/login"
+                          className={cn(buttonVariants({ variant: "default", size: "xs" }), "min-h-8 touch:min-h-11")}
+                        >
+                          Continuar
+                        </Link>
                       </div>
 
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/30 opacity-70">
@@ -307,15 +326,15 @@ export default async function Home() {
                     {/* Mini card de racha / gamificación */}
                     <div className="mt-5 pt-4 border-t border-border/60 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500">
-                          <Flame className="h-4 w-4 fill-orange-500 animate-flame-pulse" />
+                        <div className="p-1.5 rounded-lg bg-duo-orange/15 text-duo-orange">
+                          <Flame className="h-4 w-4 fill-duo-orange animate-flame-pulse" />
                         </div>
                         <span className="text-xs font-medium text-foreground">
-                          Racha de estudio: <strong className="text-orange-500">5 días seguidos</strong>
+                          Racha de estudio: <strong className="text-duo-orange">5 días (Ejemplo)</strong>
                         </span>
                       </div>
                       <Badge variant="achievement" className="text-[11px]">
-                        Nivel 3 ⚡
+                        Nivel 3 ⚡ (Ejemplo)
                       </Badge>
                     </div>
                   </div>
@@ -324,7 +343,7 @@ export default async function Home() {
                   <div className="absolute -bottom-4 -left-4 rounded-xl border border-border bg-card p-3 shadow-lg flex items-center gap-2.5 hidden sm:flex">
                     <Award className="h-5 w-5 text-duo-gold" />
                     <span className="text-xs font-bold text-foreground">
-                      ¡Insignia de Logro Desbloqueada!
+                      Insignia Desbloqueada (Ejemplo)
                     </span>
                   </div>
                 </div>
@@ -344,13 +363,13 @@ export default async function Home() {
                 Diseñado para aprender haciendo
               </h2>
               <p className="mt-4 text-base text-muted-foreground">
-                La plataforma integra pedagogía moderna y herramientas tecnológicas para asegurar
+                La plataforma integra pedagogía activa y herramientas digitales para asegurar
                 que cada estudiante comprenda y aplique cada concepto.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-md">
+              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
                   <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
                     <Layers className="h-6 w-6" />
@@ -360,12 +379,12 @@ export default async function Home() {
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Módulos claros y secuenciales. Cada lección cuenta con objetivos precisos para
-                    evitar sobrecarga y optimizar tu tiempo.
+                    organizar el avance en cada periodo.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-md">
+              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
                   <div className="h-12 w-12 rounded-xl bg-duo-blue/10 text-duo-blue flex items-center justify-center font-bold">
                     <Laptop className="h-6 w-6" />
@@ -374,38 +393,38 @@ export default async function Home() {
                     Contenido Multimedia
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Videoclases dinámicas, guías paso a paso, ejercicios en código y documentos de
-                    apoyo descargables en cualquier dispositivo.
+                    Videoclases explicativas, guías ilustradas, ejercicios en código y documentos de
+                    apoyo descargables.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-md">
+              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center font-bold">
+                  <div className="h-12 w-12 rounded-xl bg-duo-orange/15 text-duo-orange flex items-center justify-center font-bold">
                     <Flame className="h-6 w-6" />
                   </div>
                   <h3 className="font-heading text-lg font-bold text-foreground">
                     Progreso Gamificado
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Rachas de estudio, visualización de avance porcentual y felicitaciones animadas
-                    que reconocen tu esfuerzo constante.
+                    Rachas de estudio, visualización de avance porcentual e insignias de logro que
+                    reconocen tu constancia.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-md">
+              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                  <div className="h-12 w-12 rounded-xl bg-success-soft text-success flex items-center justify-center font-bold">
                     <FileCheck2 className="h-6 w-6" />
                   </div>
                   <h3 className="font-heading text-lg font-bold text-foreground">
-                    Feedback y Tutoría
+                    Acompañamiento Docente
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Seguimiento continuo por parte del docente con asignación de tareas, revisión de
-                    avances y soporte académico individualizado.
+                    Seguimiento continuo por parte del docente con orientación académica, revisión de
+                    avances y soporte permanente.
                   </p>
                 </CardContent>
               </Card>
@@ -422,19 +441,22 @@ export default async function Home() {
                   Oferta Formativa
                 </Badge>
                 <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                  Cursos y Rutas Tecnológicas
+                  Cursos y Rutas de Formación
                 </h2>
                 <p className="mt-2 text-muted-foreground max-w-xl">
                   {tieneCursosDb
                     ? "Explora los cursos activos actualmente en la plataforma institucional."
-                    : "Descubre los programas de tecnología diseñados para el desarrollo de competencias del siglo XXI."}
+                    : "Descubre los programas formativos diseñados para el desarrollo de competencias prácticas."}
                 </p>
               </div>
 
-              <Link href="/login" className={cn(buttonVariants({ variant: "outline" }), "gap-2 shrink-0 self-start md:self-end")}>
-                  Acceder a todos los cursos
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
+              <Link
+                href="/login"
+                className={cn(buttonVariants({ variant: "outline" }), "gap-2 shrink-0 self-start md:self-end min-h-11 touch:min-h-11")}
+              >
+                Acceder a todos los cursos
+                <ChevronRight className="h-4 w-4" />
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -469,10 +491,13 @@ export default async function Home() {
 
                       <div className="p-5 pt-0 border-t border-border/50 mt-4 flex items-center justify-between text-xs text-muted-foreground">
                         <span>{curso.totalContenidos || 0} lecciones</span>
-                        <Link href="/login" className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "gap-1 font-semibold text-primary")}>
-                            Entrar
-                            <ArrowRight className="h-3 w-3" />
-                          </Link>
+                        <Link
+                          href="/login"
+                          className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "gap-1 font-semibold text-primary min-h-9 touch:min-h-11")}
+                        >
+                          Entrar
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
                       </div>
                     </Card>
                   ))
@@ -507,10 +532,13 @@ export default async function Home() {
 
                       <div className="p-5 pt-0 border-t border-border/50 mt-4 flex items-center justify-between text-xs text-muted-foreground">
                         <span className="font-medium text-foreground">Prof. Fabio Aguirre</span>
-                        <Link href="/login" className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "gap-1 font-semibold text-primary")}>
-                            Detalles
-                            <ArrowRight className="h-3 w-3" />
-                          </Link>
+                        <Link
+                          href="/login"
+                          className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "gap-1 font-semibold text-primary min-h-9 touch:min-h-11")}
+                        >
+                          Detalles
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
                       </div>
                     </Card>
                   ))}
@@ -530,8 +558,7 @@ export default async function Home() {
                   Un aula virtual intuitiva que se adapta a tu ritmo
                 </h2>
                 <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-                  Olvídate de plataformas confusas y desorganizadas. Este LMS fue construido pensando
-                  en la claridad, motivación y concentración del estudiante:
+                  Construida con foco en la claridad, la motivación y la concentración del estudiante:
                 </p>
 
                 <div className="mt-8 space-y-4">
@@ -544,23 +571,23 @@ export default async function Home() {
                         Botón &quot;Continuar donde lo dejaste&quot;
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Retoma tus lecciones al instante sin tener que buscar qué video o lectura te
-                        quedaba pendiente.
+                        Retoma tus lecciones al instante sin tener que buscar qué material te quedaba
+                        pendiente.
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-600">
+                    <div className="rounded-lg bg-success-soft p-2 text-success">
                       <CheckCircle2 className="h-5 w-5" />
                     </div>
                     <div>
                       <h4 className="font-heading text-sm font-bold text-foreground">
-                        Marcado automático de contenidos
+                        Marcado de temas completados
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Tus lecturas y videos vistos se registran en tiempo real actualizando tu barra
-                        de progreso.
+                        Confirma cada lectura o video visto con un clic para actualizar tu barra de
+                        progreso personal.
                       </p>
                     </div>
                   </div>
@@ -571,40 +598,40 @@ export default async function Home() {
                     </div>
                     <div>
                       <h4 className="font-heading text-sm font-bold text-foreground">
-                        Celebraciones y reconocimientos
+                        Reconocimiento de avances
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Al completar el 100% de un curso, celebra tu logro y desbloquea tu certificado
-                        de culminación.
+                        Al completar todos los contenidos de un curso, celebra tu logro alcanzado y
+                        repasa los temas cuando lo necesites.
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-8">
-                  <Link href="/login" className={cn(buttonVariants(), "gap-2")}>
-                      Acceder a mi Cuenta de Estudiante
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                  <Link href="/login" className={cn(buttonVariants(), "gap-2 min-h-11 touch:min-h-11")}>
+                    Acceder a mi Cuenta de Estudiante
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </div>
               </div>
 
-              {/* Tarjeta Visual de presentación de panel */}
+              {/* Tarjeta Visual de presentación de panel (Ejemplo) */}
               <div className="relative rounded-2xl border border-border/80 bg-card p-6 shadow-xl">
                 <div className="flex items-center justify-between pb-4 border-b border-border/60">
                   <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-red-400" />
-                    <span className="h-3 w-3 rounded-full bg-amber-400" />
-                    <span className="h-3 w-3 rounded-full bg-emerald-400" />
+                    <span className="h-3 w-3 rounded-full bg-destructive/60" />
+                    <span className="h-3 w-3 rounded-full bg-duo-gold/60" />
+                    <span className="h-3 w-3 rounded-full bg-success/60" />
                   </div>
-                  <span className="text-xs font-mono text-muted-foreground">campus.fabioaguirre.edu</span>
+                  <span className="text-xs font-mono text-muted-foreground">Vista previa del panel</span>
                 </div>
 
                 <div className="pt-6 space-y-4">
                   <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-primary uppercase tracking-wide">
-                        Última lección vista
+                        Última lección vista (Ejemplo)
                       </span>
                       <span className="text-xs text-muted-foreground font-mono">15 min atrás</span>
                     </div>
@@ -622,12 +649,12 @@ export default async function Home() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3.5 rounded-xl border border-border/60 bg-muted/30">
-                      <p className="text-xs text-muted-foreground">Cursos en progreso</p>
+                      <p className="text-xs text-muted-foreground">Cursos activos (Ejemplo)</p>
                       <p className="font-heading text-2xl font-bold text-foreground mt-1">3</p>
                     </div>
                     <div className="p-3.5 rounded-xl border border-border/60 bg-muted/30">
-                      <p className="text-xs text-muted-foreground">Temas aprobados</p>
-                      <p className="font-heading text-2xl font-bold text-emerald-600 mt-1">24</p>
+                      <p className="text-xs text-muted-foreground">Temas completados (Ejemplo)</p>
+                      <p className="font-heading text-2xl font-bold text-success mt-1">24</p>
                     </div>
                   </div>
                 </div>
@@ -655,9 +682,8 @@ export default async function Home() {
             </p>
 
             <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-              &ldquo;La educación en tecnología no se trata únicamente de aprender a usar herramientas,
-              sino de cultivar el pensamiento crítico, la creatividad y la capacidad de resolver
-              problemas reales para generar un impacto positivo en nuestra sociedad.&rdquo;
+              Espacio formativo a cargo del docente Fabio Andrés Aguirre, orientando a los estudiantes
+              en el desarrollo de competencias tecnológicas, pensamiento lógico y proyectos prácticos.
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -689,16 +715,24 @@ export default async function Home() {
               </h2>
 
               <p className="mt-4 text-base text-muted-foreground max-w-xl mx-auto">
-                Ingresa con tu cuenta institucional y continúa construyendo tu futuro tecnológico con
+                Ingresa con tu cuenta institucional y continúa construyendo tu futuro con
                 lecciones prácticas y guiadas.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-                <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "h-12 px-8 font-semibold shadow-md gap-2")}>
-                    Ingresar al Campus Virtual
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                <a href="#cursos" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 px-6")}>Ver Cursos Disponibles</a>
+                <Link
+                  href="/login"
+                  className={cn(buttonVariants({ size: "lg" }), "h-12 min-h-11 touch:min-h-11 px-8 font-semibold shadow-xs gap-2")}
+                >
+                  Ingresar al Campus Virtual
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a
+                  href="#cursos"
+                  className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 min-h-11 touch:min-h-11 px-6")}
+                >
+                  Ver Cursos Disponibles
+                </a>
               </div>
             </div>
           </div>

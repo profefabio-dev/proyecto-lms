@@ -117,7 +117,7 @@ export function LoginForm({
           <button
             type="button"
             onClick={() => setMostrarPassword(!mostrarPassword)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute inset-y-0 right-0 flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-foreground transition-colors"
             aria-label={mostrarPassword ? "Ocultar contraseña" : "Ver contraseña"}
           >
             {mostrarPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -128,7 +128,7 @@ export function LoginForm({
       <Button
         type="submit"
         disabled={cargando}
-        className="w-full h-11 text-sm font-semibold tracking-wide shadow-md transition-all gap-2"
+        className="w-full h-11 min-h-11 touch:min-h-11 text-sm font-semibold tracking-wide shadow-md transition-all gap-2"
       >
         {cargando ? (
           <>

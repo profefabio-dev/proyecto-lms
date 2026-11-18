@@ -176,12 +176,12 @@ export default async function EstudiantePage() {
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success">
                 <Trophy className="size-5" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground font-medium">Completados</p>
-                <p className="font-heading text-xl font-bold text-emerald-600">
+                <p className="font-heading text-xl font-bold text-success">
                   {cursosCompletados} de {totalCursos}
                 </p>
               </div>
@@ -198,7 +198,7 @@ export default async function EstudiantePage() {
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <BarChart3 className="size-5" />
               </div>
               <div>

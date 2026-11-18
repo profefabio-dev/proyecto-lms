@@ -123,7 +123,7 @@ export function CourseCard({
                 {contenidosVistos} de {totalContenidos} {totalContenidos === 1 ? "tema" : "temas"}
               </span>
               {completado ? (
-                <span className="flex items-center gap-1 text-emerald-600 font-bold dark:text-emerald-400">
+                <span className="flex items-center gap-1 text-success font-bold">
                   <CheckCircle2 className="size-3.5" />
                   Completado
                 </span>
