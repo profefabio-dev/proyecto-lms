@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  ArrowRight,
   BookOpen,
   FileText,
   GraduationCap,
   ShieldCheck,
+  Sparkles,
   UserCog,
   Users,
   type LucideIcon,
@@ -12,7 +14,9 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Rol } from "@prisma/client";
 
@@ -65,49 +69,119 @@ export default async function AdminPage() {
       prisma.contents.count({ where: { course: { tutor: { espacioId } } } }),
     ]);
 
-  const indicadores: { etiqueta: string; valor: number; icon: LucideIcon }[] = [
-    { etiqueta: "Administradores", valor: administradores, icon: ShieldCheck },
-    { etiqueta: "Tutores", valor: tutores, icon: UserCog },
-    { etiqueta: "Estudiantes", valor: estudiantesInscritos.length, icon: GraduationCap },
-    { etiqueta: "Cursos activos", valor: cursosActivos, icon: BookOpen },
-    { etiqueta: "Contenidos totales", valor: totalContenidos, icon: FileText },
+  const indicadores: {
+    etiqueta: string;
+    valor: number;
+    icon: LucideIcon;
+    tono: string;
+  }[] = [
+    { etiqueta: "Administradores", valor: administradores, icon: ShieldCheck, tono: "bg-primary/10 text-primary" },
+    { etiqueta: "Tutores", valor: tutores, icon: UserCog, tono: "bg-duo-blue/10 text-duo-blue" },
+    { etiqueta: "Estudiantes", valor: estudiantesInscritos.length, icon: GraduationCap, tono: "bg-success-soft text-success" },
+    { etiqueta: "Cursos activos", valor: cursosActivos, icon: BookOpen, tono: "bg-primary/10 text-primary" },
+    { etiqueta: "Contenidos totales", valor: totalContenidos, icon: FileText, tono: "bg-duo-blue/10 text-duo-blue" },
   ];
 
   return (
     <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
-        <h1 className="text-3xl font-bold tracking-tight">Panel de Administrador</h1>
+        {/* Banner de bienvenida (mismo estilo que el panel del Tutor) */}
+        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 shadow-xs sm:p-8">
+          <div className="relative z-10 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider">
+                Administrador
+              </Badge>
+              <span className="flex items-center gap-1 text-xs font-medium text-primary">
+                <Sparkles className="size-3.5" aria-hidden="true" /> Gestión de tu espacio
+              </span>
+            </div>
+            <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+              Panel de Administrador
+            </h1>
+            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Hola, {usuarioActual.nombre}. Desde aquí supervisas a los tutores y a los usuarios de
+              tu espacio y consultas el estado general de los cursos.
+            </p>
+          </div>
+        </div>
 
-        <section
-          className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
-          aria-label="Indicadores generales"
-        >
-          {indicadores.map((indicador) => {
-            const Icono = indicador.icon;
-            return (
-              <Card key={indicador.etiqueta}>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Icono className="size-4 text-primary" aria-hidden="true" />
-                    <p className="text-sm text-muted-foreground">{indicador.etiqueta}</p>
-                  </div>
-                  <p className="text-2xl font-bold">{indicador.valor}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <section aria-label="Indicadores generales" className="space-y-3">
+          <h2 className="font-heading text-lg font-bold text-foreground">Resumen de tu espacio</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {indicadores.map((indicador) => {
+              const Icono = indicador.icon;
+              return (
+                <Card key={indicador.etiqueta} className="rounded-2xl border border-border/80 shadow-xs">
+                  <CardContent className="flex flex-col gap-3 p-4">
+                    <div
+                      className={cn(
+                        "flex size-10 items-center justify-center rounded-xl",
+                        indicador.tono
+                      )}
+                    >
+                      <Icono className="size-5" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">{indicador.etiqueta}</p>
+                      <p className="font-heading text-2xl font-extrabold text-foreground">
+                        {indicador.valor}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </section>
 
-        <div className="flex flex-wrap gap-3">
-          <Link href="/admin/tutores" className={buttonVariants({ variant: "outline" })}>
-            <UserCog aria-hidden="true" />
-            Gestionar tutores
-          </Link>
-          <Link href="/admin/usuarios" className={buttonVariants({ variant: "outline" })}>
-            <Users aria-hidden="true" />
-            Ver todos los usuarios
-          </Link>
-        </div>
+        <section className="space-y-4">
+          <h2 className="font-heading text-lg font-bold text-foreground">Herramientas del Administrador</h2>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <UserCog className="size-5" aria-hidden="true" />
+                  </span>
+                  <h3 className="font-heading text-lg font-bold text-foreground">Gestión de Tutores</h3>
+                </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Crea cuentas de tutor, edita sus datos y restablece su contraseña cuando la olviden.
+                </p>
+              </div>
+              <Link
+                href="/admin/tutores"
+                className={cn(buttonVariants({ variant: "default" }), "min-h-11 justify-between font-semibold")}
+              >
+                <span>Administrar tutores</span>
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex size-9 items-center justify-center rounded-xl bg-success-soft text-success">
+                    <Users className="size-5" aria-hidden="true" />
+                  </span>
+                  <h3 className="font-heading text-lg font-bold text-foreground">Usuarios del sistema</h3>
+                </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Consulta a todos los administradores, tutores y estudiantes de tu espacio, y
+                  desactiva o reactiva cuentas sin borrar su historial.
+                </p>
+              </div>
+              <Link
+                href="/admin/usuarios"
+                className={cn(buttonVariants({ variant: "outline" }), "min-h-11 justify-between font-semibold")}
+              >
+                <span>Ver todos los usuarios</span>
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
     </AppShell>
   );

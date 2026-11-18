@@ -2,7 +2,17 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-12 — **Interfaz, paquete 3 (parcial): botón de cerrar sesión legible, rol y estado con texto legible, panel de Administrador con iconos y accesos rápidos.**
+Última actualización: 2026-11-17 — **Rediseño de Admin y Superadmin (rama `claude/rediseno-admin`, a partir del trabajo de Antigravity en `antigravity/rediseno`), mientras Antigravity no tiene créditos.**
+
+Acuerdo con el docente: Antigravity diseña y Claude verifica y, mientras Antigravity no tenga créditos, continúa el rediseño con las mismas reglas (sin `asChild`, tokens del tema, controles táctiles de 44 px, sin funciones prometidas que no existan).
+- **Verificado antes de continuar** (commits de Antigravity `69d7a3b`, `b53321f`, `28e4a9e`): tipos, lint, 802 pruebas (el doble porque vitest lee también `.claude/worktrees`) y build correctos; los controles de acceso de la página de curso del Estudiante y de los paneles del Tutor se conservan (solo se borraron comentarios que explicaban por qué "Asignar estudiantes" lista estudiantes de toda la plataforma — decisión conocida, ver US24).
+- **Nuevo:** `components/page-header.tsx` (título, descripción e insignia) y `components/data-table.tsx` (`DataTable`, `Th`, `Td`: contenedor con desplazamiento horizontal y ancho mínimo).
+- **Rediseñado, sin tocar guardas ni consultas:** `/admin` (banner, tarjetas con icono, herramientas), `/admin/tutores`, `/admin/usuarios` (filtros de 44 px en táctil, rol como insignia) y `/superadmin` (estado con etiqueta legible, "Sin administrador" en gris).
+- **Verificación:** tsc 0 errores, eslint 0 errores, vitest 401/401, `next build --webpack` correcto; 0 colores fijos y 0 `asChild` en lo nuevo. **Sin verificar en pantalla:** estas cuatro páginas (el panel del navegador no tenía sesión).
+- **Observado en el login de Antigravity (no corregido):** en la columna izquierda, el rótulo "Campus Virtual de Aprendizaje" y la insignia "Espacio de Formación y Aprendizaje" se ven con poco contraste sobre el degradado.
+
+
+Actualización anterior — 2026-11-12 — **Interfaz, paquete 3 (parcial): botón de cerrar sesión legible, rol y estado con texto legible, panel de Administrador con iconos y accesos rápidos.**
 
 - `components/logout-button.tsx`: usa los colores del menú oscuro (antes casi blanco sobre blanco, y un cuadro vacío con el menú colapsado). Verificado en pantalla.
 - `lib/etiquetas.ts` (nuevo): "Estudiante"/"Activo"/"Desactivado" en vez de "ESTUDIANTE"/"ACTIVO"/"INACTIVO" en las tablas de usuarios, tutores y estudiantes; el rol de `/admin/usuarios` pasa a insignia. Columna de correo con ancho mínimo (se partía letra por letra). Verificado en pantalla como Administrador.

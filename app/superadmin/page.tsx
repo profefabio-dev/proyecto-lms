@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
@@ -7,6 +8,9 @@ import { CreateEspacioForm } from "@/components/create-espacio-form";
 import { ToggleEspacioStatusForm } from "@/components/toggle-espacio-status-form";
 import { ResetEspacioAdminPasswordForm } from "@/components/reset-espacio-admin-password-form";
 import { AppShell } from "@/components/app-shell";
+import { DataTable, Td, Th } from "@/components/data-table";
+import { PageHeader } from "@/components/page-header";
+import { etiquetaEstado } from "@/lib/etiquetas";
 import { Badge } from "@/components/ui/badge";
 
 export default async function SuperAdminPage() {
@@ -60,82 +64,72 @@ export default async function SuperAdminPage() {
   return (
     <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-6xl space-y-8 px-6 py-10">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Espacios de docentes</h1>
-          <p className="text-sm text-muted-foreground">
-            Cada espacio agrupa a un docente (o institución) con sus propios Administradores,
-            Tutores y cursos, aislados del resto.
-          </p>
-        </div>
+        <PageHeader
+          titulo="Espacios de docentes"
+          descripcion="Cada espacio agrupa a un docente (o institución) con sus propios Administradores, Tutores y cursos, aislados del resto."
+          icono={Building2}
+          insignia={`${espaciosConDetalle.length} ${espaciosConDetalle.length === 1 ? "espacio" : "espacios"}`}
+        />
 
         <CreateEspacioForm />
 
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-[36rem] border-collapse text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50 text-left">
-                <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Nombre
-                </th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Administrador
-                </th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Tutores
-                </th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Estudiantes
-                </th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Cursos
-                </th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Estado
-                </th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Acciones
-                </th>
+        <DataTable anchoMinimo="48rem">
+          <thead>
+            <tr className="border-b border-border/60 bg-muted/40">
+              <Th primera>Nombre</Th>
+              <Th>Administrador</Th>
+              <Th>Tutores</Th>
+              <Th>Estudiantes</Th>
+              <Th>Cursos</Th>
+              <Th>Estado</Th>
+              <Th ultima>Acciones</Th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/50">
+            {espaciosConDetalle.length === 0 && (
+              <tr>
+                <Td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  No hay espacios registrados todavía.
+                </Td>
               </tr>
-            </thead>
-            <tbody>
-              {espaciosConDetalle.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="py-4 text-center text-muted-foreground">
-                    No hay espacios registrados todavía.
-                  </td>
-                </tr>
-              )}
-              {espaciosConDetalle.map((espacio) => (
-                <tr key={espacio.id} className="border-b last:border-b-0 hover:bg-muted/30">
-                  <td className="py-2 pr-4 pl-4">{espacio.nombre}</td>
-                  <td className="py-2 pr-4">
-                    {espacio.administradorPrincipal
-                      ? `${espacio.administradorPrincipal.nombre} ${espacio.administradorPrincipal.apellido}`
-                      : "— sin Administrador —"}
-                  </td>
-                  <td className="py-2 pr-4">{espacio.cantidadTutores}</td>
-                  <td className="py-2 pr-4">{espacio.cantidadEstudiantes}</td>
-                  <td className="py-2 pr-4">{espacio.cantidadCursos}</td>
-                  <td className="py-2 pr-4">
-                    <Badge variant={espacio.estado === "ACTIVO" ? "success" : "secondary"}>
-                      {espacio.estado}
-                    </Badge>
-                  </td>
-                  <td className="py-2 pr-4">
-                    <div className="flex flex-col items-start gap-2">
-                      <ToggleEspacioStatusForm espacioId={espacio.id} estadoActual={espacio.estado} />
-                      {espacio.administradorPrincipal && (
-                        <ResetEspacioAdminPasswordForm
-                          administradorId={espacio.administradorPrincipal.id}
-                        />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            )}
+            {espaciosConDetalle.map((espacio) => (
+              <tr key={espacio.id} className="transition-colors hover:bg-muted/30">
+                <Td primera className="font-medium text-foreground">
+                  {espacio.nombre}
+                </Td>
+                <Td>
+                  {espacio.administradorPrincipal ? (
+                    `${espacio.administradorPrincipal.nombre} ${espacio.administradorPrincipal.apellido}`
+                  ) : (
+                    <span className="text-muted-foreground">Sin administrador</span>
+                  )}
+                </Td>
+                <Td>{espacio.cantidadTutores}</Td>
+                <Td>{espacio.cantidadEstudiantes}</Td>
+                <Td>{espacio.cantidadCursos}</Td>
+                <Td>
+                  <Badge
+                    variant={espacio.estado === "ACTIVO" ? "success" : "secondary"}
+                    className="text-xs font-semibold"
+                  >
+                    {etiquetaEstado(espacio.estado)}
+                  </Badge>
+                </Td>
+                <Td ultima>
+                  <div className="flex flex-col items-start gap-2">
+                    <ToggleEspacioStatusForm espacioId={espacio.id} estadoActual={espacio.estado} />
+                    {espacio.administradorPrincipal && (
+                      <ResetEspacioAdminPasswordForm
+                        administradorId={espacio.administradorPrincipal.id}
+                      />
+                    )}
+                  </div>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </DataTable>
       </main>
     </AppShell>
   );

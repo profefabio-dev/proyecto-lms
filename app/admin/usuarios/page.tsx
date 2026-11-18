@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import type { Rol } from "@prisma/client";
@@ -9,6 +10,8 @@ import { ResetPasswordForm } from "@/components/reset-password-form";
 import { ToggleUserStatusForm } from "@/components/toggle-user-status-form";
 import { BulkImportStudentsForm } from "@/components/bulk-import-students-form";
 import { AppShell } from "@/components/app-shell";
+import { DataTable, Td, Th } from "@/components/data-table";
+import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { etiquetaEstado, etiquetaRol } from "@/lib/etiquetas";
 import { cn } from "@/lib/utils";
@@ -69,12 +72,12 @@ export default async function UsuariosPage({
   return (
     <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Usuarios del sistema</h1>
-          <p className="text-sm text-muted-foreground">
-            Listado de todos los administradores, tutores y estudiantes registrados.
-          </p>
-        </div>
+        <PageHeader
+          titulo="Usuarios del sistema"
+          descripcion="Listado de todos los administradores, tutores y estudiantes registrados."
+          icono={Users}
+          insignia={`${usuarios.length} ${usuarios.length === 1 ? "usuario" : "usuarios"}`}
+        />
 
         {/* US29: un Administrador crea estudiantes sin inscribirlos a
             ningún curso (eso lo hace después un Tutor, criterio 10) —
@@ -90,8 +93,9 @@ export default async function UsuariosPage({
               <Link
                 key={valor}
                 href={href}
+                aria-current={activo ? "page" : undefined}
                 className={cn(
-                  "rounded-full border px-3 py-1 transition-colors",
+                  "inline-flex items-center rounded-full border px-4 py-1.5 font-medium transition-colors touch:py-2.5",
                   activo
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border text-muted-foreground hover:bg-muted"
@@ -103,58 +107,64 @@ export default async function UsuariosPage({
           })}
         </nav>
 
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-[36rem] border-collapse text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50 text-left">
-                <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre</th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email</th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rol</th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Estado</th>
-                <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Acciones</th>
+        <DataTable anchoMinimo="44rem">
+          <thead>
+            <tr className="border-b border-border/60 bg-muted/40">
+              <Th primera>Nombre</Th>
+              <Th>Email</Th>
+              <Th>Rol</Th>
+              <Th>Estado</Th>
+              <Th ultima>Acciones</Th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/50">
+            {usuarios.length === 0 && (
+              <tr>
+                <Td colSpan={5} className="py-8 text-center text-muted-foreground">
+                  No hay usuarios {filtroRol ? "con ese rol" : "registrados"} todavía.
+                </Td>
               </tr>
-            </thead>
-            <tbody>
-              {usuarios.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="py-4 text-center text-muted-foreground">
-                    No hay usuarios {filtroRol ? "con ese rol" : "registrados"} todavía.
-                  </td>
-                </tr>
-              )}
-              {usuarios.map((usuario) => (
-                <tr key={usuario.id} className="border-b last:border-b-0 hover:bg-muted/30">
-                  <td className="py-2 pr-4 pl-4">
-                    {usuario.nombre} {usuario.apellido}
-                  </td>
-                  <td className="min-w-[13rem] py-2 pr-4 break-all">{usuario.email}</td>
-                  <td className="py-2 pr-4">
-                    <Badge variant="outline">{etiquetaRol(usuario.rol)}</Badge>
-                  </td>
-                  <td className="py-2 pr-4">
-                    <Badge variant={usuario.estado === "ACTIVO" ? "success" : "secondary"}>
-                      {etiquetaEstado(usuario.estado)}
-                    </Badge>
-                  </td>
-                  <td className="py-2 pr-4">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <EditUserNameForm
-                        usuarioId={usuario.id}
-                        nombreActual={usuario.nombre}
-                        apellidoActual={usuario.apellido}
-                      />
-                      <EditEmailForm usuarioId={usuario.id} emailActual={usuario.email} />
-                      <ResetPasswordForm usuarioId={usuario.id} />
-                      {usuario.id !== usuarioActual.id && (
-                        <ToggleUserStatusForm usuarioId={usuario.id} estadoActual={usuario.estado} />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            )}
+            {usuarios.map((usuario) => (
+              <tr key={usuario.id} className="transition-colors hover:bg-muted/30">
+                <Td primera className="font-medium text-foreground">
+                  {usuario.nombre} {usuario.apellido}
+                </Td>
+                <Td className="min-w-[13rem] break-all text-xs text-muted-foreground">{usuario.email}</Td>
+                <Td>
+                  <Badge
+                    variant={usuario.rol === "ADMINISTRADOR" ? "default" : "outline"}
+                    className="text-xs font-semibold"
+                  >
+                    {etiquetaRol(usuario.rol)}
+                  </Badge>
+                </Td>
+                <Td>
+                  <Badge
+                    variant={usuario.estado === "ACTIVO" ? "success" : "secondary"}
+                    className="text-xs font-semibold"
+                  >
+                    {etiquetaEstado(usuario.estado)}
+                  </Badge>
+                </Td>
+                <Td ultima>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <EditUserNameForm
+                      usuarioId={usuario.id}
+                      nombreActual={usuario.nombre}
+                      apellidoActual={usuario.apellido}
+                    />
+                    <EditEmailForm usuarioId={usuario.id} emailActual={usuario.email} />
+                    <ResetPasswordForm usuarioId={usuario.id} />
+                    {usuario.id !== usuarioActual.id && (
+                      <ToggleUserStatusForm usuarioId={usuario.id} estadoActual={usuario.estado} />
+                    )}
+                  </div>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </DataTable>
       </main>
     </AppShell>
   );
