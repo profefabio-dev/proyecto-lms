@@ -154,7 +154,7 @@ export default async function CursoEstudiantePage({
                 href="/estudiante"
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
-                  "min-h-11 touch:min-h-11 gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                  "min-h-11 gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
                 )}
               >
                 <ArrowLeft className="size-4" />
@@ -231,7 +231,7 @@ export default async function CursoEstudiantePage({
                     open={seccion.esActual || seccion.estado === "DISPONIBLE"}
                     className="group/seccion overflow-hidden rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs transition-all space-y-6"
                   >
-                    <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 text-lg font-bold select-none min-h-11 touch:min-h-11 list-none [&::-webkit-details-marker]:hidden">
+                    <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 text-lg font-bold select-none min-h-11 list-none [&::-webkit-details-marker]:hidden">
                       <div className="flex flex-wrap items-center gap-2.5">
                         <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
                           <Calendar className="size-4" />

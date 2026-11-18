@@ -66,7 +66,7 @@ export function CourseContentOutline({
               <li key={item.id}>
                 <a
                   href={`#contenido-${item.id}`}
-                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted min-h-11 touch:min-h-11"
+                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted min-h-11"
                 >
                   <span
                     className={cn(

@@ -30,7 +30,7 @@ export function DocumentContentList({ documentos }: { documentos: DocumentoConUr
 
                 <a
                   href={documento.url}
-                  className="inline-flex min-h-11 touch:min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 shadow-xs"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 shadow-xs"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
