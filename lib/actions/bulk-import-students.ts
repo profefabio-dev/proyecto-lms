@@ -2,18 +2,27 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { Rol } from "@prisma/client";
+import { EstadoUsuario, Rol } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { createSyncedUser } from "@/lib/supabase/sync-user";
 import { generarPasswordTemporal } from "@/lib/auth/generar-password-temporal";
 import { generarEmailInterno } from "@/lib/auth/generar-email-interno";
 import { parsearArchivoEstudiantes, type GrupoExtraido } from "@/lib/parse-student-file";
+import { claveEstudiante } from "@/lib/clave-estudiante";
 
 const EXTENSIONES_ACEPTADAS = ["xlsx", "xls", "pdf"];
 
 type ResultadoPrevisualizar =
-  | { success: true; grupos: GrupoExtraido[]; advertencias: string[] }
+  | {
+      success: true;
+      grupos: GrupoExtraido[];
+      advertencias: string[];
+      // US34: claves (ver `lib/clave-estudiante.ts`) de los estudiantes del
+      // archivo que ya existen en la plataforma, para marcarlos en la vista
+      // previa en vez de omitirlos en silencio al confirmar.
+      existentes: string[];
+    }
   | { success: false; error: string };
 
 /**
@@ -82,7 +91,34 @@ export async function previsualizarCargaEstudiantes(
     };
   }
 
-  return { success: true, grupos: resultado.grupos, advertencias: resultado.advertencias };
+  // US34: se consulta una sola vez el nombre y apellido de los estudiantes
+  // ya registrados y se cruza en memoria contra el archivo. Al cliente solo
+  // viajan las claves que coinciden con una fila de su propio archivo —
+  // nunca el listado completo de estudiantes de la plataforma.
+  const clavesRegistradas = new Set(
+    (
+      await prisma.users.findMany({
+        where: { rol: Rol.ESTUDIANTE },
+        select: { nombre: true, apellido: true },
+      })
+    ).map((estudiante) => claveEstudiante(estudiante.nombre, estudiante.apellido))
+  );
+
+  const existentes = [
+    ...new Set(
+      resultado.grupos
+        .flatMap((grupo) => grupo.estudiantes)
+        .map((estudiante) => claveEstudiante(estudiante.nombre, estudiante.apellido))
+        .filter((clave) => clavesRegistradas.has(clave))
+    ),
+  ];
+
+  return {
+    success: true,
+    grupos: resultado.grupos,
+    advertencias: resultado.advertencias,
+    existentes,
+  };
 }
 
 const estudianteEditadoSchema = z.object({
@@ -104,6 +140,10 @@ export type ResultadoConfirmar =
       creados: { nombre: string; apellido: string; email: string; passwordTemporal: string }[];
       omitidos: { nombre: string; apellido: string; motivo: string }[];
       inscritos: number;
+      // US34: estudiantes del archivo que ya tenían cuenta y quedaron
+      // matriculados en el curso elegido sin crear una cuenta nueva.
+      // `yaInscrito` distingue a los que ya estaban en ese curso.
+      existentesMatriculados: { nombre: string; apellido: string; yaInscrito: boolean }[];
     }
   | { success: false; error: string };
 
@@ -114,6 +154,11 @@ export type ResultadoConfirmar =
  * si `createSyncedUser` falla para un estudiante puntual, esa fila se
  * omite y el resto del lote sigue su curso, en vez de abortar la carga
  * completa por un solo error.
+ *
+ * US34: una fila que coincide con un estudiante ya existente nunca crea una
+ * cuenta nueva. Si el Tutor eligió un curso propio, ese estudiante se
+ * matricula en él con su cuenta de siempre; si no hay curso (o lo sube un
+ * Administrador), la fila se omite como antes.
  */
 export async function confirmarCargaEstudiantes(
   _prevState: ResultadoConfirmar | null,
@@ -181,6 +226,9 @@ export async function confirmarCargaEstudiantes(
   }[] = [];
   const idsCreados: string[] = [];
   const omitidos: { nombre: string; apellido: string; motivo: string }[] = [];
+  // US34: estudiantes ya existentes que se van a matricular en `curso`,
+  // por id para no repetir a nadie si el archivo trae dos filas iguales.
+  const existentesPorMatricular = new Map<string, { nombre: string; apellido: string }>();
 
   // Se consulta una sola vez el conjunto de emails ya usados en toda la
   // base de datos, y se va ampliando en memoria a medida que se crean
@@ -209,8 +257,23 @@ export async function confirmarCargaEstudiantes(
         nombre: { equals: nombre, mode: "insensitive" },
         apellido: { equals: apellido, mode: "insensitive" },
       },
-      select: { id: true },
+      select: { id: true, estado: true },
     });
+
+    if (yaExiste && curso) {
+      // Mismo criterio que "Asignar estudiantes" (US20): una cuenta
+      // desactivada no se ofrece ni se matricula en cursos nuevos.
+      if (yaExiste.estado !== EstadoUsuario.ACTIVO) {
+        omitidos.push({
+          nombre,
+          apellido,
+          motivo: "Ya existe, pero su cuenta está desactivada — no se matriculó.",
+        });
+      } else {
+        existentesPorMatricular.set(yaExiste.id, { nombre, apellido });
+      }
+      continue;
+    }
 
     if (yaExiste) {
       omitidos.push({
@@ -255,18 +318,48 @@ export async function confirmarCargaEstudiantes(
   }
 
   let inscritos = 0;
+  const existentesMatriculados: { nombre: string; apellido: string; yaInscrito: boolean }[] = [];
 
-  if (curso && idsCreados.length > 0) {
+  if (curso && (idsCreados.length > 0 || existentesPorMatricular.size > 0)) {
     try {
-      await prisma.courseUsers.createMany({
-        data: idsCreados.map((userId) => ({ courseId: curso!.id, userId })),
-      });
+      // US34: un estudiante ya existente puede estar ya inscrito en este
+      // mismo curso — se consulta antes para no chocar con la restricción
+      // única (courseId, userId) y para informarlo tal cual en el resumen.
+      const idsYaInscritos = new Set<string>();
+      if (existentesPorMatricular.size > 0) {
+        const inscripciones = await prisma.courseUsers.findMany({
+          where: { courseId: curso.id, userId: { in: [...existentesPorMatricular.keys()] } },
+          select: { userId: true },
+        });
+        inscripciones.forEach((inscripcion) => idsYaInscritos.add(inscripcion.userId));
+      }
+
+      const idsPorInscribir = [
+        ...idsCreados,
+        ...[...existentesPorMatricular.keys()].filter((id) => !idsYaInscritos.has(id)),
+      ];
+
+      if (idsPorInscribir.length > 0) {
+        await prisma.courseUsers.createMany({
+          data: idsPorInscribir.map((userId) => ({ courseId: curso!.id, userId })),
+        });
+      }
+
       inscritos = idsCreados.length;
+      existentesPorMatricular.forEach((estudiante, id) => {
+        existentesMatriculados.push({ ...estudiante, yaInscrito: idsYaInscritos.has(id) });
+      });
     } catch (error) {
       // Los estudiantes ya quedaron creados de todas formas — un fallo de
       // inscripción no revierte la creación, solo se informa como 0
       // inscritos para que el Tutor los asigne a mano después.
       console.error("Error inscribiendo estudiantes de la carga masiva:", error);
+      existentesPorMatricular.forEach((estudiante) => {
+        omitidos.push({
+          ...estudiante,
+          motivo: "Ya existe, pero no se pudo matricular en el curso. Asígnalo a mano.",
+        });
+      });
     }
   }
 
@@ -281,5 +374,6 @@ export async function confirmarCargaEstudiantes(
     creados,
     omitidos,
     inscritos,
+    existentesMatriculados,
   };
 }

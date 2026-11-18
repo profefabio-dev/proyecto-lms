@@ -44,24 +44,24 @@ export function ResetPasswordForm({ usuarioId }: { usuarioId: string }) {
       </form>
 
       {estado && !estado.success && visible && (
-        <p className="text-xs text-red-600" role="alert">
+        <p className="text-xs text-destructive" role="alert">
           {estado.error}
         </p>
       )}
 
       {estado && estado.success && visible && (
-        <div className="rounded border border-green-200 bg-green-50 p-2 text-xs">
-          <p className="font-medium text-green-800">Nueva contraseña temporal:</p>
+        <div className="rounded border border-success-border bg-success-soft p-2 text-xs">
+          <p className="font-medium text-success">Nueva contraseña temporal:</p>
           <p>
             <code>{estado.passwordTemporal}</code>
           </p>
-          <p className="mt-1 text-green-700">
+          <p className="mt-1 text-success">
             Compártela con el usuario de forma segura; debería cambiarla en su próximo inicio de sesión.
           </p>
           <button
             type="button"
             onClick={() => setVisible(false)}
-            className="mt-1 text-green-700 underline"
+            className="mt-1 text-success underline"
           >
             Ocultar
           </button>

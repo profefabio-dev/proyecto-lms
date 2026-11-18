@@ -93,13 +93,13 @@ export function AssignStudentsForm({
                 {estudiantesDelGrado.map((estudiante) => (
                   <label
                     key={estudiante.id}
-                    className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted"
+                    className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted touch:py-2.5"
                   >
                     <input
                       type="checkbox"
                       name="estudianteIds"
                       value={estudiante.id}
-                      className="size-4 shrink-0 accent-primary"
+                      className="size-4 shrink-0 accent-primary touch:size-5"
                     />
                     {/* Corrección de UX (16/09/2026): además del color del
                         borde del grupo, cada fila trunca su texto a un
@@ -126,13 +126,13 @@ export function AssignStudentsForm({
       </Button>
 
       {estado && !estado.success && (
-        <p role="alert" className="text-red-600 text-sm">
+        <p role="alert" className="text-destructive text-sm">
           {estado.error}
         </p>
       )}
 
       {estado && estado.success && (
-        <p className="text-green-700 text-sm">
+        <p className="text-success text-sm">
           {estado.asignados} estudiante(s) asignado(s) correctamente.
         </p>
       )}

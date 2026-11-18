@@ -4,6 +4,7 @@ import { BookOpen, GraduationCap, FileText, type LucideIcon } from "lucide-react
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default async function TutorPage() {
@@ -75,11 +76,13 @@ export default async function TutorPage() {
           })}
         </section>
 
-        <div className="flex flex-wrap gap-4">
-          <Link href="/tutor/estudiantes" className="font-medium text-primary hover:underline">
+        <div className="flex flex-wrap gap-3">
+          <Link href="/tutor/estudiantes" className={buttonVariants({ variant: "outline" })}>
+            <GraduationCap aria-hidden="true" />
             Gestionar estudiantes
           </Link>
-          <Link href="/tutor/cursos" className="font-medium text-primary hover:underline">
+          <Link href="/tutor/cursos" className={buttonVariants({ variant: "outline" })}>
+            <BookOpen aria-hidden="true" />
             Gestionar cursos
           </Link>
         </div>

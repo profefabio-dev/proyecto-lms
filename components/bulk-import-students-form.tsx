@@ -7,7 +7,8 @@ import {
   type ResultadoConfirmar,
 } from "@/lib/actions/bulk-import-students";
 import { Button } from "@/components/ui/button";
-import { colorDeGrupo } from "@/lib/group-color";
+import { colorDeGrupo, COLOR_ESTUDIANTE_EXISTENTE } from "@/lib/group-color";
+import { claveEstudiante } from "@/lib/clave-estudiante";
 
 interface FilaEditable {
   incluido: boolean;
@@ -76,6 +77,13 @@ function agruparFilasPorGrupo(filas: FilaEditable[]): { grupo: string; indices: 
  *    procesa por lotes (ver `TAMANO_LOTE` arriba) mostrando el avance.
  * 3. "resultado": resumen de creados/omitidos y las credenciales
  *    generadas (criterio 11).
+ *
+ * US34: en "revisar", una fila cuyo nombre y apellido coinciden con un
+ * estudiante que ya existe en la plataforma se marca con un color e
+ * insignia propios (`COLOR_ESTUDIANTE_EXISTENTE`). Esa fila nunca crea una
+ * cuenta nueva: si hay un curso elegido se matricula al estudiante que ya
+ * existe; si no, se omite. La marca se recalcula con el texto actual de la
+ * fila, así que desaparece si el Tutor corrige el nombre a uno distinto.
  */
 export function BulkImportStudentsForm({
   cursos,
@@ -93,6 +101,7 @@ export function BulkImportStudentsForm({
   const [progreso, setProgreso] = useState<{ procesados: number; total: number } | null>(null);
   const [errorConfirmar, setErrorConfirmar] = useState<string | null>(null);
   const [resultadoFinal, setResultadoFinal] = useState<ResultadoFinal | null>(null);
+  const [clavesExistentes, setClavesExistentes] = useState<Set<string>>(new Set());
 
   // Ajuste de estado durante el render (no en un efecto) al detectar un
   // resultado nuevo de `useActionState`: siguiendo el patrón recomendado por
@@ -112,8 +121,13 @@ export function BulkImportStudentsForm({
           }))
         )
       );
+      setClavesExistentes(new Set(previsualizacion.existentes));
       setPaso("revisar");
     }
+  }
+
+  function yaExiste(fila: FilaEditable) {
+    return clavesExistentes.has(claveEstudiante(fila.nombre, fila.apellido));
   }
 
   function actualizarFila(indice: number, cambios: Partial<FilaEditable>) {
@@ -128,6 +142,7 @@ export function BulkImportStudentsForm({
 
   function empezarDeNuevo() {
     setFilas([]);
+    setClavesExistentes(new Set());
     setCursoSeleccionado("");
     setProgreso(null);
     setErrorConfirmar(null);
@@ -150,6 +165,7 @@ export function BulkImportStudentsForm({
 
     const creados: ResultadoFinal["creados"] = [];
     const omitidos: ResultadoFinal["omitidos"] = [];
+    const existentesMatriculados: ResultadoFinal["existentesMatriculados"] = [];
     let inscritos = 0;
 
     for (let inicio = 0; inicio < seleccionadas.length; inicio += TAMANO_LOTE) {
@@ -170,6 +186,7 @@ export function BulkImportStudentsForm({
 
       creados.push(...resultadoLote.creados);
       omitidos.push(...resultadoLote.omitidos);
+      existentesMatriculados.push(...resultadoLote.existentesMatriculados);
       inscritos += resultadoLote.inscritos;
       setProgreso({
         procesados: Math.min(inicio + TAMANO_LOTE, seleccionadas.length),
@@ -178,7 +195,7 @@ export function BulkImportStudentsForm({
     }
 
     setConfirmando(false);
-    setResultadoFinal({ success: true, creados, omitidos, inscritos });
+    setResultadoFinal({ success: true, creados, omitidos, inscritos, existentesMatriculados });
     setPaso("resultado");
   }
 
@@ -194,8 +211,8 @@ export function BulkImportStudentsForm({
         </p>
 
         {resultadoFinal.creados.length > 0 && (
-          <div className="overflow-hidden rounded-md border">
-            <table className="w-full border-collapse text-xs">
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full min-w-[28rem] border-collapse text-xs">
               <thead>
                 <tr className="border-b bg-muted/50 text-left">
                   <th className="py-1.5 pl-3 pr-2">Nombre</th>
@@ -215,6 +232,25 @@ export function BulkImportStudentsForm({
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {resultadoFinal.existentesMatriculados.length > 0 && (
+          <div className="space-y-1">
+            <p className="font-medium">
+              {resultadoFinal.existentesMatriculados.length} estudiante(s) que ya existían — no se
+              creó ninguna cuenta nueva para ellos:
+            </p>
+            <ul className="list-inside list-disc text-muted-foreground">
+              {resultadoFinal.existentesMatriculados.map((estudiante, indice) => (
+                <li key={indice}>
+                  {estudiante.nombre} {estudiante.apellido} —{" "}
+                  {estudiante.yaInscrito
+                    ? "ya estaba inscrito en este curso"
+                    : "matriculado en el curso con su cuenta de siempre"}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -249,6 +285,16 @@ export function BulkImportStudentsForm({
   if (paso === "revisar") {
     const seleccionados = filas.filter((fila) => fila.incluido).length;
     const grupos = agruparFilasPorGrupo(filas);
+    const totalExistentes = filas.filter(yaExiste).length;
+    const existentesSeleccionados = filas.filter((fila) => fila.incluido && yaExiste(fila)).length;
+    const nuevosSeleccionados = seleccionados - existentesSeleccionados;
+    const hayCurso = cursoSeleccionado !== "";
+    const textoConfirmar =
+      existentesSeleccionados === 0
+        ? `Confirmar y crear ${seleccionados} estudiante(s)`
+        : hayCurso
+          ? `Confirmar: crear ${nuevosSeleccionados} y matricular ${existentesSeleccionados} que ya existen`
+          : `Confirmar y crear ${nuevosSeleccionados} estudiante(s)`;
 
     return (
       <form
@@ -285,6 +331,23 @@ export function BulkImportStudentsForm({
           separado o descartar una fila que no corresponda. Los estudiantes están agrupados por el
           grado detectado en cada hoja del archivo.
         </p>
+
+        {totalExistentes > 0 && (
+          <p className="rounded-md border p-2 text-sm">
+            <span
+              className={`mr-1.5 rounded px-1.5 py-0.5 text-xs font-medium ${COLOR_ESTUDIANTE_EXISTENTE.insignia}`}
+            >
+              Ya existe
+            </span>
+            {totalExistentes} estudiante(s) de este archivo ya tienen cuenta en la plataforma. No se
+            les crea una cuenta nueva.{" "}
+            {hayCurso
+              ? "Los que dejes marcados se matriculan en el curso elegido con su cuenta de siempre."
+              : cursos && cursos.length > 0
+                ? "Elige un curso arriba para matricularlos; sin curso, esas filas se omiten."
+                : "Esas filas se omiten."}
+          </p>
+        )}
 
         <div className="max-h-[32rem] space-y-3 overflow-auto rounded-md border bg-muted/10 p-3">
           {grupos.map(({ grupo, indices }) => {
@@ -327,19 +390,27 @@ export function BulkImportStudentsForm({
                   </Button>
                 </summary>
 
-                <table className="w-full border-collapse text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[22rem] border-collapse text-sm">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
                       <th className="py-1.5 pl-2 pr-2"></th>
                       <th className="py-1.5 pr-2">Nombre</th>
                       <th className="py-1.5 pr-2">Apellido</th>
+                      <th className="py-1.5 pr-2">
+                        <span className="sr-only">Estado</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {indices.map((indice) => {
                       const fila = filas[indice];
+                      const existente = yaExiste(fila);
                       return (
-                        <tr key={indice} className="border-b last:border-b-0">
+                        <tr
+                          key={indice}
+                          className={`border-b last:border-b-0 ${existente ? COLOR_ESTUDIANTE_EXISTENTE.fila : ""}`}
+                        >
                           <td className="py-1 pl-2 pr-2">
                             <input
                               type="checkbox"
@@ -373,11 +444,26 @@ export function BulkImportStudentsForm({
                               }
                             />
                           </td>
+                          <td className="py-1 pr-2 whitespace-nowrap">
+                            {existente && (
+                              <span
+                                className={`rounded px-1.5 py-0.5 text-xs font-medium ${COLOR_ESTUDIANTE_EXISTENTE.insignia}`}
+                                title={
+                                  hayCurso
+                                    ? "Se matricula en el curso sin crear otra cuenta"
+                                    : "No se crea otra cuenta; sin curso elegido, la fila se omite"
+                                }
+                              >
+                                Ya existe
+                              </span>
+                            )}
+                          </td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
+                </div>
               </details>
             );
           })}
@@ -386,8 +472,8 @@ export function BulkImportStudentsForm({
         <div className="flex items-center gap-2">
           <Button type="submit" disabled={confirmando || seleccionados === 0}>
             {confirmando
-              ? `Creando ${progreso?.procesados ?? 0} de ${progreso?.total ?? seleccionados}...`
-              : `Confirmar y crear ${seleccionados} estudiante(s)`}
+              ? `Procesando ${progreso?.procesados ?? 0} de ${progreso?.total ?? seleccionados}...`
+              : textoConfirmar}
           </Button>
           <Button type="button" variant="outline" onClick={empezarDeNuevo} disabled={confirmando}>
             Cancelar
@@ -401,7 +487,7 @@ export function BulkImportStudentsForm({
         )}
 
         {errorConfirmar && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-destructive">
             {errorConfirmar}
           </p>
         )}
@@ -440,7 +526,7 @@ export function BulkImportStudentsForm({
         {previsualizando ? "Leyendo archivo..." : "Ver vista previa"}
       </Button>
       {previsualizacion && !previsualizacion.success && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {previsualizacion.error}
         </p>
       )}

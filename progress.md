@@ -2,7 +2,71 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-09-23 — **Conversación sobre comercialización del producto: gestión de estudiantes retirados/cambiados de colegio, y modelo de cuenta compartida vs duplicada entre docentes. Se propone US34.**
+Última actualización: 2026-11-12 — **Interfaz, paquete 3 (parcial): botón de cerrar sesión legible, rol y estado con texto legible, panel de Administrador con iconos y accesos rápidos.**
+
+- `components/logout-button.tsx`: usa los colores del menú oscuro (antes casi blanco sobre blanco, y un cuadro vacío con el menú colapsado). Verificado en pantalla.
+- `lib/etiquetas.ts` (nuevo): "Estudiante"/"Activo"/"Desactivado" en vez de "ESTUDIANTE"/"ACTIVO"/"INACTIVO" en las tablas de usuarios, tutores y estudiantes; el rol de `/admin/usuarios` pasa a insignia. Columna de correo con ancho mínimo (se partía letra por letra). Verificado en pantalla como Administrador.
+- Panel de Administrador: iconos en las cinco tarjetas y accesos rápidos como botones (igual que el de Tutor, que también estrena los botones; **ese no se vio en pantalla**).
+
+**Verificación:** vitest 401/401, eslint 0 errores, build correcto. **Sin revisar en pantalla:** paneles y detalle de curso de Tutor y de Estudiante (solo se inició sesión como Administrador), y el flujo de US34 con un Excel real. **Pendiente del paquete 3:** pulido de las vistas de Tutor y Estudiante.
+
+
+Actualización anterior — 2026-11-12 — **Interfaz, paquete 2 (celular): el menú lateral ya no arranca abierto sobre el contenido, controles táctiles de 44 px y tablas con desplazamiento horizontal.**
+
+- **Error real corregido — menú abierto en celular.** `AppShell` tenía un solo estado (`abierto`, iniciado en `true`) para escritorio y celular, así que en un teléfono el menú aparecía desplegado ENCIMA del contenido al cargar cada página — y como cada página monta su propio `AppShell`, **reaparecía abierto en cada navegación**. Ahora son dos estados: `expandido` (escritorio, arranca expandido como siempre) y `movilAbierto` (celular, arranca cerrado y se cierra solo al navegar). El botón de hamburguesa decide cuál alternar según el ancho de la ventana; su etiqueta accesible pasó a "Mostrar u ocultar el menú".
+- **Zonas de toque.** Nueva variante de Tailwind `touch:` en `app/globals.css` (pantallas `pointer: coarse` o ventanas de menos de 640 px). `Button`: default 44 px, lg 48, sm 40, xs 36 (iconos igual). Los `<input>`, `<select>` y `<textarea>` sueltos (unos 20 formularios) y el componente `Input` suben a 44 px con una regla global de `min-height`, sin editar cada archivo; los checkbox a 20 px y sus filas a ~40 px; enlaces del menú 44 px. En escritorio nada cambia.
+- **Tablas.** Las de Admin (usuarios, tutores), Tutor (estudiantes), Superadmin y la carga masiva (resumen y vista previa) usaban `overflow-hidden`, que cortaba columnas en pantallas angostas; ahora tienen `overflow-x-auto` y un ancho mínimo, así que se desplazan en vez de aplastarse.
+
+**Verificación:** `vitest run` 401/401, `eslint` 0 errores, `next build --webpack` correcto. Con una página de demostración temporal (ya borrada) en 375 px: menú cerrado al cargar, se abre con su fondo oscurecido; botones 44/40/36 px, icono 44×44, campos y selector 44 px, casilla 20 px, enlaces del menú 44 px; la página no desborda y la tabla se desplaza (341 de 576 px). En escritorio: menú expandido al cargar, se colapsa a riel con un clic y los controles siguen en su tamaño compacto. **No verificado:** las pantallas reales con sesión iniciada (Tutor, Admin, Estudiante) ni el modo táctil real (el emulador usa clics de ratón; `pointer: coarse` se comprobó solo por el ancho).
+
+**Detectado y dejado para el paquete 3:** el botón "Cerrar sesión" sobre el menú oscuro se ve casi blanco (variante `outline`) y, con el menú colapsado, queda como un cuadro blanco sin icono visible.
+
+
+Actualización anterior — 2026-11-12 — **Interfaz, paquete 1 (base visual y estados): raíz sin plantilla, pantallas de no encontrada / error / carga, y colores fijos pasados al tema.**
+
+Tras la revisión general de interfaz de hoy (pedido del docente: "se ve poco profesional"), se hizo el primer paquete de tres:
+- **Página raíz `/`:** era la plantilla de ejemplo de Next.js (logo, "Templates", "Deploy"). Ahora redirige a `/dashboard`, que manda a cada rol a su panel; sin sesión, el middleware lleva a `/login`. Se borró `public/` (los cinco SVG de la plantilla, ya sin uso).
+- **Pantallas de estado nuevas:** `app/not-found.tsx` (404 con salida al inicio), `app/error.tsx` (error inesperado con "Intentar de nuevo"; no muestra `error.message` al usuario), `app/global-error.tsx` (si falla el layout raíz) y `app/loading.tsx` (indicador de carga que respeta `prefers-reduced-motion`). Las tres primeras comparten `components/status-screen.tsx`, con el mismo fondo y rótulo que el login. En esta versión de Next.js el reintento se llama `retry`, no `reset` (ver `node_modules/next/dist/docs`).
+- **Colores al tema:** 55 usos de colores fijos de Tailwind en 25 archivos pasaron a tokens: `text-red-600` → `text-destructive`; verdes de éxito → tres tokens nuevos (`--success`, `--success-soft`, `--success-border`, con versión oscura en `app/globals.css`); `text-gray-500` → `text-muted-foreground`; `text-blue-600` → `text-primary`. Los estados de curso de `lib/course-status.ts` (y su prueba) ahora usan los mismos tokens. Se dejó el ámbar de "Borrador" y del progreso, que es semántico (advertencia).
+
+**Verificación:** `vitest run` 401/401; `eslint` 0 errores; `next build --webpack` correcto. En pantalla (escritorio y 375 px, sin desborde): la página 404 se ve y responde con código 404 y enlace a `/dashboard`, y `/` redirige a `/login`. **No verificado en pantalla:** `error.tsx`, `global-error.tsx`, `loading.tsx`, el modo oscuro y los mensajes de éxito/error de los formularios (están detrás del inicio de sesión).
+
+**Siguen pendientes los paquetes 2 (celular: controles de 44 px y tablas que no se corten) y 3 (pulido de los paneles de Tutor, Admin y Estudiante).**
+
+
+Actualización anterior — 2026-11-12 — **Revisión de seguridad: se corrigen tres problemas graves (tablas abiertas a internet, contraseñas de scripts en el repositorio público y Next.js con vulnerabilidad crítica). Base de datos migrada a una cuenta nueva de Supabase.**
+
+**Corregido:**
+- **RLS en `espacios`, `secciones` y `_prisma_migrations`** (migración `20261112200000_rls_espacios_secciones`, ya aplicada en el proyecto nuevo). Esas tablas se crearon después de la migración que activó RLS y se podían leer y modificar desde internet con la clave pública. Verificado: la clave pública ahora ve 0 filas en las nueve tablas. La aplicación no se ve afectada (usa Prisma y service_role).
+- **Scripts sin contraseñas en el código.** `seed-admin.ts`, `seed-superadmin.ts` y `test-sync-user.ts` ya no traen correo ni contraseña escritos; exigen variables de entorno (`ADMIN_EMAIL`/`ADMIN_PASSWORD`, `SUPERADMIN_EMAIL`/`SUPERADMIN_PASSWORD`, `TEST_USER_EMAIL`/`TEST_USER_PASSWORD`) y se niegan a correr sin ellas. Se quitó de este archivo el nombre completo de dos estudiantes. **Sigue en el historial de git** (commits anteriores): el código de los scripts y esos nombres siguen visibles allí.
+- **Dependencias:** Next.js 16.3.2 → 16.4.6 (vulnerabilidad crítica); `eslint-config-next` igual; `shadcn` pasa a dependencia de desarrollo; `npm audit fix` aplicado. Vulnerabilidades de producción: de 26 (2 críticas, 15 altas) a **0**, en dos pasos: (1) `xlsx` 0.18.5 → 0.20.3, que corrige la contaminación de prototipos y el ReDoS; esa versión ya no se publica en npm, así que se instala desde la distribución oficial de SheetJS (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`) con su huella de integridad fijada en `package-lock.json`; (2) el defecto de `prisma` venía de `deepmerge-ts` 7 dentro del CLI (`@prisma/config`), y se resolvió con un `overrides` de `deepmerge-ts` a ^8.0.2 en `package.json` en vez de saltar a Prisma 7 — `prisma generate`, `validate` y `migrate status` siguen funcionando. Quedan 12 avisos de gravedad baja/moderada, todos de herramientas de desarrollo (`typescript-eslint`, `shadcn`, `minimatch`, `ts-morph`), sin efecto en la aplicación en funcionamiento. Si algún día se actualiza Prisma a una versión que ya traiga `deepmerge-ts` 8, el `overrides` se puede quitar.
+
+**Pendiente — te toca a ti:** cambiar la contraseña de la cuenta de administrador de prueba que usaba `seed-admin.ts` (estuvo publicada), y decidir si el repositorio pasa a privado.
+
+**Pendiente — hallazgos medios sin corregir:** cuenta desactivada sigue activa hasta que expire su token en páginas y acciones que no pasan por `/dashboard`; registro público de Supabase Auth activado (desactivar en el panel); un Tutor puede resetear contraseña y correo de un estudiante compartido con otro docente; "Asignar estudiantes" lista estudiantes de toda la plataforma; archivos validados solo por el tipo que declara el navegador; sin cabeceras de seguridad en `next.config.ts`; un estudiante inscrito puede abrir un curso en Borrador/Archivado; `xlsx` sin parche; `middleware.ts` en desuso (renombrar a `proxy`).
+
+**Verificación:** `vitest run`: 401/401. `eslint`: 0 errores. `next build --webpack`: compila y pasa TypeScript.
+
+
+Actualización anterior — 2026-11-12 — **US34 implementada (la carga masiva marca a los estudiantes que ya existen y permite matricularlos), y se corrigen dos pruebas unitarias desactualizadas. Pendiente de probar en navegador.**
+
+**US34 — qué cambió:**
+- `lib/actions/bulk-import-students.ts`: `previsualizarCargaEstudiantes` ahora devuelve `existentes`, las claves (nombre+apellido, sin espacios sobrantes ni distinción de mayúsculas — `lib/clave-estudiante.ts`, archivo nuevo) de las filas del archivo que coinciden con un estudiante ya registrado. Se consulta una sola vez el nombre y apellido de los estudiantes y se cruza en memoria; al cliente solo viajan las coincidencias con su propio archivo, nunca el listado de la plataforma. `confirmarCargaEstudiantes` ya no omite siempre al duplicado: si el Tutor eligió un curso propio, el estudiante existente se matricula en él con su cuenta de siempre (se consulta antes si ya estaba inscrito, para no chocar con la restricción única de `CourseUsers` y para informarlo tal cual); sin curso, o si lo sube un Administrador, la fila se omite como antes. Un existente con `estado` distinto de `ACTIVO` no se matricula y queda en omitidos con ese motivo (mismo criterio que la corrección de US20 del 17/09). El resultado trae un campo nuevo, `existentesMatriculados` (con `yaInscrito` por estudiante). Si la inscripción falla, los existentes se informan como omitidos para asignarlos a mano.
+- `components/bulk-import-students-form.tsx`: cada fila existente se muestra con fondo e insignia "Ya existe"; un aviso arriba de la lista dice cuántos son y qué pasará según haya o no curso elegido; el botón de confirmar separa cuántos se crean y cuántos existentes se matriculan; el resumen final lista aparte a los existentes. La marca se recalcula con el texto actual de la fila, así que desaparece si el Tutor corrige el nombre a uno distinto.
+- `lib/group-color.ts`: nuevo `COLOR_ESTUDIANTE_EXISTENTE` (fucsia), a propósito fuera de la paleta de grupos y de los colores con significado propio, y aplicado como fondo de fila — no como línea a la izquierda — para no confundirse con el color de grado.
+
+**Límite conocido, sin cambios:** la coincidencia sigue siendo por nombre y apellido, con las fallas ya documentadas (acentos, "Apellidos, Nombres" invertido). Eso es lo que resolvería US35 (documento de identidad), todavía sin construir.
+
+**Pruebas corregidas (no eran fallas del código de la aplicación):** la suite completa, que no se había podido correr entera desde el 17/09, daba 394 de 396. `app/tutor/estudiantes/page.test.ts` no simulaba la consulta de cursos que la página hace desde US29; `lib/actions/mark-current-section.test.ts` afirmaba que `update` no se llamaba, cuando la transacción en forma de arreglo sí lo invoca — ahora verifica las dos operaciones con sus argumentos.
+
+**Verificación:** `vitest run` completo: 401 de 401 (5 pruebas nuevas de US34). `eslint` limpio en los archivos tocados. `tsc --noEmit` solo reporta `LayoutProps` en `app/layout.tsx`, un tipo que genera Next.js al compilar y que no existe en esta copia de trabajo — no viene de este cambio.
+
+**Pendiente:**
+- Probar US34 en navegador real: no se pudo porque `prisma migrate status` falló con `tenant/user postgres.… not found` — la base de datos de Supabase rechazó la conexión (posiblemente el proyecto está pausado por inactividad). Por lo mismo sigue sin confirmarse que la migración de `grado` esté aplicada.
+- Siguen abiertos del 20-22/09: qué no convenció al docente de "agregar y quitar estudiantes" (US11) y si el formulario manual (US06) debe avisar de duplicados por nombre y apellido.
+
+
+Actualización anterior — 2026-09-23 — **Conversación sobre comercialización del producto: gestión de estudiantes retirados/cambiados de colegio, y modelo de cuenta compartida vs duplicada entre docentes. Se propone US34.**
 
 Pensando en comercializar la plataforma para instituciones educativas, el docente planteó varios escenarios hipotéticos, sin pedir cambios de código todavía:
 
@@ -19,7 +83,7 @@ Actualización anterior — 2026-09-22 — **Se borran definitivamente los 110 e
 
 El docente pidió dejar el listado de estudiantes "en blanco", borrando a los cargados mediante el archivo de Excel de prueba. Se creó `scripts/borrar-carga-excel.ts`, con un criterio más directo y confiable que el del script anterior (`borrar-listado-1.ts`, que cruzaba nombres contra un archivo específico): identifica en la base de datos, sin depender de ningún Excel, a **todo** estudiante con `rol = ESTUDIANTE` y email terminado en `@estudiantes-lms.local` — ese dominio solo lo genera automáticamente la carga masiva (US29, `lib/auth/generar-email-interno.ts`); un estudiante creado a mano (US06) siempre tiene un email real escrito por el Tutor/Administrador. Mismo patrón de seguridad que el script anterior: dry run por defecto, separa a quien tenga inscripciones o vistas de contenido reales y no lo toca salvo `--forzar-todos`, y solo borra con `--confirmar` explícito (borra `CourseUsers`/`ContentViews`, la cuenta de Supabase Auth y por último la fila de `Users`).
 
-El docente corrió el dry run: 110 estudiantes sin ninguna actividad (de un total con ese dominio de email un poco mayor, con 2 casos aparte que sí tienen inscripción real — los mismos que ya se habían identificado antes, YOHANNY VALERIA AGUACHE VILLA y YURI SALOME LAZO QUICENO). Confirmó borrar solo esos 110, dejando intactos a los 2 con actividad real (sin `--forzar-todos`). Corrido con `--confirmar` en su máquina: **"Listo: 110 estudiantes borrados definitivamente (Users + Supabase Auth)."**
+El docente corrió el dry run: 110 estudiantes sin ninguna actividad (de un total con ese dominio de email un poco mayor, con 2 casos aparte que sí tienen inscripción real — los mismos que ya se habían identificado antes). Confirmó borrar solo esos 110, dejando intactos a los 2 con actividad real (sin `--forzar-todos`). Corrido con `--confirmar` en su máquina: **"Listo: 110 estudiantes borrados definitivamente (Users + Supabase Auth)."**
 
 Con esto, el listado de estudiantes queda con las 2 cuentas de prueba manuales de siempre (Ana Perez, carlos andres gaviria) más los 2 estudiantes reales que sí llegaron a inscribirse — ya no quedan cuentas sueltas de la carga de prueba.
 

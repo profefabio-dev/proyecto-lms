@@ -95,8 +95,17 @@ describe("marcarSeccionActual (US30)", () => {
     const resultado = await marcarSeccionActual(null, buildFormData("seccion-1"));
 
     expect(resultado.success).toBe(true);
+    // La transacción en forma de arreglo construye ambas operaciones antes
+    // de enviarlas juntas, así que update/updateMany sí se invocan aquí.
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
-    expect(prisma.secciones.update).not.toHaveBeenCalled();
+    expect(prisma.secciones.updateMany).toHaveBeenCalledWith({
+      where: { courseId: "curso-1", esActual: true },
+      data: { esActual: false },
+    });
+    expect(prisma.secciones.update).toHaveBeenCalledWith({
+      where: { id: "seccion-1" },
+      data: { esActual: true },
+    });
   });
 
   it("desmarca la sección si ya era la semana actual (segundo clic)", async () => {

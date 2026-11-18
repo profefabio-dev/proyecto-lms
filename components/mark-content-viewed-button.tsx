@@ -41,7 +41,7 @@ export function MarkContentViewedButton({
         {isPending ? "Guardando..." : "Marcar como visto"}
       </Button>
       {estado && !estado.success && (
-        <span className="text-sm text-red-600" role="alert">
+        <span className="text-sm text-destructive" role="alert">
           {estado.error}
         </span>
       )}

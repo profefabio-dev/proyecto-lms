@@ -24,7 +24,7 @@ export function DocumentContentList({ documentos }: { documentos: DocumentoConUr
             <>
               <a
                 href={documento.url}
-                className="text-lg font-medium text-blue-600 underline"
+                className="text-lg font-medium text-primary underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >

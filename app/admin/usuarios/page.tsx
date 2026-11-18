@@ -10,6 +10,7 @@ import { ToggleUserStatusForm } from "@/components/toggle-user-status-form";
 import { BulkImportStudentsForm } from "@/components/bulk-import-students-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { etiquetaEstado, etiquetaRol } from "@/lib/etiquetas";
 import { cn } from "@/lib/utils";
 import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 
@@ -102,8 +103,8 @@ export default async function UsuariosPage({
           })}
         </nav>
 
-        <div className="overflow-hidden rounded-lg border">
-          <table className="w-full border-collapse text-sm">
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-[36rem] border-collapse text-sm">
             <thead>
               <tr className="border-b bg-muted/50 text-left">
                 <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre</th>
@@ -126,11 +127,13 @@ export default async function UsuariosPage({
                   <td className="py-2 pr-4 pl-4">
                     {usuario.nombre} {usuario.apellido}
                   </td>
-                  <td className="py-2 pr-4 break-all">{usuario.email}</td>
-                  <td className="py-2 pr-4">{usuario.rol}</td>
+                  <td className="min-w-[13rem] py-2 pr-4 break-all">{usuario.email}</td>
+                  <td className="py-2 pr-4">
+                    <Badge variant="outline">{etiquetaRol(usuario.rol)}</Badge>
+                  </td>
                   <td className="py-2 pr-4">
                     <Badge variant={usuario.estado === "ACTIVO" ? "success" : "secondary"}>
-                      {usuario.estado}
+                      {etiquetaEstado(usuario.estado)}
                     </Badge>
                   </td>
                   <td className="py-2 pr-4">

@@ -25,6 +25,12 @@ export function LogoutButton({ iconOnly = false }: { iconOnly?: boolean }) {
     <Button
       type="button"
       variant="outline"
+      // Paquete 3 de interfaz (2026-11-12): este botón solo vive dentro del
+      // menú lateral OSCURO (`AppShell`), pero la variante `outline` pinta un
+      // fondo claro (`bg-background`) con el texto heredado del menú (también
+      // claro) — quedaba casi invisible, y colapsado era un cuadro blanco sin
+      // icono legible. Se sobrescribe con los colores propios del menú.
+      className="border-sidebar-border bg-transparent text-sidebar-foreground shadow-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:border-sidebar-border dark:bg-transparent dark:hover:bg-sidebar-accent"
       size={iconOnly ? "icon-sm" : "sm"}
       onClick={handleClick}
       disabled={cargando}

@@ -7,6 +7,7 @@ import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { ResetPasswordForm } from "@/components/reset-password-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { etiquetaEstado } from "@/lib/etiquetas";
 import { Rol } from "@prisma/client";
 
 export default async function TutoresPage() {
@@ -51,8 +52,8 @@ export default async function TutoresPage() {
 
         <div>
           <h2 className="mb-2 text-lg font-semibold">Tutores registrados</h2>
-          <div className="overflow-hidden rounded-lg border">
-            <table className="w-full border-collapse text-sm">
+          <div className="overflow-x-auto rounded-lg border">
+            <table className="w-full min-w-[36rem] border-collapse text-sm">
               <thead>
                 <tr className="border-b bg-muted/50 text-left">
                   <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre</th>
@@ -65,10 +66,10 @@ export default async function TutoresPage() {
                 {tutores.map((tutor) => (
                   <tr key={tutor.id} className="border-b last:border-b-0 hover:bg-muted/30">
                     <td className="py-2 pr-4 pl-4">{tutor.nombre} {tutor.apellido}</td>
-                    <td className="py-2 pr-4 break-all">{tutor.email}</td>
+                    <td className="min-w-[13rem] py-2 pr-4 break-all">{tutor.email}</td>
                     <td className="py-2 pr-4">
                       <Badge variant={tutor.estado === "ACTIVO" ? "success" : "secondary"}>
-                        {tutor.estado}
+                        {etiquetaEstado(tutor.estado)}
                       </Badge>
                     </td>
                     <td className="py-2 pr-4">

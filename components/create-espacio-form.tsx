@@ -38,13 +38,13 @@ export function CreateEspacioForm() {
       </div>
 
       {estado && !estado.success && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-destructive" role="alert">
           {estado.error}
         </p>
       )}
 
       {estado && estado.success && (
-        <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">
+        <div className="rounded-md bg-success-soft p-3 text-sm text-success">
           Espacio creado. Contraseña temporal del Administrador (compártela de forma segura):{" "}
           <code className="font-mono font-semibold">{estado.passwordTemporal}</code>
         </div>

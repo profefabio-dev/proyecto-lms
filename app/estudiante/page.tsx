@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Sparkles,
   CheckCircle2,
-  GraduationCap,
   PlayCircle,
   BarChart3,
 } from "lucide-react";
@@ -21,7 +20,8 @@ import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { CourseCard } from "@/components/course-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default async function EstudiantePage() {
   const supabase = await createClient();
@@ -249,15 +249,10 @@ export default async function EstudiantePage() {
                 </div>
               </div>
 
-              <Button
-                asChild
-                className="h-12 px-6 rounded-2xl font-bold shadow-sm gap-2 shrink-0 self-start sm:self-center"
-              >
-                <Link href={cursoEnProgreso.href}>
+              <Link href={cursoEnProgreso.href} className={cn(buttonVariants(), "h-12 px-6 rounded-2xl font-bold shadow-sm gap-2 shrink-0 self-start sm:self-center")}>
                   Reanudar clase
                   <ArrowRight className="size-4" />
                 </Link>
-              </Button>
             </div>
           </div>
         )}

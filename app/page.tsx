@@ -16,7 +16,8 @@ import {
   Compass,
   FileCheck2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
@@ -150,23 +151,17 @@ export default async function Home() {
 
           <div className="flex items-center gap-3">
             {usuarioAutenticado ? (
-              <Button asChild className="gap-2 font-medium">
-                <Link href="/dashboard">
+              <Link href="/dashboard" className={cn(buttonVariants(), "gap-2 font-medium")}>
                   Ir a mi Panel
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-              </Button>
             ) : (
               <>
-                <Button variant="ghost" asChild className="hidden sm:inline-flex">
-                  <Link href="/login">Acceso</Link>
-                </Button>
-                <Button asChild className="gap-2 shadow-sm font-semibold">
-                  <Link href="/login">
+                <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "hidden sm:inline-flex")}>Acceso</Link>
+                <Link href="/login" className={cn(buttonVariants(), "gap-2 shadow-sm font-semibold")}>
                     Ingresar al Campus
                     <ArrowRight className="h-4 w-4" />
                   </Link>
-                </Button>
               </>
             )}
           </div>
@@ -205,28 +200,15 @@ export default async function Home() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto pt-2">
-                  <Button
-                    size="lg"
-                    asChild
-                    className="h-12 px-7 text-base font-semibold shadow-md gap-2"
-                  >
-                    <Link href="/login">
+                  <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "h-12 px-7 text-base font-semibold shadow-md gap-2")}>
                       {usuarioAutenticado ? "Entrar al Campus Virtual" : "Comenzar Ahora"}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
-                  </Button>
 
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    asChild
-                    className="h-12 px-6 text-base font-medium"
-                  >
-                    <a href="#cursos">
+                  <a href="#cursos" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 px-6 text-base font-medium")}>
                       <BookOpen className="h-4 w-4 mr-2" />
                       Explorar Cursos
                     </a>
-                  </Button>
                 </div>
 
                 {/* Métricas destacadas */}
@@ -305,9 +287,7 @@ export default async function Home() {
                             <p className="text-primary font-medium">En curso actualmente</p>
                           </div>
                         </div>
-                        <Button size="xs" variant="default" asChild>
-                          <Link href="/login">Continuar</Link>
-                        </Button>
+                        <Link href="/login" className={buttonVariants({ variant: "default", size: "xs" })}>Continuar</Link>
                       </div>
 
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/30 opacity-70">
@@ -451,12 +431,10 @@ export default async function Home() {
                 </p>
               </div>
 
-              <Button asChild variant="outline" className="gap-2 shrink-0 self-start md:self-end">
-                <Link href="/login">
+              <Link href="/login" className={cn(buttonVariants({ variant: "outline" }), "gap-2 shrink-0 self-start md:self-end")}>
                   Acceder a todos los cursos
                   <ChevronRight className="h-4 w-4" />
                 </Link>
-              </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -491,12 +469,10 @@ export default async function Home() {
 
                       <div className="p-5 pt-0 border-t border-border/50 mt-4 flex items-center justify-between text-xs text-muted-foreground">
                         <span>{curso.totalContenidos || 0} lecciones</span>
-                        <Button size="xs" variant="ghost" asChild className="gap-1 font-semibold text-primary">
-                          <Link href="/login">
+                        <Link href="/login" className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "gap-1 font-semibold text-primary")}>
                             Entrar
                             <ArrowRight className="h-3 w-3" />
                           </Link>
-                        </Button>
                       </div>
                     </Card>
                   ))
@@ -531,12 +507,10 @@ export default async function Home() {
 
                       <div className="p-5 pt-0 border-t border-border/50 mt-4 flex items-center justify-between text-xs text-muted-foreground">
                         <span className="font-medium text-foreground">Prof. Fabio Aguirre</span>
-                        <Button size="xs" variant="ghost" asChild className="gap-1 font-semibold text-primary">
-                          <Link href="/login">
+                        <Link href="/login" className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "gap-1 font-semibold text-primary")}>
                             Detalles
                             <ArrowRight className="h-3 w-3" />
                           </Link>
-                        </Button>
                       </div>
                     </Card>
                   ))}
@@ -567,7 +541,7 @@ export default async function Home() {
                     </div>
                     <div>
                       <h4 className="font-heading text-sm font-bold text-foreground">
-                        Botón "Continuar donde lo dejaste"
+                        Botón &quot;Continuar donde lo dejaste&quot;
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         Retoma tus lecciones al instante sin tener que buscar qué video o lectura te
@@ -608,12 +582,10 @@ export default async function Home() {
                 </div>
 
                 <div className="mt-8">
-                  <Button asChild className="gap-2">
-                    <Link href="/login">
+                  <Link href="/login" className={cn(buttonVariants(), "gap-2")}>
                       Acceder a mi Cuenta de Estudiante
                       <ArrowRight className="h-4 w-4" />
                     </Link>
-                  </Button>
                 </div>
               </div>
 
@@ -683,9 +655,9 @@ export default async function Home() {
             </p>
 
             <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-              "La educación en tecnología no se trata únicamente de aprender a usar herramientas,
+              &ldquo;La educación en tecnología no se trata únicamente de aprender a usar herramientas,
               sino de cultivar el pensamiento crítico, la creatividad y la capacidad de resolver
-              problemas reales para generar un impacto positivo en nuestra sociedad."
+              problemas reales para generar un impacto positivo en nuestra sociedad.&rdquo;
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -722,15 +694,11 @@ export default async function Home() {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-                <Button size="lg" asChild className="h-12 px-8 font-semibold shadow-md gap-2">
-                  <Link href="/login">
+                <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "h-12 px-8 font-semibold shadow-md gap-2")}>
                     Ingresar al Campus Virtual
                     <ArrowRight className="h-4 w-4" />
                   </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild className="h-12 px-6">
-                  <a href="#cursos">Ver Cursos Disponibles</a>
-                </Button>
+                <a href="#cursos" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 px-6")}>Ver Cursos Disponibles</a>
               </div>
             </div>
           </div>

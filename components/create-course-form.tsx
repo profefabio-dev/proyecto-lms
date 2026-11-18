@@ -98,14 +98,14 @@ export function CreateCourseForm() {
       </Button>
 
       {estado && !estado.success && (
-        <p role="alert" className="text-red-600 text-sm">
+        <p role="alert" className="text-destructive text-sm">
           {estado.error}
         </p>
       )}
 
       {estado && estado.success && (
-        <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
-          <p className="font-medium text-green-800">Curso creado correctamente.</p>
+        <div className="bg-success-soft border border-success-border rounded p-3 text-sm">
+          <p className="font-medium text-success">Curso creado correctamente.</p>
         </div>
       )}
     </form>

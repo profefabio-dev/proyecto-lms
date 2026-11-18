@@ -8,6 +8,7 @@ import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { ResetPasswordForm } from "@/components/reset-password-form";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { etiquetaEstado } from "@/lib/etiquetas";
 import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 import { Rol } from "@prisma/client";
 
@@ -62,8 +63,8 @@ export default async function EstudiantesPage() {
 
         <BulkImportStudentsForm cursos={cursos} />
 
-        <div className="overflow-hidden rounded-lg border">
-          <table className="w-full text-sm border-collapse">
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-[36rem] text-sm border-collapse">
             <thead>
               <tr className="text-left border-b bg-muted/50">
                 <th className="py-2 pr-4 pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre</th>
@@ -85,10 +86,10 @@ export default async function EstudiantesPage() {
                   <td className="py-2 pr-4 pl-4">
                     {estudiante.nombre} {estudiante.apellido}
                   </td>
-                  <td className="py-2 pr-4 break-all">{estudiante.email}</td>
+                  <td className="min-w-[13rem] py-2 pr-4 break-all">{estudiante.email}</td>
                   <td className="py-2 pr-4">
                     <Badge variant={estudiante.estado === "ACTIVO" ? "success" : "secondary"}>
-                      {estudiante.estado}
+                      {etiquetaEstado(estudiante.estado)}
                     </Badge>
                   </td>
                   <td className="py-2 pr-4">

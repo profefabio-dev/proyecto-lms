@@ -4,8 +4,6 @@ import {
   ArrowLeft,
   Sparkles,
   CheckCircle2,
-  BookOpen,
-  Award,
   Flame,
   HelpCircle,
 } from "lucide-react";

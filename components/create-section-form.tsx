@@ -25,7 +25,7 @@ export function CreateSectionForm({ courseId }: { courseId: string }) {
       </Button>
 
       {estado && !estado.success && (
-        <p role="alert" className="w-full text-sm text-red-600">
+        <p role="alert" className="w-full text-sm text-destructive">
           {estado.error}
         </p>
       )}
