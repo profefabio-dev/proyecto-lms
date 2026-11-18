@@ -30,6 +30,8 @@ export default async function TutorPage() {
 
   const usuarioActual = await prisma.users.findUnique({ where: { authId: user.id } });
 
+  // US18: guarda de sesión y rol — antes cualquier persona con sesión activa
+  // podía entrar directamente a /tutor sin ser Tutor.
   if (!usuarioActual || usuarioActual.rol !== "TUTOR") {
     redirect("/login");
   }

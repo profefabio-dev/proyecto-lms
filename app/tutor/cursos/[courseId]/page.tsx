@@ -79,6 +79,28 @@ export default async function CursoDetallePage({
 
   const idsInscritos = curso.inscritos.map((inscripcion) => inscripcion.userId);
 
+  // Corrección del 16/09/2026: la revisión de seguridad de esta misma
+  // mañana había agregado aquí el filtro de espacio de US24
+  // (`filtroUsuarioVisibleEnEspacio`), pensando que era la misma fuga que
+  // ya se corrigió en `/tutor/estudiantes`. Era un error: ese filtro exige
+  // que el estudiante ya tenga una inscripción previa para considerarlo
+  // "visible", así que ningún estudiante recién creado (por US06 o por la
+  // carga masiva de US29) podía asignarse nunca a ningún curso, en ningún
+  // espacio — la función quedó inservible. Además, el diseño ya
+  // documentado de esta épica (`Backlog.md`, US26) dice explícitamente que
+  // un estudiante creado en un espacio **debe poder** ser asignado después
+  // por un Tutor de otro espacio distinto, sin duplicar su cuenta — un
+  // Estudiante es una cuenta global compartida, a propósito, y este
+  // selector es un buscador de ese universo global de estudiantes para
+  // inscribir, no un listado de "mis estudiantes" (eso sí sigue filtrado
+  // por espacio en `/tutor/estudiantes`, correctamente). Se revierte al
+  // comportamiento original: cualquier estudiante del sistema que todavía
+  // no esté inscrito en este curso puntual.
+  // 17/09/2026, pedido por el docente: un estudiante con matrícula
+  // cancelada (desactivado por un Administrador, US20) no debe seguir
+  // apareciendo como candidato para asignar a un curso nuevo — solo se
+  // excluye de este selector, su historial y su inscripción en cursos
+  // donde ya estaba no se tocan.
   const estudiantesDisponibles = await prisma.users.findMany({
     where: {
       rol: "ESTUDIANTE",

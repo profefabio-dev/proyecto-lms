@@ -98,6 +98,12 @@ export default async function CursoEstudiantePage({
 
   // US19 (rediseño): "visto" ya no se marca solo con abrir esta página —
   // hace falta la confirmación del estudiante al pulsar el botón correspondiente.
+  // US19 (rediseño): el contenido ya NO se marca como visto automáticamente
+  // al abrir la página — eso marcaba TODOS los contenidos a la vez sin que
+  // el estudiante interactuara con ninguno, porque todos se muestran juntos
+  // en la misma página. Ahora hace falta el clic del estudiante en
+  // <MarkContentViewedButton>; aquí solo se consulta cuáles ya están
+  // marcados, para no mostrarle el botón a algo que ya confirmó antes.
   const vistos =
     contenidosVisibles.length === 0
       ? []

@@ -29,6 +29,15 @@ export default async function EstudiantesPage() {
     redirect("/login");
   }
 
+  // Épica Multi-docente (US24): antes de esto, un Tutor veía (y podía
+  // editar/resetear la contraseña de) TODOS los Estudiantes de la
+  // plataforma, sin importar si tenían algo que ver con sus cursos — un
+  // vacío real, no solo un límite de la vista. Ahora se limita a los
+  // Estudiantes con al menos una inscripción en un curso de su mismo
+  // espacio (los Estudiantes son cuentas compartidas entre espacios, así
+  // que no tienen espacioId propio — se filtran por inscripción real, ver
+  // `lib/espacio-scope.ts`). Caso defensivo: todo Tutor existente quedó
+  // con espacioId asignado por la migración de la épica.
   if (!usuarioActual.espacioId) {
     redirect("/login");
   }
