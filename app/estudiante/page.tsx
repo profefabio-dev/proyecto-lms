@@ -1,6 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, Flame, Search } from "lucide-react";
+import {
+  BookOpen,
+  Flame,
+  Search,
+  Trophy,
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  GraduationCap,
+  PlayCircle,
+  BarChart3,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { obtenerEstadoEstudiante } from "@/lib/course-status";
@@ -9,6 +20,8 @@ import { calcularRacha } from "@/lib/streak";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { CourseCard } from "@/components/course-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default async function EstudiantePage() {
   const supabase = await createClient();
@@ -26,17 +39,7 @@ export default async function EstudiantePage() {
     redirect("/login");
   }
 
-  // US19: para calcular el % de avance de cada curso hace falta el total
-  // de contenidos visibles (los ocultos no cuentan, igual que en la vista
-  // de detalle) y cuántos de esos ya vio el estudiante autenticado. Se
-  // trae también el tutor de cada curso para mostrarlo en la tarjeta.
-  //
-  // Esta consulta y la de `ContentViews` de abajo no dependen una de la
-  // otra (la de vistas solo necesita `usuarioActual.id`, no el resultado de
-  // las inscripciones) — antes se esperaban en serie sin necesidad, así que
-  // se paralelizan con `Promise.all` para no pagar dos viajes de ida y
-  // vuelta a la base de datos uno detrás del otro (pase de optimización de
-  // rendimiento, 2026-09-04).
+  // Carga paralela de inscripciones y vistas de contenido
   const [inscripciones, vistas] = await Promise.all([
     prisma.courseUsers.findMany({
       where: { userId: usuarioActual.id },
@@ -50,10 +53,6 @@ export default async function EstudiantePage() {
       },
       orderBy: { fecha: "desc" },
     }),
-    // Además del % de avance por curso, `vistoEn` alimenta la racha de
-    // días activos. No se filtra por contenidos visibles porque la racha
-    // debe reflejar toda la actividad real del estudiante, no solo la de
-    // los cursos/contenidos que siguen visibles hoy.
     prisma.contentViews.findMany({
       where: { userId: usuarioActual.id },
       select: { contentId: true, vistoEn: true },
@@ -63,76 +62,244 @@ export default async function EstudiantePage() {
   const idsVistos = new Set(vistas.map((vista) => vista.contentId));
   const racha = calcularRacha(vistas.map((vista) => vista.vistoEn));
 
+  // Procesamos cada curso con sus métricas
+  const cursosConMetricas = inscripciones.map((inscripcion) => {
+    const estado = obtenerEstadoEstudiante(inscripcion.course.estado);
+    const totalContenidos = inscripcion.course.contenidos.length;
+    const contenidosVistos = inscripcion.course.contenidos.filter((c) => idsVistos.has(c.id)).length;
+    const progreso = calcularProgreso(contenidosVistos, totalContenidos);
+    const completado = progreso === 100 && totalContenidos > 0;
+
+    return {
+      id: inscripcion.id,
+      courseId: inscripcion.course.id,
+      href: `/estudiante/cursos/${inscripcion.course.id}`,
+      titulo: inscripcion.course.titulo,
+      imagen: inscripcion.course.imagen,
+      tutor: inscripcion.course.tutor,
+      estadoLabel: estado.label,
+      progreso,
+      contenidosVistos,
+      totalContenidos,
+      completado,
+    };
+  });
+
+  const totalCursos = cursosConMetricas.length;
+  const cursosCompletados = cursosConMetricas.filter((c) => c.completado).length;
+  const totalTemasVistos = vistas.length;
+  const progresoPromedio =
+    totalCursos > 0
+      ? Math.round(cursosConMetricas.reduce((acc, c) => acc + c.progreso, 0) / totalCursos)
+      : 0;
+
+  // Encontrar el curso prioritario para "Continuar Aprendiendo"
+  const cursoEnProgreso =
+    cursosConMetricas.find((c) => !c.completado && c.progreso > 0) ||
+    cursosConMetricas.find((c) => !c.completado && c.totalContenidos > 0);
+
   return (
     <AppShell usuario={usuarioActual} breadcrumbs={[{ label: "Mis cursos" }]}>
-      <main className="mx-auto max-w-6xl space-y-8 px-6 py-10">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-              Hola, {usuarioActual.nombre} 👋
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Este es el estado de tus cursos y tu actividad reciente.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {racha > 0 && (
-              <div
-                className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-br from-duo-orange to-duo-gold px-4 py-2.5 shadow-[0_3px_0_var(--duo-orange-shadow)]"
-                title="Días consecutivos con actividad"
-              >
-                <Flame className="size-6 animate-flame-pulse text-white drop-shadow" aria-hidden="true" />
-                <span className="text-base leading-none font-extrabold text-white">
-                  {racha}
-                  <span className="ml-1 text-xs font-semibold opacity-90">
-                    {racha === 1 ? "día" : "días"} de racha
-                  </span>
+      <main className="mx-auto max-w-6xl space-y-8 px-4 sm:px-6 py-8">
+        {/* BANNER DE BIENVENIDA Y RACHA */}
+        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-indigo-500/5 p-6 sm:p-8 shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2 max-w-xl">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider">
+                  {usuarioActual.grado ? `Grado ${usuarioActual.grado}` : "Estudiante"}
+                </Badge>
+                <span className="flex items-center gap-1 text-xs text-primary font-medium">
+                  <Sparkles className="size-3.5" /> Campus Activo
                 </span>
               </div>
-            )}
-            <Link
-              href="/estudiante/buscar"
-              className="inline-flex items-center gap-1.5 rounded-full border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              <Search className="size-4" aria-hidden="true" />
-              Buscar
-            </Link>
+
+              <h1 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+                ¡Hola, {usuarioActual.nombre}! 👋
+              </h1>
+
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                {racha > 0
+                  ? `¡Gran constancia! Mantienes una racha de ${racha} ${
+                      racha === 1 ? "día" : "días"
+                    } consecutivos. Continúa con tus metas de aprendizaje hoy.`
+                  : "Bienvenido a tu aula virtual. Revisa tus lecciones pendientes y sigue dominando nuevas habilidades tecnológicas."}
+              </p>
+            </div>
+
+            {/* Widget de Racha y Acciones rápidas */}
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              {racha > 0 ? (
+                <div
+                  className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-duo-orange to-duo-gold px-5 py-3 shadow-[0_4px_0_var(--duo-orange-shadow)] text-white"
+                  title="Días consecutivos con actividad educativa"
+                >
+                  <Flame className="size-7 animate-flame-pulse fill-white drop-shadow" />
+                  <div className="flex flex-col">
+                    <span className="text-xl font-extrabold leading-none">{racha}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider opacity-90">
+                      {racha === 1 ? "Día de racha" : "Días de racha"}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2.5 rounded-2xl border border-border bg-card px-4 py-2.5 text-xs text-muted-foreground">
+                  <Flame className="size-5 text-muted-foreground/60" />
+                  <span>Completa una lección para activar tu racha diaria</span>
+                </div>
+              )}
+
+              <Link
+                href="/estudiante/buscar"
+                className="inline-flex h-11 items-center gap-2 rounded-2xl border border-border/80 bg-card px-4 text-xs font-semibold text-foreground transition-all hover:bg-muted hover:border-primary/40 shadow-xs"
+              >
+                <Search className="size-4 text-muted-foreground" />
+                Buscar cursos
+              </Link>
+            </div>
           </div>
         </div>
 
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Mis cursos</h2>
+        {/* RESUMEN DE MÉTRICAS RÁPIDAS (KPIs) */}
+        {totalCursos > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <BookOpen className="size-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Inscripciones</p>
+                <p className="font-heading text-xl font-bold text-foreground">
+                  {totalCursos} {totalCursos === 1 ? "curso" : "cursos"}
+                </p>
+              </div>
+            </div>
 
-          {inscripciones.length === 0 ? (
+            <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                <Trophy className="size-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Completados</p>
+                <p className="font-heading text-xl font-bold text-emerald-600">
+                  {cursosCompletados} de {totalCursos}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-duo-blue/10 text-duo-blue">
+                <CheckCircle2 className="size-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Temas vistos</p>
+                <p className="font-heading text-xl font-bold text-foreground">{totalTemasVistos}</p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
+                <BarChart3 className="size-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Progreso general</p>
+                <p className="font-heading text-xl font-bold text-foreground">{progresoPromedio}%</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TARJETA DESTACADA: "CONTINUAR APRENDIENDO" */}
+        {cursoEnProgreso && (
+          <div className="rounded-2xl border border-primary/30 bg-card p-6 shadow-md transition-all hover:border-primary/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="space-y-3 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary uppercase tracking-wide">
+                    <PlayCircle className="size-3.5" />
+                    Continuar donde lo dejaste
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {cursoEnProgreso.contenidosVistos} de {cursoEnProgreso.totalContenidos} lecciones
+                  </span>
+                </div>
+
+                <h2 className="font-heading text-xl font-bold text-foreground">
+                  {cursoEnProgreso.titulo}
+                </h2>
+
+                {cursoEnProgreso.tutor && (
+                  <p className="text-xs text-muted-foreground">
+                    Docente: {cursoEnProgreso.tutor.nombre} {cursoEnProgreso.tutor.apellido}
+                  </p>
+                )}
+
+                {/* Barra de progreso visual */}
+                <div className="space-y-1.5 max-w-md">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-muted-foreground">Avance del curso</span>
+                    <span className="text-primary">{cursoEnProgreso.progreso}%</span>
+                  </div>
+                  <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all duration-700"
+                      style={{ width: `${cursoEnProgreso.progreso}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                asChild
+                className="h-12 px-6 rounded-2xl font-bold shadow-sm gap-2 shrink-0 self-start sm:self-center"
+              >
+                <Link href={cursoEnProgreso.href}>
+                  Reanudar clase
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* LISTADO DE CURSOS */}
+        <section className="space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
+                Mis Cursos
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Todos tus cursos activos, asignaciones y material didáctico.
+              </p>
+            </div>
+
+            {totalCursos > 0 && (
+              <Badge variant="outline" className="font-semibold text-xs">
+                {totalCursos} {totalCursos === 1 ? "curso disponible" : "cursos disponibles"}
+              </Badge>
+            )}
+          </div>
+
+          {totalCursos === 0 ? (
             <EmptyState icon={BookOpen} message="Todavía no estás inscrito en ningún curso." />
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {inscripciones.map((inscripcion, index) => {
-                const estado = obtenerEstadoEstudiante(inscripcion.course.estado);
-                const totalContenidos = inscripcion.course.contenidos.length;
-                const contenidosVistos = inscripcion.course.contenidos.filter((contenido) =>
-                  idsVistos.has(contenido.id)
-                ).length;
-                const progreso = calcularProgreso(contenidosVistos, totalContenidos);
-                const completado = progreso === 100 && totalContenidos > 0;
-
-                return (
-                  <CourseCard
-                    key={inscripcion.id}
-                    href={`/estudiante/cursos/${inscripcion.course.id}`}
-                    index={index}
-                    titulo={inscripcion.course.titulo}
-                    imagen={inscripcion.course.imagen}
-                    tutor={inscripcion.course.tutor}
-                    estadoLabel={estado.label}
-                    progreso={progreso}
-                    contenidosVistos={contenidosVistos}
-                    totalContenidos={totalContenidos}
-                    completado={completado}
-                  />
-                );
-              })}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {cursosConMetricas.map((curso, index) => (
+                <CourseCard
+                  key={curso.id}
+                  href={curso.href}
+                  index={index}
+                  titulo={curso.titulo}
+                  imagen={curso.imagen}
+                  tutor={curso.tutor}
+                  estadoLabel={curso.estadoLabel}
+                  progreso={curso.progreso}
+                  contenidosVistos={curso.contenidosVistos}
+                  totalContenidos={curso.totalContenidos}
+                  completado={curso.completado}
+                />
+              ))}
             </div>
           )}
         </section>

@@ -1,22 +1,17 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen, User, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CelebrationBadge } from "@/components/celebration-badge";
 import { cn } from "@/lib/utils";
 
-// Paleta de portadas cuando el curso no tiene imagen propia: antes era un
-// gris plano con un ícono de "sin imagen", que es exactamente lo que hacía
-// sentir el panel "básico" (feedback del docente, 2026-09-04). Ahora cada
-// tarjeta sin imagen recibe un degradado vivo de la paleta de gamificación,
-// rotando en el mismo orden que los cursos — no es aleatorio, así que la
-// portada de un curso no "salta" de color entre una carga de página y otra.
+// Paleta de portadas cuando el curso no tiene imagen propia
 const PORTADAS_DEGRADADO = [
-  "from-duo-blue to-duo-green",
+  "from-indigo-600 to-sky-500",
   "from-duo-orange to-duo-gold",
-  "from-duo-green to-duo-blue",
-  "from-primary to-duo-blue",
+  "from-duo-green to-teal-500",
+  "from-primary to-indigo-700",
 ];
 
 function varianteEstado(label: string): "success" | "warning" | "secondary" {
@@ -25,13 +20,6 @@ function varianteEstado(label: string): "success" | "warning" | "secondary" {
   return "secondary";
 }
 
-// Server Component a propósito (sin "use client"): la única parte de esta
-// tarjeta que necesita JavaScript en el navegador es el confeti de la
-// insignia de completado, aislado en `CelebrationBadge`. El resto —
-// imagen/degradado, título, badge de estado, barra de progreso, animación
-// de entrada y el efecto hover del texto "Continuar" — es HTML/CSS puro,
-// así que no manda ni un byte de JavaScript de hidratación por tarjeta
-// (pase de optimización de rendimiento, 2026-09-04).
 export function CourseCard({
   href,
   index,
@@ -58,62 +46,99 @@ export function CourseCard({
   return (
     <Link
       href={href}
-      className="group/course-card block rounded-3xl outline-none animate-in fade-in slide-in-from-bottom-4 fill-mode-both focus-visible:ring-3 focus-visible:ring-ring/50"
-      style={{ animationDelay: `${Math.min(index, 8) * 70}ms`, animationDuration: "450ms" }}
+      className="group/course-card block rounded-2xl outline-none animate-in fade-in slide-in-from-bottom-4 fill-mode-both focus-visible:ring-3 focus-visible:ring-ring/50"
+      style={{ animationDelay: `${Math.min(index, 8) * 60}ms`, animationDuration: "400ms" }}
     >
-      <Card className="h-full overflow-hidden rounded-3xl py-0 shadow-sm transition-all duration-200 group-hover/course-card:-translate-y-1 group-hover/course-card:shadow-lg">
-        {imagen ? (
-          // eslint-disable-next-line @next/next/no-img-element -- URL externa arbitraria provista por el tutor
-          <img
-            src={imagen}
-            alt=""
-            className="aspect-video w-full object-cover"
-            // Solo las primeras tarjetas (probablemente sobre el pliegue en
-            // la mayoría de anchos de pantalla) cargan de inmediato; el
-            // resto espera a acercarse al viewport — menos peso de red en
-            // la carga inicial cuando hay muchos cursos.
-            loading={index < 3 ? "eager" : "lazy"}
-            decoding="async"
-          />
-        ) : (
-          <div
-            className={cn(
-              "flex aspect-video w-full items-center justify-center bg-gradient-to-br",
-              PORTADAS_DEGRADADO[index % PORTADAS_DEGRADADO.length]
-            )}
-          >
-            <BookOpen className="size-10 text-white/90" aria-hidden="true" />
-          </div>
-        )}
-        <CardHeader>
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-balance text-lg">{titulo}</CardTitle>
+      <Card className="h-full overflow-hidden rounded-2xl py-0 border border-border/80 shadow-xs transition-all duration-300 group-hover/course-card:-translate-y-1.5 group-hover/course-card:border-primary/40 group-hover/course-card:shadow-lg">
+        {/* Encabezado visual con imagen o degradado temático */}
+        <div className="relative overflow-hidden aspect-video w-full">
+          {imagen ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imagen}
+              alt=""
+              className="h-full w-full object-cover transition-transform duration-500 group-hover/course-card:scale-105"
+              loading={index < 3 ? "eager" : "lazy"}
+              decoding="async"
+            />
+          ) : (
+            <div
+              className={cn(
+                "flex h-full w-full items-center justify-center bg-gradient-to-br transition-transform duration-500 group-hover/course-card:scale-105",
+                PORTADAS_DEGRADADO[index % PORTADAS_DEGRADADO.length]
+              )}
+            >
+              <BookOpen className="size-11 text-white/90 drop-shadow-sm" aria-hidden="true" />
+            </div>
+          )}
+
+          {/* Badge de completado o estado flotante sobre la imagen */}
+          <div className="absolute top-3 right-3 z-10">
             {completado ? (
               <CelebrationBadge href={href} />
             ) : (
-              <Badge variant={varianteEstado(estadoLabel)}>{estadoLabel}</Badge>
+              <Badge
+                variant={varianteEstado(estadoLabel)}
+                className="backdrop-blur-md shadow-xs font-semibold"
+              >
+                {estadoLabel}
+              </Badge>
             )}
           </div>
+
+          {/* Indicador de porcentaje si ya tiene avance */}
+          {progreso > 0 && !completado && (
+            <div className="absolute bottom-3 left-3 z-10">
+              <span className="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md">
+                {progreso}% completado
+              </span>
+            </div>
+          )}
+        </div>
+
+        <CardHeader className="pt-4 pb-2 px-5">
+          <CardTitle className="text-balance font-heading text-base font-bold text-foreground group-hover/course-card:text-primary transition-colors line-clamp-2">
+            {titulo}
+          </CardTitle>
           {tutor && (
-            <p className="text-xs text-muted-foreground">
-              {tutor.nombre} {tutor.apellido}
-            </p>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+              <User className="size-3.5 text-muted-foreground/70" />
+              <span>
+                {tutor.nombre} {tutor.apellido}
+              </span>
+            </div>
           )}
         </CardHeader>
-        <CardContent className="pb-(--card-spacing)">
-          <Progress
-            value={progreso}
-            variant={completado ? "success" : "default"}
-            size="lg"
-            aria-label={`Avance del curso ${titulo}`}
-          />
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              {progreso}% · {contenidosVistos}/{totalContenidos} contenidos
-            </p>
-            <span className="flex items-center gap-0.5 text-xs font-semibold text-primary opacity-0 transition-opacity group-hover/course-card:opacity-100">
-              Continuar
-              <ArrowRight className="size-3.5" aria-hidden="true" />
+
+        <CardContent className="px-5 pb-5 pt-2 flex flex-col gap-3 mt-auto">
+          <div className="space-y-1.5">
+            <Progress
+              value={progreso}
+              variant={completado ? "success" : "default"}
+              size="default"
+              aria-label={`Avance del curso ${titulo}`}
+            />
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
+              <span>
+                {contenidosVistos} de {totalContenidos} {totalContenidos === 1 ? "tema" : "temas"}
+              </span>
+              {completado ? (
+                <span className="flex items-center gap-1 text-emerald-600 font-bold dark:text-emerald-400">
+                  <CheckCircle2 className="size-3.5" />
+                  Completado
+                </span>
+              ) : (
+                <span className="font-semibold text-foreground">{progreso}%</span>
+              )}
+            </div>
+          </div>
+
+          {/* Botón interactivo al hacer hover */}
+          <div className="border-t border-border/50 pt-3 flex items-center justify-between text-xs font-semibold text-primary">
+            <span>{completado ? "Repasar contenido" : "Continuar lecciones"}</span>
+            <span className="flex items-center gap-1 transition-transform group-hover/course-card:translate-x-1">
+              Ingresar
+              <ArrowRight className="size-3.5" />
             </span>
           </div>
         </CardContent>
