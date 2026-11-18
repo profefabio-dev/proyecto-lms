@@ -1,3 +1,4 @@
+import { FileText, Download } from "lucide-react";
 import { esDocumentoPdf } from "@/lib/supabase/storage";
 
 type DocumentoConUrl = {
@@ -7,41 +8,47 @@ type DocumentoConUrl = {
   url: string | null;
 };
 
-/**
- * US09/US16: lista de documentos de un contenido de tipo DOCUMENTO.
- * Cada documento siempre tiene su enlace de descarga (URL firmada, de
- * corta duración); si además es un PDF, se agrega una previsualización
- * embebida — los navegadores lo renderizan de forma nativa. Los
- * documentos Word no se pueden previsualizar en el navegador, así que
- * para esos solo queda el enlace de descarga.
- */
 export function DocumentContentList({ documentos }: { documentos: DocumentoConUrl[] }) {
   return (
-    <ul className="space-y-5">
+    <ul className="space-y-6">
       {documentos.map((documento) => (
-        <li key={documento.id} className="space-y-2.5">
+        <li key={documento.id} className="space-y-3">
           {documento.url ? (
             <>
-              <a
-                href={documento.url}
-                className="text-lg font-medium text-primary underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {documento.nombre}
-              </a>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-muted/30 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <FileText className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-foreground">{documento.nombre}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                      {esDocumentoPdf(documento.tipo) ? "Documento PDF" : "Archivo descargable"}
+                    </p>
+                  </div>
+                </div>
+
+                <a
+                  href={documento.url}
+                  className="inline-flex min-h-11 touch:min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 shadow-xs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Download className="size-4" />
+                  <span>Descargar material</span>
+                </a>
+              </div>
+
               {esDocumentoPdf(documento.tipo) && (
-                // US31, cuarta vuelta (05/09/2026): otro escalón más de
-                // tamaño (antes 700px de alto, antes de eso 500px).
                 <iframe
                   src={documento.url}
                   title={`Previsualización de ${documento.nombre}`}
-                  className="h-[850px] w-full rounded border"
+                  className="h-[850px] w-full rounded-2xl border border-border/80 shadow-xs"
                 />
               )}
             </>
           ) : (
-            <p className="text-base text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {documento.nombre} (no se pudo generar el enlace de descarga)
             </p>
           )}

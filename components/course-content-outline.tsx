@@ -11,19 +11,6 @@ type ItemIndice = {
   visto: boolean;
 };
 
-// US31, segunda vuelta (05/09/2026): la primera versión solo agregó una
-// tarjeta de resumen ARRIBA de la lista, en el mismo contenedor angosto de
-// siempre — el docente evaluador confirmó que "sigue desaprovechándose" el
-// ancho de pantalla, con mucho espacio en blanco a los lados. Ensanchar las
-// tarjetas de contenido hasta ocupar todo el ancho se ve incómodo de leer
-// (líneas de texto demasiado largas), así que en vez de eso ese espacio
-// lateral pasa a esta barra — resumen de avance + índice de navegación con
-// enlaces internos — algo que un LMS de verdad pondría ahí (como el listado
-// de secciones a la izquierda en Canvas, la referencia que compartió el
-// docente), sin necesitar todavía el modelo de datos de secciones de US30.
-// El mapa ícono/color por tipo vive en `lib/content-type-icon.ts`,
-// compartido con `CourseContentItem` (antes estaba copiado igual en los dos
-// archivos).
 export function CourseContentOutline({
   tituloCurso,
   progreso,
@@ -38,17 +25,18 @@ export function CourseContentOutline({
   items: ItemIndice[];
 }) {
   return (
-    <div className="space-y-4 rounded-2xl border bg-card p-5 shadow-sm">
+    <div className="space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+      {/* Resumen de progreso */}
       <div className="flex items-center gap-4">
         <div
-          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-duo-blue text-lg font-extrabold text-white"
+          className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-duo-blue text-lg font-extrabold text-white shadow-xs"
           aria-hidden="true"
         >
           {progreso}%
         </div>
         <div className="min-w-0 flex-1 space-y-1.5">
-          <p className="text-sm font-semibold">
-            {vistos} de {total} vistos
+          <p className="text-sm font-bold text-foreground">
+            {vistos} de {total} temas vistos
           </p>
           <Progress
             value={progreso}
@@ -59,11 +47,18 @@ export function CourseContentOutline({
         </div>
       </div>
 
-      <nav aria-label="Índice del curso" className="space-y-1 border-t pt-4">
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        {progreso === 100
+          ? "¡Excelente trabajo! Has completado todas las lecciones publicadas."
+          : "Confirma cada lección completada para avanzar en tu ruta de aprendizaje."}
+      </p>
+
+      {/* Lista de navegación interna */}
+      <nav aria-label="Índice del curso" className="space-y-1 border-t border-border/60 pt-4">
         <p className="px-1 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-          Contenido
+          Ruta de Lecciones
         </p>
-        <ul className="space-y-0.5">
+        <ul className="space-y-1">
           {items.map((item) => {
             const { Icon, clase } = ICONO_POR_TIPO[item.tipo];
 
@@ -71,18 +66,18 @@ export function CourseContentOutline({
               <li key={item.id}>
                 <a
                   href={`#contenido-${item.id}`}
-                  className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-muted"
+                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted min-h-11 touch:min-h-11"
                 >
                   <span
                     className={cn(
-                      "flex size-6 shrink-0 items-center justify-center rounded-full text-white",
+                      "flex size-6 shrink-0 items-center justify-center rounded-lg text-white shadow-xs",
                       item.visto ? "bg-duo-green" : clase
                     )}
                     aria-hidden="true"
                   >
                     {item.visto ? <Check className="size-3.5" /> : <Icon className="size-3.5" />}
                   </span>
-                  <span className={cn("min-w-0 truncate", item.visto && "text-muted-foreground")}>
+                  <span className={cn("min-w-0 flex-1 truncate", item.visto && "text-muted-foreground line-through opacity-80")}>
                     {item.numero}. {item.titulo}
                   </span>
                 </a>

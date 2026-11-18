@@ -37,7 +37,7 @@ export function MarkContentViewedButton({
   return (
     <form action={formAction} className="inline-flex items-center gap-2">
       <input type="hidden" name="contentId" value={contentId} />
-      <Button type="submit" size="sm" variant="outline" disabled={isPending}>
+      <Button type="submit" size="sm" variant="outline" disabled={isPending} className="min-h-11 touch:min-h-11 px-4 font-medium">
         {isPending ? "Guardando..." : "Marcar como visto"}
       </Button>
       {estado && !estado.success && (
