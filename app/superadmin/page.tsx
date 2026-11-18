@@ -95,7 +95,7 @@ export default async function SuperAdminPage() {
             )}
             {espaciosConDetalle.map((espacio) => (
               <tr key={espacio.id} className="transition-colors hover:bg-muted/30">
-                <Td primera className="font-medium text-foreground">
+                <Td primera className="min-w-[10rem] font-medium text-foreground">
                   {espacio.nombre}
                 </Td>
                 <Td>

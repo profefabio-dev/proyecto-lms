@@ -83,7 +83,7 @@ export default async function TutoresPage() {
               )}
               {tutores.map((tutor) => (
                 <tr key={tutor.id} className="transition-colors hover:bg-muted/30">
-                  <Td primera className="font-medium text-foreground">
+                  <Td primera className="min-w-[10rem] font-medium text-foreground">
                     {tutor.nombre} {tutor.apellido}
                   </Td>
                   <Td className="min-w-[13rem] break-all text-xs text-muted-foreground">{tutor.email}</Td>

@@ -112,7 +112,7 @@ export default async function AdminPage() {
             {indicadores.map((indicador) => {
               const Icono = indicador.icon;
               return (
-                <Card key={indicador.etiqueta} className="rounded-2xl border border-border/80 shadow-xs">
+                <Card key={indicador.etiqueta} className="rounded-2xl border border-border/80 py-0 shadow-xs">
                   <CardContent className="flex flex-col gap-3 p-4">
                     <div
                       className={cn(

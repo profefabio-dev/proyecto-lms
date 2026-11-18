@@ -95,7 +95,7 @@ export default async function UsuariosPage({
                 href={href}
                 aria-current={activo ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center rounded-full border px-4 py-1.5 font-medium transition-colors touch:py-2.5",
+                  "inline-flex items-center rounded-full border px-4 py-1.5 font-medium transition-colors touch:min-h-11",
                   activo
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border text-muted-foreground hover:bg-muted"
@@ -127,7 +127,7 @@ export default async function UsuariosPage({
             )}
             {usuarios.map((usuario) => (
               <tr key={usuario.id} className="transition-colors hover:bg-muted/30">
-                <Td primera className="font-medium text-foreground">
+                <Td primera className="min-w-[10rem] font-medium text-foreground">
                   {usuario.nombre} {usuario.apellido}
                 </Td>
                 <Td className="min-w-[13rem] break-all text-xs text-muted-foreground">{usuario.email}</Td>
