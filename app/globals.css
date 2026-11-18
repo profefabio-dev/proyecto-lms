@@ -8,7 +8,11 @@
    (`pointer: coarse`: celulares y tablets) y también en ventanas angostas
    (< 640 px), para agrandar las zonas de toque sin cambiar la densidad de
    escritorio. Uso: `touch:h-11`. */
-@custom-variant touch (@media (pointer: coarse), (max-width: 639px));
+@custom-variant touch {
+  @media (pointer: coarse), (max-width: 639px) {
+    @slot;
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
