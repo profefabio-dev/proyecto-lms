@@ -98,6 +98,8 @@ describe("CursoEstudiantePage (US15)", () => {
       descripcion: "desc",
       contenidos: [],
       secciones: [],
+      actividades: [],
+      quizzes: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue(null);
 
@@ -121,6 +123,8 @@ describe("CursoEstudiantePage (US15)", () => {
         { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false, seccionId: null },
       ],
       secciones: [],
+      actividades: [],
+      quizzes: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
 
@@ -133,6 +137,19 @@ describe("CursoEstudiantePage (US15)", () => {
       include: {
         contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } },
         secciones: { orderBy: { orden: "asc" } },
+        actividades: {
+          where: { visible: true },
+          orderBy: { orden: "asc" },
+          include: { entregas: { where: { userId: "est-1" } } },
+        },
+        quizzes: {
+          where: { visible: true },
+          orderBy: { orden: "asc" },
+          include: {
+            _count: { select: { preguntas: true } },
+            intentos: { where: { userId: "est-1" }, orderBy: { puntaje: "desc" }, take: 1 },
+          },
+        },
       },
     });
   });
@@ -149,6 +166,8 @@ describe("CursoEstudiantePage (US15)", () => {
         { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false, seccionId: null },
       ],
       secciones: [],
+      actividades: [],
+      quizzes: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
     (prisma.contentViews.findMany as any).mockResolvedValue([{ contentId: "c1" }]);
@@ -170,6 +189,8 @@ describe("CursoEstudiantePage (US15)", () => {
       descripcion: "desc",
       contenidos: [],
       secciones: [],
+      actividades: [],
+      quizzes: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
 
@@ -193,6 +214,8 @@ describe("CursoEstudiantePage (US15)", () => {
         { id: "sec-1", titulo: "Semana 1", orden: 0, estado: "DISPONIBLE", esActual: false },
         { id: "sec-2", titulo: "Semana 2", orden: 1, estado: "NO_DISPONIBLE", esActual: false },
       ],
+      actividades: [],
+      quizzes: [],
     });
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
 
