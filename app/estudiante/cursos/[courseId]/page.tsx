@@ -4,6 +4,8 @@ import {
   Inbox,
   ArrowLeft,
   Calendar,
+  ClipboardList,
+  ListChecks,
   Lock,
   BookOpen,
   Sparkles,
@@ -14,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
+import { SubmitActivityForm } from "@/components/submit-activity-form";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
@@ -58,6 +61,33 @@ export default async function CursoEstudiantePage({
       // por el Tutor) y la marca opcional de "semana actual".
       secciones: {
         orderBy: { orden: "asc" },
+      },
+      // Actividades evaluables (19/11/2026). Solo las visibles, mismo
+      // criterio que ya se aplica al contenido, y de cada una se trae
+      // únicamente la entrega de este estudiante: las de sus compañeros no
+      // deben salir nunca de la pantalla del tutor.
+      actividades: {
+        where: { visible: true },
+        orderBy: { orden: "asc" },
+        include: {
+          entregas: { where: { userId: usuarioActual.id } },
+        },
+      },
+      // Evaluaciones automáticas publicadas, con los intentos de este
+      // estudiante. Aquí no se traen las preguntas ni las opciones: esta
+      // pantalla solo enlaza al quiz, y la respuesta correcta nunca debe
+      // salir del servidor.
+      quizzes: {
+        where: { visible: true },
+        orderBy: { orden: "asc" },
+        include: {
+          _count: { select: { preguntas: true } },
+          intentos: {
+            where: { userId: usuarioActual.id },
+            orderBy: { puntaje: "desc" },
+            take: 1,
+          },
+        },
       },
     },
   });
@@ -334,6 +364,134 @@ export default async function CursoEstudiantePage({
                         )}
                       </CourseContentItem>
                     ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* ACTIVIDADES EVALUABLES (19/11/2026) */}
+              <div className="space-y-4 pt-4 border-t border-border/60">
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="size-5 text-primary" aria-hidden="true" />
+                  <h2 className="font-heading text-xl font-bold text-foreground">Actividades</h2>
+                </div>
+
+                {curso.actividades.length === 0 ? (
+                  <EmptyState
+                    icon={ClipboardList}
+                    message="Este curso todavía no tiene actividades para entregar."
+                  />
+                ) : (
+                  <ul className="space-y-4">
+                    {curso.actividades.map((actividad) => {
+                      const entrega = actividad.entregas[0] ?? null;
+                      const calificada = entrega?.nota !== null && entrega !== null;
+
+                      return (
+                        <li
+                          key={actividad.id}
+                          className="space-y-4 rounded-2xl border border-border/80 bg-card p-5"
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div className="space-y-0.5">
+                              <h3 className="font-heading text-base font-bold text-foreground">
+                                {actividad.titulo}
+                              </h3>
+                              <p className="text-xs text-muted-foreground">
+                                {actividad.puntajeMaximo} puntos
+                                {actividad.fechaLimite
+                                  ? ` · entrega hasta el ${actividad.fechaLimite.toLocaleDateString("es-CO")}`
+                                  : ""}
+                              </p>
+                            </div>
+
+                            <Badge
+                              variant={
+                                calificada ? "success" : entrega ? "secondary" : "warning"
+                              }
+                              className="font-semibold"
+                            >
+                              {calificada
+                                ? `${entrega!.nota} / ${actividad.puntajeMaximo}`
+                                : entrega
+                                  ? "Entregada"
+                                  : "Pendiente"}
+                            </Badge>
+                          </div>
+
+                          {actividad.descripcion && (
+                            <p className="text-sm text-muted-foreground">{actividad.descripcion}</p>
+                          )}
+
+                          <MarkdownContent contenido={actividad.instrucciones} />
+
+                          {entrega?.retroalimentacion && (
+                            <div className="rounded-md border border-success-border bg-success-soft px-3 py-2 text-sm">
+                              <p className="font-semibold text-success">
+                                Comentario de tu profesor
+                              </p>
+                              <p className="whitespace-pre-wrap text-foreground">
+                                {entrega.retroalimentacion}
+                              </p>
+                            </div>
+                          )}
+
+                          <SubmitActivityForm
+                            actividadId={actividad.id}
+                            titulo={actividad.titulo}
+                            yaEntregada={entrega !== null}
+                            textoPrevio={entrega?.texto}
+                            nombreArchivoPrevio={entrega?.nombreArchivo}
+                          />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+
+              {/* EVALUACIONES AUTOMÁTICAS (19/11/2026) */}
+              {curso.quizzes.length > 0 && (
+                <div className="space-y-4 pt-4 border-t border-border/60">
+                  <div className="flex items-center gap-2">
+                    <ListChecks className="size-5 text-primary" aria-hidden="true" />
+                    <h2 className="font-heading text-xl font-bold text-foreground">
+                      Evaluaciones
+                    </h2>
+                  </div>
+
+                  <ul className="space-y-3">
+                    {curso.quizzes.map((quiz) => {
+                      const mejor = quiz.intentos[0] ?? null;
+
+                      return (
+                        <li key={quiz.id}>
+                          <Link
+                            href={`/estudiante/cursos/${curso.id}/quizzes/${quiz.id}`}
+                            className="group flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
+                          >
+                            <div className="space-y-0.5">
+                              <p className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                                {quiz.titulo}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {quiz._count.preguntas}{" "}
+                                {quiz._count.preguntas === 1 ? "pregunta" : "preguntas"} · se
+                                califica al instante
+                              </p>
+                            </div>
+
+                            <Badge
+                              variant={
+                                mejor ? (mejor.puntaje >= 60 ? "success" : "warning") : "secondary"
+                              }
+                              className="font-semibold"
+                            >
+                              {mejor ? `Tu mejor: ${mejor.puntaje}%` : "Sin responder"}
+                            </Badge>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}

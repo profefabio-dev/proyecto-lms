@@ -1,14 +1,15 @@
 import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
 import {
   GraduationCap,
   Inbox,
   Sparkles,
   BookOpen,
   Calendar,
+  ClipboardList,
   Layers,
-  Video,
-  FileUp,
-  FileText,
+  Settings2,
+  TrendingUp,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -19,6 +20,8 @@ import { UnenrollStudentsForm } from "@/components/unenroll-students-form";
 import { CreateVideoContentForm } from "@/components/create-video-content-form";
 import { UploadDocumentForm } from "@/components/upload-document-form";
 import { CreateTextContentForm } from "@/components/create-text-content-form";
+import { CreateActivityForm } from "@/components/create-activity-form";
+import { CreateQuizForm } from "@/components/create-quiz-form";
 import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
 import { DocumentContentList } from "@/components/document-content-list";
@@ -69,6 +72,20 @@ export default async function CursoDetallePage({
       },
       secciones: {
         orderBy: { orden: "asc" },
+      },
+      actividades: {
+        orderBy: { orden: "asc" },
+        include: {
+          // Cuántas entregas lleva cada actividad, para mostrar el avance
+          // sin traerse todas las entregas a esta pantalla.
+          _count: { select: { entregas: true } },
+        },
+      },
+      quizzes: {
+        orderBy: { orden: "asc" },
+        include: {
+          _count: { select: { preguntas: true, intentos: true } },
+        },
       },
     },
   });
@@ -190,7 +207,7 @@ export default async function CursoDetallePage({
 
         {/* ÁREA 1: CONTENIDO Y MÓDULOS DE LA RUTA */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="font-heading text-2xl font-bold text-foreground">
                 Módulos y Lecciones de la Ruta
@@ -200,6 +217,7 @@ export default async function CursoDetallePage({
                 cada recurso.
               </p>
             </div>
+            <CreateSectionForm courseId={curso.id} />
           </div>
 
           {contenidosConDocumentos.length === 0 && curso.secciones.length === 0 ? (
@@ -232,18 +250,28 @@ export default async function CursoDetallePage({
                     </span>
                   </summary>
 
-                  {/* Controles de edición de la sección */}
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
-                    <RenameSectionForm seccionId={seccion.id} tituloActual={seccion.titulo} />
+                  {/* Controles de edición de la sección, plegados: en el
+                      estado normal el tutor viene a mirar el contenido, no a
+                      renombrar ni reordenar, y tenerlos siempre abiertos
+                      hacía que cada sección pareciera un formulario. */}
+                  <details className="group/opciones">
+                    <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-xs font-semibold text-muted-foreground select-none hover:text-foreground [&::-webkit-details-marker]:hidden">
+                      <Settings2 className="size-3.5" aria-hidden="true" />
+                      Opciones de la sección
+                    </summary>
 
-                    <SectionControls
-                      seccionId={seccion.id}
-                      esPrimera={indiceSeccion === 0}
-                      esUltima={indiceSeccion === gruposDeSeccion.length - 1}
-                      estado={seccion.estado}
-                      esActual={seccion.esActual}
-                    />
-                  </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-border/60 bg-muted/20 p-4">
+                      <RenameSectionForm seccionId={seccion.id} tituloActual={seccion.titulo} />
+
+                      <SectionControls
+                        seccionId={seccion.id}
+                        esPrimera={indiceSeccion === 0}
+                        esUltima={indiceSeccion === gruposDeSeccion.length - 1}
+                        estado={seccion.estado}
+                        esActual={seccion.esActual}
+                      />
+                    </div>
+                  </details>
 
                   {contenidos.length === 0 ? (
                     <p className="text-sm text-muted-foreground italic p-2">
@@ -391,72 +419,129 @@ export default async function CursoDetallePage({
             </div>
           )}
 
-          {/* FORMULARIO PARA CREAR SECCIÓN NUEVA */}
-          <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 text-primary">
-              <Calendar className="size-5" />
-              <h3 className="font-heading text-lg font-bold text-foreground">
-                Crear Nueva Sección o Módulo Semanal
-              </h3>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Agrega una nueva estación o semana en la ruta de aprendizaje de tu curso.
-            </p>
-            <CreateSectionForm courseId={curso.id} />
-          </div>
         </section>
 
         {/* ÁREA 2: PUBLICACIÓN DE NUEVO MATERIAL */}
-        <section className="space-y-6 pt-4 border-t border-border/60">
+        <section className="space-y-4 pt-4 border-t border-border/60">
           <div>
             <h2 className="font-heading text-2xl font-bold text-foreground">
               Publicar Nuevo Material en el Curso
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Selecciona el tipo de material didáctico que deseas compartir con tus estudiantes.
+              Elige el tipo de material y completa el formulario que se abre.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs space-y-3">
-              <div className="flex items-center gap-2 text-duo-blue">
-                <Video className="size-5" />
-                <h3 className="font-heading text-base font-bold text-foreground">
-                  Publicar Video Tutorial
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Inserta enlaces de YouTube para videoclases y explicaciones.
-              </p>
-              <CreateVideoContentForm courseId={curso.id} />
-            </div>
+          {/* Cada botón abre su formulario en una ventana (rediseño de
+              2026-11). Antes los tres estaban abiertos a la vez en tres
+              columnas: la página arrancaba con una pared de campos vacíos en
+              lugar del contenido del curso, y el ancho de cada columna
+              apretaba el área de redacción y el selector de archivo. */}
+          <div className="flex flex-wrap gap-3">
+            <CreateVideoContentForm courseId={curso.id} />
+            <UploadDocumentForm courseId={curso.id} />
+            <CreateTextContentForm courseId={curso.id} />
+          </div>
+        </section>
 
-            <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs space-y-3">
-              <div className="flex items-center gap-2 text-duo-orange">
-                <FileUp className="size-5" />
-                <h3 className="font-heading text-base font-bold text-foreground">
-                  Subir Guía o Documento
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Adjunta talleres y lecturas en PDF, Word u otros formatos.
+        {/* ÁREA 2B: ACTIVIDADES EVALUABLES (19/11/2026) */}
+        <section className="space-y-4 pt-4 border-t border-border/60">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground">
+                Actividades y Calificaciones
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Lo que tus estudiantes deben presentar. Entra a una actividad para ver las entregas
+                y poner notas.
               </p>
-              <UploadDocumentForm courseId={curso.id} />
             </div>
-
-            <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs space-y-3">
-              <div className="flex items-center gap-2 text-duo-green">
-                <FileText className="size-5" />
-                <h3 className="font-heading text-base font-bold text-foreground">
-                  Publicar Lectura en Texto
-                </h3>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Redacta explicaciones directas con formato Markdown enriquecido.
-              </p>
-              <CreateTextContentForm courseId={curso.id} />
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href={`/tutor/cursos/${curso.id}/seguimiento`}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                <TrendingUp className="size-4 text-primary" aria-hidden="true" />
+                Ver seguimiento
+              </Link>
+              <CreateQuizForm courseId={curso.id} secciones={curso.secciones} />
+              <CreateActivityForm courseId={curso.id} secciones={curso.secciones} />
             </div>
           </div>
+
+          {curso.actividades.length === 0 ? (
+            <EmptyState
+              icon={ClipboardList}
+              message="Aún no has creado actividades para este curso."
+            />
+          ) : (
+            <ul className="space-y-3">
+              {curso.actividades.map((actividad) => (
+                <li key={actividad.id}>
+                  <Link
+                    href={`/tutor/cursos/${curso.id}/actividades/${actividad.id}`}
+                    className="group flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
+                  >
+                    <div className="space-y-0.5">
+                      <p className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                        {actividad.titulo}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {actividad.puntajeMaximo} puntos
+                        {actividad.fechaLimite
+                          ? ` · hasta el ${actividad.fechaLimite.toLocaleDateString("es-CO")}`
+                          : ""}
+                      </p>
+                    </div>
+
+                    <Badge
+                      variant={actividad._count.entregas > 0 ? "success" : "secondary"}
+                      className="font-semibold"
+                    >
+                      {actividad._count.entregas} de {curso.inscritos.length} entregaron
+                    </Badge>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {curso.quizzes.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <h3 className="font-heading text-base font-bold text-foreground">
+                Evaluaciones automáticas
+              </h3>
+              <ul className="space-y-3">
+                {curso.quizzes.map((quiz) => (
+                  <li key={quiz.id}>
+                    <Link
+                      href={`/tutor/cursos/${curso.id}/quizzes/${quiz.id}`}
+                      className="group flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
+                    >
+                      <div className="space-y-0.5">
+                        <p className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                          {quiz.titulo}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {quiz._count.preguntas}{" "}
+                          {quiz._count.preguntas === 1 ? "pregunta" : "preguntas"} ·{" "}
+                          {quiz._count.intentos}{" "}
+                          {quiz._count.intentos === 1 ? "intento" : "intentos"}
+                        </p>
+                      </div>
+
+                      <Badge
+                        variant={quiz.visible ? "success" : "secondary"}
+                        className="font-semibold"
+                      >
+                        {quiz.visible ? "Publicada" : "Oculta"}
+                      </Badge>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
 
         {/* ÁREA 3: GESTIÓN DE ESTUDIANTES DEL CURSO */}

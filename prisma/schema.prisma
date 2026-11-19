@@ -74,6 +74,8 @@ model Users {
   cursosComoTutor  Courses[]      @relation("TutorCourses")
   inscripciones    CourseUsers[]
   contenidosVistos ContentViews[]
+  entregas         Entregas[]
+  intentosQuiz     IntentosQuiz[]
 
   @@map("users")
 }
@@ -102,10 +104,12 @@ model Courses {
   estado      EstadoCurso @default(BORRADOR)
   createdAt   DateTime    @default(now())
 
-  tutor      Users         @relation("TutorCourses", fields: [tutorId], references: [id])
-  inscritos  CourseUsers[]
-  contenidos Contents[]
-  secciones  Secciones[]
+  tutor       Users         @relation("TutorCourses", fields: [tutorId], references: [id])
+  inscritos   CourseUsers[]
+  contenidos  Contents[]
+  secciones   Secciones[]
+  actividades Actividades[]
+  quizzes     Quizzes[]
 
   @@map("courses")
 }
@@ -134,10 +138,149 @@ model Secciones {
   esActual  Boolean       @default(false)
   createdAt DateTime      @default(now())
 
-  course     Courses    @relation(fields: [courseId], references: [id])
-  contenidos Contents[]
+  course      Courses       @relation(fields: [courseId], references: [id])
+  contenidos  Contents[]
+  actividades Actividades[]
+  quizzes     Quizzes[]
 
   @@map("secciones")
+}
+
+// Evaluaciones de opción múltiple con calificación automática
+// (19/11/2026). Son la contraparte rápida de `Actividades`: aquí el
+// estudiante no entrega nada que el docente deba leer, el sistema corrige
+// solo y devuelve el resultado al instante.
+model Quizzes {
+  id          String   @id @default(uuid())
+  courseId    String
+  seccionId   String?
+  titulo      String
+  descripcion String?
+  visible     Boolean  @default(true)
+  orden       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  course    Courses         @relation(fields: [courseId], references: [id])
+  seccion   Secciones?      @relation(fields: [seccionId], references: [id])
+  preguntas PreguntasQuiz[]
+  intentos  IntentosQuiz[]
+
+  @@map("quizzes")
+}
+
+model PreguntasQuiz {
+  id        String @id @default(uuid())
+  quizId    String
+  enunciado String
+  orden     Int    @default(0)
+
+  quiz     Quizzes        @relation(fields: [quizId], references: [id])
+  opciones OpcionesQuiz[]
+
+  @@map("preguntas_quiz")
+}
+
+// `esCorrecta` nunca debe viajar al navegador del estudiante: las páginas
+// del estudiante seleccionan solo id y texto. Dejarlo salir en el HTML
+// equivaldría a publicar la hoja de respuestas.
+model OpcionesQuiz {
+  id         String  @id @default(uuid())
+  preguntaId String
+  texto      String
+  esCorrecta Boolean @default(false)
+  orden      Int     @default(0)
+
+  pregunta PreguntasQuiz @relation(fields: [preguntaId], references: [id])
+
+  @@map("opciones_quiz")
+}
+
+// Un registro por intento: se conservan todos (no se sobrescribe el
+// anterior como en `Entregas`) porque en un quiz repetir es parte del
+// aprendizaje, y el docente quiere ver la evolución, no solo el último
+// resultado. `respuestas` guarda el mapa { preguntaId: opcionId } elegido,
+// en JSON, para poder mostrarle al estudiante en qué se equivocó sin
+// necesitar una quinta tabla.
+model IntentosQuiz {
+  id          String   @id @default(uuid())
+  quizId      String
+  userId      String
+  respuestas  Json
+  correctas   Int
+  total       Int
+  puntaje     Float
+  realizadoEn DateTime @default(now())
+
+  quiz Quizzes @relation(fields: [quizId], references: [id])
+  user Users   @relation(fields: [userId], references: [id])
+
+  @@map("intentos_quiz")
+}
+
+// Actividades evaluables de un curso (19/11/2026). Hasta ahora la
+// plataforma solo entregaba contenido y registraba quién lo vio
+// (`ContentViews`): el estudiante no tenía nada que presentar y el docente
+// nada que calificar, que es justo la mitad del ciclo que describe el
+// proyecto ("el docente podrá ver los avances y actividades presentadas por
+// los diferentes estudiantes así como las notas obtenidas").
+//
+// Decisiones:
+// - Entidad propia y no un `TipoContenido` más: una actividad tiene cosas
+//   que un contenido no tiene (puntaje, fecha límite, entregas), y
+//   mezclarlas obligaría a llenar `Contents.contenido` con algo artificial.
+// - `seccionId` opcional, igual que en `Contents` (US30): una actividad
+//   puede colgar de una sección o quedar suelta en el curso.
+// - `visible`, mismo patrón que `Contents.visible` (US12), para prepararla
+//   antes de mostrarla.
+model Actividades {
+  id            String    @id @default(uuid())
+  courseId      String
+  seccionId     String?
+  titulo        String
+  descripcion   String?
+  // Instrucciones en Markdown, igual que el contenido de tipo TEXTO (US10):
+  // se renderizan con `MarkdownContent`, no con HTML crudo.
+  instrucciones String
+  puntajeMaximo Int       @default(100)
+  fechaLimite   DateTime?
+  visible       Boolean   @default(true)
+  orden         Int       @default(0)
+  createdAt     DateTime  @default(now())
+
+  course   Courses    @relation(fields: [courseId], references: [id])
+  seccion  Secciones? @relation(fields: [seccionId], references: [id])
+  entregas Entregas[]
+
+  @@map("actividades")
+}
+
+// Lo que un estudiante presenta para una actividad, y la nota que le pone
+// el tutor. Una sola entrega por estudiante y actividad (`@@unique`): si
+// vuelve a entregar, se reemplaza la anterior en vez de acumular intentos
+// — decisión para esta primera versión, más simple de calificar.
+model Entregas {
+  id String @id @default(uuid())
+
+  actividadId String
+  userId      String
+
+  // El estudiante puede responder escribiendo, adjuntando un archivo, o
+  // ambas cosas; la Server Action exige al menos una de las dos.
+  texto         String?
+  archivo       String?
+  nombreArchivo String?
+  entregadaEn   DateTime @default(now())
+
+  // Calificación: `nota` en null significa "entregada, sin calificar".
+  nota              Float?
+  retroalimentacion String?
+  calificadaEn      DateTime?
+
+  actividad Actividades @relation(fields: [actividadId], references: [id])
+  user      Users       @relation(fields: [userId], references: [id])
+
+  @@unique([actividadId, userId])
+  @@map("entregas")
 }
 
 model CourseUsers {
