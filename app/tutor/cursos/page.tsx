@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { CreateCourseForm } from "@/components/create-course-form";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -47,26 +48,16 @@ export default async function CursosPage() {
   return (
     <AppShell usuario={usuarioActual} breadcrumbs={[{ label: "Mis cursos" }]}>
       <main className="mx-auto max-w-5xl space-y-8 px-4 sm:px-6 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground">
-              Mis Cursos y Asignaturas
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Crea nuevos cursos, organiza contenidos por semanas y asigna estudiantes.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-semibold text-xs">
-              <Sparkles className="size-3 mr-1 text-primary" />
-              {cursos.length} {cursos.length === 1 ? "curso registrado" : "cursos registrados"}
-            </Badge>
-          </div>
-        </div>
-
-        {/* FORMULARIO DE CREACIÓN */}
-        <CreateCourseForm />
+        {/* El formulario de creación vive dentro de un diálogo que abre este
+            botón, así la pantalla arranca mostrando los cursos y no un
+            formulario vacío (rediseño de 2026-11). */}
+        <PageHeader
+          titulo="Mis Cursos y Asignaturas"
+          descripcion="Crea nuevos cursos, organiza contenidos por semanas y asigna estudiantes."
+          icono={Sparkles}
+          insignia={`${cursos.length} ${cursos.length === 1 ? "curso registrado" : "cursos registrados"}`}
+          accion={<CreateCourseForm />}
+        />
 
         {/* LISTADO DE CURSOS */}
         <section className="space-y-4">
