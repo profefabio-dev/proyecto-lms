@@ -45,3 +45,8 @@ estudiantes.txt
 
 # Configuracion local de otra herramienta, no forma parte del proyecto
 .codex/
+
+# Script de limpieza puntual del 18/09/2026: lleva embebidos los nombres
+# completos de 229 estudiantes menores de edad del listado real del colegio.
+# Su trabajo ya se hizo (ver progress.md, 22/09/2026). No debe subirse.
+scripts/borrar-listado-1.ts
