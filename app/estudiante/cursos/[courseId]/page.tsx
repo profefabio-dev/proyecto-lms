@@ -3,31 +3,51 @@ import { redirect, notFound } from "next/navigation";
 import {
   Inbox,
   ArrowLeft,
+  ArrowRight,
   Calendar,
   ClipboardList,
   ListChecks,
   Lock,
   BookOpen,
-  Sparkles,
+  PlayCircle,
   Layers,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { YoutubeEmbed } from "@/components/youtube-embed";
 import { MarkdownContent } from "@/components/markdown-content";
-import { DocumentContentList } from "@/components/document-content-list";
 import { SubmitActivityForm } from "@/components/submit-activity-form";
-import { crearUrlDescarga } from "@/lib/supabase/storage";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
-import { CourseContentItem } from "@/components/course-content-item";
-import { CourseContentOutline } from "@/components/course-content-outline";
+import { LessonRow } from "@/components/lesson-row";
 import { calcularProgreso } from "@/lib/course-progress";
-import { agruparContenidoPorSeccion, contenidoSinSeccion } from "@/lib/group-content-by-section";
+import {
+  filtrarContenidosAccesibles,
+  ordenarLecciones,
+  siguienteLeccionPendiente,
+} from "@/lib/course-lessons";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+/**
+ * US43 (20/11/2026) — esta página pasó de "el curso entero desplegado" a
+ * "el temario del curso".
+ *
+ * Antes mostraba, una debajo de otra, todas las lecciones con su video
+ * embebido, su texto completo en Markdown y su lista de documentos
+ * firmados. Funcionaba, pero el docente lo vio y dijo lo que había que
+ * oír: "no se me parece a un LMS, es muy básico" y, al sembrar un curso de
+ * prueba con todos los recursos, "es lo mismo que ya había subido". El
+ * problema era la forma: un curso que se lee como un artículo largo.
+ *
+ * Ahora esta pantalla responde tres preguntas de un vistazo —¿qué trae el
+ * curso?, ¿cuánto llevo?, ¿por dónde sigo?— y el contenido se estudia en
+ * el reproductor (`lecciones/[contenidoId]`), una lección a la vez.
+ *
+ * La consulta a Prisma quedó igual a propósito: cambia la presentación, no
+ * los datos ni las reglas de acceso (US11 + US30).
+ */
 export default async function CursoEstudiantePage({
   params,
 }: {
@@ -107,33 +127,23 @@ export default async function CursoEstudiantePage({
     notFound();
   }
 
-  // US30: el mapa de estado por sección decide, además de `visible`, si un
-  // contenido cuenta como accesible — el contenido de una sección "No
-  // disponible" queda tan oculto para el Estudiante como uno con
-  // `visible: false` (ni aparece en la lista, ni cuenta para el avance),
-  // hasta que el Tutor la marque Disponible. El contenido sin sección nunca
-  // se ve afectado por esto.
-  const estadoPorSeccion = new Map(curso.secciones.map((seccion) => [seccion.id, seccion.estado]));
-  const contenidosVisibles = curso.contenidos.filter((contenido) => {
-    if (!contenido.visible) {
-      return false;
-    }
+  // US30 + US43: el criterio de "qué puede ver el Estudiante" vive en
+  // `lib/course-lessons.ts`, compartido con el reproductor y con la acción
+  // que marca una lección — antes estaba escrito a mano aquí mismo.
+  type ContenidoDelCurso = (typeof curso.contenidos)[number];
+  type SeccionDelCurso = (typeof curso.secciones)[number];
 
-    if (contenido.seccionId && estadoPorSeccion.get(contenido.seccionId) === "NO_DISPONIBLE") {
-      return false;
-    }
+  const contenidosVisibles = filtrarContenidosAccesibles<ContenidoDelCurso, SeccionDelCurso>(
+    curso.contenidos,
+    curso.secciones
+  );
+  const lecciones = ordenarLecciones<ContenidoDelCurso, SeccionDelCurso>(
+    contenidosVisibles,
+    curso.secciones
+  );
 
-    return true;
-  });
-
-  // US19 (rediseño): "visto" ya no se marca solo con abrir esta página —
-  // hace falta la confirmación del estudiante al pulsar el botón correspondiente.
-  // US19 (rediseño): el contenido ya NO se marca como visto automáticamente
-  // al abrir la página — eso marcaba TODOS los contenidos a la vez sin que
-  // el estudiante interactuara con ninguno, porque todos se muestran juntos
-  // en la misma página. Ahora hace falta el clic del estudiante en
-  // <MarkContentViewedButton>; aquí solo se consulta cuáles ya están
-  // marcados, para no mostrarle el botón a algo que ya confirmó antes.
+  // US19: "visto" solo cuenta cuando el estudiante lo confirma; aquí se
+  // consulta qué confirmó antes para pintar los visto-buenos del temario.
   const vistos =
     contenidosVisibles.length === 0
       ? []
@@ -145,45 +155,31 @@ export default async function CursoEstudiantePage({
           select: { contentId: true },
         });
 
-  const idsVistos = new Set(vistos.map((visto) => visto.contentId));
+  const idsVistos = new Set<string>(vistos.map((visto) => visto.contentId));
 
-  // US31: resumen de avance mostrado en la barra lateral del aula.
-  const progreso = calcularProgreso(idsVistos.size, contenidosVisibles.length);
+  // US31: resumen de avance del curso.
+  const progreso = calcularProgreso(idsVistos.size, lecciones.length);
 
-  // Las URLs de descarga son firmadas y de corta duración (US09/US16), así
-  // que se generan en cada carga de la página en vez de guardarse.
-  const contenidosConDocumentos = await Promise.all(
-    contenidosVisibles.map(async (contenido) => {
-      if (contenido.tipo !== "DOCUMENTO") {
-        return { ...contenido, documentosConUrl: [] };
-      }
+  // US43: por dónde retomar. La primera lección sin completar, o la primera
+  // del curso si ya terminó todo (para repasar).
+  const leccionParaContinuar = siguienteLeccionPendiente<ContenidoDelCurso>(lecciones, idsVistos);
+  const esRepaso = progreso === 100;
+  const esComienzo = idsVistos.size === 0;
 
-      const documentosConUrl = await Promise.all(
-        contenido.documentos.map(async (documento) => ({
-          ...documento,
-          url: await crearUrlDescarga(documento.archivo),
-        }))
-      );
-
-      return { ...contenido, documentosConUrl };
-    })
-  );
-
-  // Agrupamiento por secciones y contenido suelto
-  const gruposDeSeccion = agruparContenidoPorSeccion(contenidosConDocumentos, [...curso.secciones]);
-  const contenidoSueltoEstudiante = contenidoSinSeccion(contenidosConDocumentos);
   const numeroPorContenido = new Map(
-    contenidosConDocumentos.map((contenido, index) => [contenido.id, index + 1])
+    lecciones.map((leccion, posicion) => [leccion.id, posicion + 1])
   );
+
+  const leccionesSueltas = lecciones.filter((leccion) => leccion.seccionId === null);
 
   return (
     <AppShell
       usuario={usuarioActual}
       breadcrumbs={[{ label: "Mis cursos", href: "/estudiante" }, { label: curso.titulo }]}
     >
-      <main className="mx-auto max-w-6xl space-y-8 px-4 sm:px-6 py-8">
-        {/* CABECERA PRINCIPAL DEL CURSO (AULA Y RUTA) */}
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 sm:p-8 shadow-xs">
+      <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
+        {/* CABECERA DEL CURSO */}
+        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 shadow-xs sm:p-8">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Link
@@ -197,37 +193,29 @@ export default async function CursoEstudiantePage({
                 Volver a Mis Cursos
               </Link>
 
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="font-semibold text-xs">
-                  <Sparkles className="size-3 mr-1 text-primary" />
-                  Ruta de Aprendizaje
-                </Badge>
-                <Badge
-                  variant={progreso === 100 ? "success" : "default"}
-                  className="font-semibold text-xs"
-                >
-                  {progreso}% completado
-                </Badge>
-              </div>
+              <Badge
+                variant={progreso === 100 ? "success" : "default"}
+                className="text-xs font-semibold"
+              >
+                {progreso}% completado
+              </Badge>
             </div>
 
             <div className="space-y-2">
-              <h1 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                 {curso.titulo}
               </h1>
               {curso.descripcion && (
-                <p className="text-base text-muted-foreground max-w-3xl leading-relaxed">
+                <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
                   {curso.descripcion}
                 </p>
               )}
             </div>
 
-            {/* Fila de métricas rápidas del curso */}
-            <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-border/60 text-xs font-medium text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-4 border-t border-border/60 pt-2 text-xs font-medium text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <BookOpen className="size-4 text-primary" />
-                {contenidosVisibles.length}{" "}
-                {contenidosVisibles.length === 1 ? "lección disponible" : "lecciones disponibles"}
+                {lecciones.length} {lecciones.length === 1 ? "lección" : "lecciones"}
               </span>
               <span className="flex items-center gap-1.5">
                 <Layers className="size-4 text-duo-blue" />
@@ -235,285 +223,288 @@ export default async function CursoEstudiantePage({
                 {curso.secciones.length === 1 ? "módulo / semana" : "módulos / semanas"}
               </span>
               <span className="flex items-center gap-1.5">
-                <Calendar className="size-4 text-duo-green" />
-                {idsVistos.size} de {contenidosVisibles.length} temas completados
+                <ClipboardList className="size-4 text-duo-orange" />
+                {curso.actividades.length}{" "}
+                {curso.actividades.length === 1 ? "actividad" : "actividades"}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <ListChecks className="size-4 text-duo-green" />
+                {curso.quizzes.length}{" "}
+                {curso.quizzes.length === 1 ? "evaluación" : "evaluaciones"}
               </span>
             </div>
           </div>
         </div>
 
-        {contenidosConDocumentos.length === 0 && curso.secciones.length === 0 ? (
+        {/* CONTINUAR / COMENZAR — US43 */}
+        {leccionParaContinuar && (
+          <div className="rounded-3xl border border-primary/30 bg-card p-6 shadow-md transition-colors hover:border-primary/60">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1 space-y-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-wide text-primary uppercase">
+                  <PlayCircle className="size-3.5" />
+                  {esComienzo ? "Comenzar el curso" : esRepaso ? "Repasar" : "Continuar donde quedaste"}
+                </span>
+
+                <h2 className="font-heading text-xl font-bold text-foreground">
+                  Lección {numeroPorContenido.get(leccionParaContinuar.id)}:{" "}
+                  {leccionParaContinuar.titulo}
+                </h2>
+
+                <div className="max-w-md space-y-1.5">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-muted-foreground">
+                      {idsVistos.size} de {lecciones.length} completadas
+                    </span>
+                    <span className="text-primary">{progreso}%</span>
+                  </div>
+                  <Progress
+                    value={progreso}
+                    variant={progreso === 100 ? "success" : "default"}
+                    aria-label={`Avance del curso ${curso.titulo}`}
+                  />
+                </div>
+              </div>
+
+              <Link
+                href={`/estudiante/cursos/${curso.id}/lecciones/${leccionParaContinuar.id}`}
+                className={cn(
+                  buttonVariants({ size: "lg" }),
+                  "shrink-0 gap-2 self-start font-bold sm:self-center"
+                )}
+              >
+                {esComienzo ? "Empezar" : esRepaso ? "Repasar" : "Continuar"}
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {lecciones.length === 0 && curso.secciones.length === 0 ? (
           <EmptyState icon={Inbox} message="Este curso todavía no tiene contenido publicado." />
         ) : (
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-            {/* COLUMNA PRINCIPAL DE LECCIONES Y SECCIONES */}
-            <section className="order-2 space-y-8 lg:order-1">
-              <div>
-                <h2 className="font-heading text-2xl font-bold text-foreground">
-                  Ruta de Aprendizaje y Módulos
-                </h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Explora las lecciones organizadas por semanas y confirma cada tema al finalizarlo.
-                </p>
-              </div>
+          <section className="space-y-6">
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground">Temario</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Entra a cada lección para verla y confírmala al terminar; tu avance se guarda
+                solo.
+              </p>
+            </div>
 
-              {/* SECCIONES PLEGABLES */}
-              {gruposDeSeccion.map(({ seccion, contenidos }) => {
-                const vistosEnSeccion = contenidos.filter((c) => idsVistos.has(c.id)).length;
+            {/* MÓDULOS / SEMANAS */}
+            {curso.secciones.map((seccion) => {
+              const leccionesDeSeccion = lecciones.filter(
+                (leccion) => leccion.seccionId === seccion.id
+              );
+              const vistasEnSeccion = leccionesDeSeccion.filter((leccion) =>
+                idsVistos.has(leccion.id)
+              ).length;
+
+              return (
+                <div
+                  key={seccion.id}
+                  className="space-y-4 rounded-3xl border border-border/80 bg-card/60 p-5 shadow-xs sm:p-6"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Calendar className="size-4" />
+                      </span>
+                      <span className="font-heading text-xl font-bold text-foreground">
+                        {seccion.titulo}
+                      </span>
+                      {seccion.esActual && <Badge variant="success">Semana actual</Badge>}
+                      {seccion.estado === "NO_DISPONIBLE" && (
+                        <Badge variant="secondary" className="gap-1">
+                          <Lock className="size-3" /> No disponible
+                        </Badge>
+                      )}
+                    </div>
+
+                    {seccion.estado !== "NO_DISPONIBLE" && leccionesDeSeccion.length > 0 && (
+                      <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+                        {vistasEnSeccion} de {leccionesDeSeccion.length} completadas
+                      </span>
+                    )}
+                  </div>
+
+                  {seccion.estado === "NO_DISPONIBLE" ? (
+                    <p className="rounded-2xl border border-border/60 bg-muted/30 p-5 text-sm text-muted-foreground">
+                      Esta sección todavía no está disponible — tu docente la habilitará según el
+                      avance de la clase.
+                    </p>
+                  ) : leccionesDeSeccion.length === 0 ? (
+                    <p className="rounded-2xl border border-border/60 bg-muted/30 p-5 text-sm text-muted-foreground">
+                      Esta sección todavía no tiene lecciones publicadas.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {leccionesDeSeccion.map((leccion) => (
+                        <LessonRow
+                          key={leccion.id}
+                          href={`/estudiante/cursos/${curso.id}/lecciones/${leccion.id}`}
+                          numero={numeroPorContenido.get(leccion.id) ?? 0}
+                          titulo={leccion.titulo}
+                          descripcion={leccion.descripcion}
+                          tipo={leccion.tipo}
+                          visto={idsVistos.has(leccion.id)}
+                        />
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* CONTENIDO SIN SECCIÓN */}
+            {leccionesSueltas.length > 0 && (
+              <div className="space-y-4 rounded-3xl border border-border/80 bg-card/60 p-5 shadow-xs sm:p-6">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <BookOpen className="size-4" />
+                  </span>
+                  <span className="font-heading text-xl font-bold text-foreground">
+                    Contenidos generales del curso
+                  </span>
+                </div>
+
+                <ul className="space-y-2">
+                  {leccionesSueltas.map((leccion) => (
+                    <LessonRow
+                      key={leccion.id}
+                      href={`/estudiante/cursos/${curso.id}/lecciones/${leccion.id}`}
+                      numero={numeroPorContenido.get(leccion.id) ?? 0}
+                      titulo={leccion.titulo}
+                      descripcion={leccion.descripcion}
+                      tipo={leccion.tipo}
+                      visto={idsVistos.has(leccion.id)}
+                    />
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ACTIVIDADES EVALUABLES (19/11/2026) */}
+        <section className="space-y-4 border-t border-border/60 pt-6">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="size-5 text-primary" aria-hidden="true" />
+            <h2 className="font-heading text-xl font-bold text-foreground">Actividades</h2>
+          </div>
+
+          {curso.actividades.length === 0 ? (
+            <EmptyState
+              icon={ClipboardList}
+              message="Este curso todavía no tiene actividades para entregar."
+            />
+          ) : (
+            <ul className="space-y-4">
+              {curso.actividades.map((actividad) => {
+                const entrega = actividad.entregas[0] ?? null;
+                const calificada = entrega?.nota !== null && entrega !== null;
 
                 return (
-                  <details
-                    key={seccion.id}
-                    open={seccion.esActual || seccion.estado === "DISPONIBLE"}
-                    className="group/seccion overflow-hidden rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs transition-all space-y-6"
+                  <li
+                    key={actividad.id}
+                    className="space-y-4 rounded-2xl border border-border/80 bg-card p-5"
                   >
-                    <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 text-lg font-bold select-none min-h-11 list-none [&::-webkit-details-marker]:hidden">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                          <Calendar className="size-4" />
-                        </span>
-                        <span className="font-heading text-xl font-bold text-foreground">
-                          {seccion.titulo}
-                        </span>
-                        {seccion.esActual && <Badge variant="success">Semana actual</Badge>}
-                        {seccion.estado === "NO_DISPONIBLE" && (
-                          <Badge variant="secondary" className="gap-1">
-                            <Lock className="size-3" /> No disponible
-                          </Badge>
-                        )}
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <h3 className="font-heading text-base font-bold text-foreground">
+                          {actividad.titulo}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {actividad.puntajeMaximo} puntos
+                          {actividad.fechaLimite
+                            ? ` · entrega hasta el ${actividad.fechaLimite.toLocaleDateString("es-CO")}`
+                            : ""}
+                        </p>
                       </div>
 
-                      {seccion.estado !== "NO_DISPONIBLE" && contenidos.length > 0 && (
-                        <span className="text-xs font-semibold text-muted-foreground bg-muted px-3 py-1 rounded-full">
-                          {vistosEnSeccion} de {contenidos.length} temas
-                        </span>
-                      )}
-                    </summary>
+                      <Badge
+                        variant={calificada ? "success" : entrega ? "secondary" : "warning"}
+                        className="font-semibold"
+                      >
+                        {calificada
+                          ? `${entrega!.nota} / ${actividad.puntajeMaximo}`
+                          : entrega
+                            ? "Entregada"
+                            : "Pendiente"}
+                      </Badge>
+                    </div>
 
-                    {seccion.estado === "NO_DISPONIBLE" ? (
-                      <div className="rounded-2xl border border-border/60 bg-muted/30 p-5 text-sm text-muted-foreground">
-                        Esta sección todavía no está disponible — tu docente la habilitará según el
-                        avance de la clase.
-                      </div>
-                    ) : contenidos.length === 0 ? (
-                      <div className="rounded-2xl border border-border/60 bg-muted/30 p-5 text-sm text-muted-foreground">
-                        Esta sección todavía no tiene contenidos publicados.
-                      </div>
-                    ) : (
-                      <ul className="space-y-10 pt-2">
-                        {contenidos.map((contenido, index) => (
-                          <CourseContentItem
-                            key={contenido.id}
-                            numero={numeroPorContenido.get(contenido.id) ?? index + 1}
-                            index={index}
-                            titulo={contenido.titulo}
-                            descripcion={contenido.descripcion}
-                            tipo={contenido.tipo}
-                            contentId={contenido.id}
-                            visto={idsVistos.has(contenido.id)}
-                          >
-                            {contenido.tipo === "VIDEO" && (
-                              <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
-                            )}
-                            {contenido.tipo === "TEXTO" && (
-                              <MarkdownContent contenido={contenido.contenido} />
-                            )}
-                            {contenido.tipo === "DOCUMENTO" && (
-                              <DocumentContentList documentos={contenido.documentosConUrl} />
-                            )}
-                          </CourseContentItem>
-                        ))}
-                      </ul>
+                    {actividad.descripcion && (
+                      <p className="text-sm text-muted-foreground">{actividad.descripcion}</p>
                     )}
-                  </details>
+
+                    <MarkdownContent contenido={actividad.instrucciones} />
+
+                    {entrega?.retroalimentacion && (
+                      <div className="rounded-md border border-success-border bg-success-soft px-3 py-2 text-sm">
+                        <p className="font-semibold text-success">Comentario de tu profesor</p>
+                        <p className="whitespace-pre-wrap text-foreground">
+                          {entrega.retroalimentacion}
+                        </p>
+                      </div>
+                    )}
+
+                    <SubmitActivityForm
+                      actividadId={actividad.id}
+                      titulo={actividad.titulo}
+                      yaEntregada={entrega !== null}
+                      textoPrevio={entrega?.texto}
+                      nombreArchivoPrevio={entrega?.nombreArchivo}
+                    />
+                  </li>
                 );
               })}
+            </ul>
+          )}
+        </section>
 
-              {/* CONTENIDO SUELTO (SIN SECCIÓN) */}
-              {contenidoSueltoEstudiante.length > 0 && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2">
-                    <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <BookOpen className="size-4" />
-                    </span>
-                    <h3 className="font-heading text-xl font-bold text-foreground">
-                      Contenidos Generales del Curso
-                    </h3>
-                  </div>
+        {/* EVALUACIONES AUTOMÁTICAS (19/11/2026) */}
+        {curso.quizzes.length > 0 && (
+          <section className="space-y-4 border-t border-border/60 pt-6">
+            <div className="flex items-center gap-2">
+              <ListChecks className="size-5 text-primary" aria-hidden="true" />
+              <h2 className="font-heading text-xl font-bold text-foreground">Evaluaciones</h2>
+            </div>
 
-                  <ul className="space-y-10">
-                    {contenidoSueltoEstudiante.map((contenido, index) => (
-                      <CourseContentItem
-                        key={contenido.id}
-                        numero={numeroPorContenido.get(contenido.id) ?? index + 1}
-                        index={index}
-                        titulo={contenido.titulo}
-                        descripcion={contenido.descripcion}
-                        tipo={contenido.tipo}
-                        contentId={contenido.id}
-                        visto={idsVistos.has(contenido.id)}
+            <ul className="space-y-3">
+              {curso.quizzes.map((quiz) => {
+                const mejor = quiz.intentos[0] ?? null;
+
+                return (
+                  <li key={quiz.id}>
+                    <Link
+                      href={`/estudiante/cursos/${curso.id}/quizzes/${quiz.id}`}
+                      className="group flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
+                    >
+                      <div className="space-y-0.5">
+                        <p className="font-heading text-base font-bold text-foreground transition-colors group-hover:text-primary">
+                          {quiz.titulo}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {quiz._count.preguntas}{" "}
+                          {quiz._count.preguntas === 1 ? "pregunta" : "preguntas"} · se califica al
+                          instante
+                        </p>
+                      </div>
+
+                      <Badge
+                        variant={mejor ? (mejor.puntaje >= 60 ? "success" : "warning") : "secondary"}
+                        className="font-semibold"
                       >
-                        {contenido.tipo === "VIDEO" && (
-                          <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
-                        )}
-                        {contenido.tipo === "TEXTO" && (
-                          <MarkdownContent contenido={contenido.contenido} />
-                        )}
-                        {contenido.tipo === "DOCUMENTO" && (
-                          <DocumentContentList documentos={contenido.documentosConUrl} />
-                        )}
-                      </CourseContentItem>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* ACTIVIDADES EVALUABLES (19/11/2026) */}
-              <div className="space-y-4 pt-4 border-t border-border/60">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="size-5 text-primary" aria-hidden="true" />
-                  <h2 className="font-heading text-xl font-bold text-foreground">Actividades</h2>
-                </div>
-
-                {curso.actividades.length === 0 ? (
-                  <EmptyState
-                    icon={ClipboardList}
-                    message="Este curso todavía no tiene actividades para entregar."
-                  />
-                ) : (
-                  <ul className="space-y-4">
-                    {curso.actividades.map((actividad) => {
-                      const entrega = actividad.entregas[0] ?? null;
-                      const calificada = entrega?.nota !== null && entrega !== null;
-
-                      return (
-                        <li
-                          key={actividad.id}
-                          className="space-y-4 rounded-2xl border border-border/80 bg-card p-5"
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div className="space-y-0.5">
-                              <h3 className="font-heading text-base font-bold text-foreground">
-                                {actividad.titulo}
-                              </h3>
-                              <p className="text-xs text-muted-foreground">
-                                {actividad.puntajeMaximo} puntos
-                                {actividad.fechaLimite
-                                  ? ` · entrega hasta el ${actividad.fechaLimite.toLocaleDateString("es-CO")}`
-                                  : ""}
-                              </p>
-                            </div>
-
-                            <Badge
-                              variant={
-                                calificada ? "success" : entrega ? "secondary" : "warning"
-                              }
-                              className="font-semibold"
-                            >
-                              {calificada
-                                ? `${entrega!.nota} / ${actividad.puntajeMaximo}`
-                                : entrega
-                                  ? "Entregada"
-                                  : "Pendiente"}
-                            </Badge>
-                          </div>
-
-                          {actividad.descripcion && (
-                            <p className="text-sm text-muted-foreground">{actividad.descripcion}</p>
-                          )}
-
-                          <MarkdownContent contenido={actividad.instrucciones} />
-
-                          {entrega?.retroalimentacion && (
-                            <div className="rounded-md border border-success-border bg-success-soft px-3 py-2 text-sm">
-                              <p className="font-semibold text-success">
-                                Comentario de tu profesor
-                              </p>
-                              <p className="whitespace-pre-wrap text-foreground">
-                                {entrega.retroalimentacion}
-                              </p>
-                            </div>
-                          )}
-
-                          <SubmitActivityForm
-                            actividadId={actividad.id}
-                            titulo={actividad.titulo}
-                            yaEntregada={entrega !== null}
-                            textoPrevio={entrega?.texto}
-                            nombreArchivoPrevio={entrega?.nombreArchivo}
-                          />
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-
-              {/* EVALUACIONES AUTOMÁTICAS (19/11/2026) */}
-              {curso.quizzes.length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-border/60">
-                  <div className="flex items-center gap-2">
-                    <ListChecks className="size-5 text-primary" aria-hidden="true" />
-                    <h2 className="font-heading text-xl font-bold text-foreground">
-                      Evaluaciones
-                    </h2>
-                  </div>
-
-                  <ul className="space-y-3">
-                    {curso.quizzes.map((quiz) => {
-                      const mejor = quiz.intentos[0] ?? null;
-
-                      return (
-                        <li key={quiz.id}>
-                          <Link
-                            href={`/estudiante/cursos/${curso.id}/quizzes/${quiz.id}`}
-                            className="group flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
-                          >
-                            <div className="space-y-0.5">
-                              <p className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors">
-                                {quiz.titulo}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {quiz._count.preguntas}{" "}
-                                {quiz._count.preguntas === 1 ? "pregunta" : "preguntas"} · se
-                                califica al instante
-                              </p>
-                            </div>
-
-                            <Badge
-                              variant={
-                                mejor ? (mejor.puntaje >= 60 ? "success" : "warning") : "secondary"
-                              }
-                              className="font-semibold"
-                            >
-                              {mejor ? `Tu mejor: ${mejor.puntaje}%` : "Sin responder"}
-                            </Badge>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-            </section>
-
-            {/* BARRA LATERAL (OUTLINE Y PROGRESO) */}
-            <aside className="order-1 lg:sticky lg:top-6 lg:order-2">
-              <CourseContentOutline
-                tituloCurso={curso.titulo}
-                progreso={progreso}
-                vistos={idsVistos.size}
-                total={contenidosVisibles.length}
-                items={contenidosConDocumentos.map((contenido, index) => ({
-                  id: contenido.id,
-                  numero: index + 1,
-                  titulo: contenido.titulo,
-                  tipo: contenido.tipo,
-                  visto: idsVistos.has(contenido.id),
-                }))}
-              />
-            </aside>
-          </div>
+                        {mejor ? `Tu mejor: ${mejor.puntaje}%` : "Sin responder"}
+                      </Badge>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         )}
       </main>
     </AppShell>

@@ -71,7 +71,11 @@ describe("EstudiantePage (US14 minimo / US15)", () => {
           id: "curso-1",
           titulo: "Curso 1",
           estado: "PUBLICADO",
-          contenidos: [{ id: "c1" }, { id: "c2" }],
+          contenidos: [
+            { id: "c1", visible: true, seccionId: null },
+            { id: "c2", visible: true, seccionId: null },
+          ],
+          secciones: [],
           tutor: { nombre: "Ana", apellido: "Ríos" },
         },
       },
@@ -87,7 +91,12 @@ describe("EstudiantePage (US14 minimo / US15)", () => {
       include: {
         course: {
           include: {
-            contenidos: { where: { visible: true }, select: { id: true } },
+            contenidos: {
+              where: { visible: true },
+              orderBy: { orden: "asc" },
+              select: { id: true, visible: true, seccionId: true },
+            },
+            secciones: { orderBy: { orden: "asc" }, select: { id: true, estado: true } },
             tutor: { select: { nombre: true, apellido: true } },
           },
         },

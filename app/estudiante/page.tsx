@@ -15,6 +15,11 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { obtenerEstadoEstudiante } from "@/lib/course-status";
 import { calcularProgreso } from "@/lib/course-progress";
+import {
+  filtrarContenidosAccesibles,
+  ordenarLecciones,
+  siguienteLeccionPendiente,
+} from "@/lib/course-lessons";
 import { calcularRacha } from "@/lib/streak";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
@@ -46,7 +51,18 @@ export default async function EstudiantePage() {
       include: {
         course: {
           include: {
-            contenidos: { where: { visible: true }, select: { id: true } },
+            // US43: además del id hacen falta `seccionId` y el orden para
+            // poder calcular la lección exacta por la que el estudiante
+            // retoma el curso — "Reanudar clase" ahora entra directo al
+            // reproductor, no a la portada del curso. `visible` viaja
+            // porque `filtrarContenidosAccesibles` lo exige, aunque el
+            // `where` ya lo garantice.
+            contenidos: {
+              where: { visible: true },
+              orderBy: { orden: "asc" },
+              select: { id: true, visible: true, seccionId: true },
+            },
+            secciones: { orderBy: { orden: "asc" }, select: { id: true, estado: true } },
             tutor: { select: { nombre: true, apellido: true } },
           },
         },
@@ -59,21 +75,41 @@ export default async function EstudiantePage() {
     }),
   ]);
 
-  const idsVistos = new Set(vistas.map((vista) => vista.contentId));
+  const idsVistos = new Set<string>(vistas.map((vista) => vista.contentId));
   const racha = calcularRacha(vistas.map((vista) => vista.vistoEn));
 
   // Procesamos cada curso con sus métricas
   const cursosConMetricas = inscripciones.map((inscripcion) => {
     const estado = obtenerEstadoEstudiante(inscripcion.course.estado);
-    const totalContenidos = inscripcion.course.contenidos.length;
-    const contenidosVistos = inscripcion.course.contenidos.filter((c) => idsVistos.has(c.id)).length;
+
+    // US43: el avance se cuenta sobre las lecciones que el estudiante
+    // realmente puede abrir — el contenido de una sección "No disponible"
+    // no debería inflar el denominador y dejar el curso en un 60% eterno.
+    type ContenidoDelCurso = (typeof inscripcion.course.contenidos)[number];
+    type SeccionDelCurso = (typeof inscripcion.course.secciones)[number];
+
+    const lecciones = ordenarLecciones<ContenidoDelCurso, SeccionDelCurso>(
+      filtrarContenidosAccesibles<ContenidoDelCurso, SeccionDelCurso>(
+        inscripcion.course.contenidos,
+        inscripcion.course.secciones
+      ),
+      inscripcion.course.secciones
+    );
+    const totalContenidos = lecciones.length;
+    const contenidosVistos = lecciones.filter((leccion) => idsVistos.has(leccion.id)).length;
     const progreso = calcularProgreso(contenidosVistos, totalContenidos);
     const completado = progreso === 100 && totalContenidos > 0;
+    const leccionParaContinuar = siguienteLeccionPendiente(lecciones, idsVistos);
 
     return {
       id: inscripcion.id,
       courseId: inscripcion.course.id,
       href: `/estudiante/cursos/${inscripcion.course.id}`,
+      // "Reanudar clase" entra directo a la lección pendiente; si el curso
+      // todavía no tiene lecciones accesibles, cae en el temario.
+      hrefContinuar: leccionParaContinuar
+        ? `/estudiante/cursos/${inscripcion.course.id}/lecciones/${leccionParaContinuar.id}`
+        : `/estudiante/cursos/${inscripcion.course.id}`,
       titulo: inscripcion.course.titulo,
       imagen: inscripcion.course.imagen,
       tutor: inscripcion.course.tutor,
@@ -249,7 +285,7 @@ export default async function EstudiantePage() {
                 </div>
               </div>
 
-              <Link href={cursoEnProgreso.href} className={cn(buttonVariants(), "h-12 px-6 rounded-2xl font-bold shadow-sm gap-2 shrink-0 self-start sm:self-center")}>
+              <Link href={cursoEnProgreso.hrefContinuar} className={cn(buttonVariants(), "h-12 px-6 rounded-2xl font-bold shadow-sm gap-2 shrink-0 self-start sm:self-center")}>
                   Reanudar clase
                   <ArrowRight className="size-4" />
                 </Link>
