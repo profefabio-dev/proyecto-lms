@@ -30,6 +30,17 @@ enum TipoContenido {
   VIDEO
   TEXTO
   DOCUMENTO
+  // US45 (20/11/2026): dos tipos más, pedidos al ver que un curso con todos
+  // los recursos de la plataforma seguía viéndose igual que cualquier otro
+  // — con tres tipos, todos los cursos se parecen.
+  // ENLACE: un recurso externo (una simulación, un artículo, una
+  // herramienta en línea) que antes había que pegar dentro de un TEXTO
+  // como un link suelto, sin ficha ni aviso de que sale del sitio.
+  // CODIGO: un fragmento de código con su lenguaje, para las clases de
+  // programación — en un TEXTO en Markdown perdía el formato y se mezclaba
+  // con la explicación.
+  ENLACE
+  CODIGO
 }
 
 // US30: estado de una sección, fijado a mano por el Tutor (mismo patrón que
@@ -38,6 +49,15 @@ enum TipoContenido {
 enum EstadoSeccion {
   DISPONIBLE
   NO_DISPONIBLE
+}
+
+// US44 (20/11/2026): una ruta de aprendizaje empieza en BORRADOR —
+// invisible para los estudiantes mientras el Tutor le agrega cursos— y se
+// PUBLICADA cuando ya se puede recorrer. Mismo patrón que `EstadoCurso`,
+// pero con dos estados: una ruta no se archiva, se despublica.
+enum EstadoRuta {
+  BORRADOR
+  PUBLICADA
 }
 
 model Users {
@@ -76,6 +96,8 @@ model Users {
   contenidosVistos ContentViews[]
   entregas         Entregas[]
   intentosQuiz     IntentosQuiz[]
+  rutasComoTutor   Rutas[]        @relation("TutorRutas")
+  rutasInscritas   RutaUsuarios[]
 
   @@map("users")
 }
@@ -110,8 +132,80 @@ model Courses {
   secciones   Secciones[]
   actividades Actividades[]
   quizzes     Quizzes[]
+  rutas       RutaCursos[]
 
   @@map("courses")
+}
+
+// US44 — Rutas de aprendizaje (20/11/2026).
+//
+// Es la pieza que la descripción del proyecto pedía desde el principio y
+// que todavía no existía: "los alumnos podrán ingresar a un rol de
+// estudiante en donde podrán asociarse a unas rutas de aprendizaje tipo
+// LMS". Una ruta es una secuencia ordenada de cursos del mismo Tutor — por
+// ejemplo "Tecnología 7°: de la informática básica a la robótica" — que el
+// estudiante recorre de principio a fin viendo un solo porcentaje de
+// avance para todo el camino.
+//
+// Decisiones:
+// - Tabla intermedia propia (`RutaCursos`) en vez de un `rutaId` en
+//   `Courses`: un mismo curso puede servir en más de una ruta (un curso de
+//   fundamentos aparece tanto en la ruta de programación como en la de
+//   robótica), y el `orden` pertenece a la relación, no al curso.
+// - Asociarse a una ruta inscribe al estudiante en los cursos publicados
+//   de esa ruta (`CourseUsers`), en vez de inventar una segunda forma de
+//   dar acceso: así TODO el control de acceso ya escrito (US11, US30, las
+//   actividades, los quizzes) sigue valiendo sin cambiarle una línea. Ver
+//   `lib/actions/join-ruta.ts`.
+// - La ruta la arma un Tutor y le pertenece, igual que un curso.
+model Rutas {
+  id          String     @id @default(uuid())
+  titulo      String
+  descripcion String
+  imagen      String?
+  tutorId     String
+  estado      EstadoRuta @default(BORRADOR)
+  createdAt   DateTime   @default(now())
+
+  tutor     Users          @relation("TutorRutas", fields: [tutorId], references: [id])
+  cursos    RutaCursos[]
+  inscritos RutaUsuarios[]
+
+  @@map("rutas")
+}
+
+// Un curso dentro de una ruta, con su posición en el camino. `orden` se
+// maneja igual que en `Secciones`/`Contents`: incremental al agregar, y el
+// Tutor lo reacomoda después.
+model RutaCursos {
+  id       String @id @default(uuid())
+  rutaId   String
+  courseId String
+  orden    Int    @default(0)
+
+  ruta   Rutas   @relation(fields: [rutaId], references: [id])
+  course Courses @relation(fields: [courseId], references: [id])
+
+  @@unique([rutaId, courseId])
+  @@map("ruta_cursos")
+}
+
+// El estudiante asociado a una ruta. Equivale a `CourseUsers` pero a nivel
+// de ruta, y conviven: la inscripción al curso es la que da acceso al
+// contenido; esta registra que el estudiante va recorriendo la ruta
+// completa, para poder mostrarle el avance del camino y no solo de cada
+// curso por separado.
+model RutaUsuarios {
+  id     String   @id @default(uuid())
+  rutaId String
+  userId String
+  fecha  DateTime @default(now())
+
+  ruta Rutas @relation(fields: [rutaId], references: [id])
+  user Users @relation(fields: [userId], references: [id])
+
+  @@unique([rutaId, userId])
+  @@map("ruta_usuarios")
 }
 
 // US30: agrupa el contenido de un curso en secciones plegables con estado
