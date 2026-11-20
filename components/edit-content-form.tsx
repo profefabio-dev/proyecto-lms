@@ -33,7 +33,7 @@ export function EditContentForm({
   nombreArchivoActual,
 }: {
   contentId: string;
-  tipo: "VIDEO" | "TEXTO" | "DOCUMENTO";
+  tipo: "VIDEO" | "TEXTO" | "DOCUMENTO" | "ENLACE" | "CODIGO";
   tituloActual: string;
   descripcionActual: string | null;
   contenidoActual: string;
@@ -118,6 +118,43 @@ export function EditContentForm({
           />
           <p className="text-xs text-muted-foreground">
             Admite formato Markdown: # para títulos, **texto** para negrita y - para listas.
+          </p>
+        </div>
+      )}
+
+      {/* US45: los dos tipos nuevos reusan los mismos campos — el enlace la
+          `url` (sin exigir YouTube) y el código el `contenido`, que incluye
+          el encabezado `lenguaje:` de `lib/code-content.ts`: editarlo a mano
+          también cambia el lenguaje, que es lo esperable. */}
+      {tipo === "ENLACE" && (
+        <div className="space-y-1">
+          <Label htmlFor={`url-editar-${contentId}`}>Dirección del recurso</Label>
+          <Input
+            id={`url-editar-${contentId}`}
+            name="url"
+            type="url"
+            required
+            value={valores.contenido}
+            onChange={(e) => setValores((v) => ({ ...v, contenido: e.target.value }))}
+          />
+        </div>
+      )}
+
+      {tipo === "CODIGO" && (
+        <div className="space-y-1">
+          <Label htmlFor={`codigo-editar-${contentId}`}>Código</Label>
+          <textarea
+            id={`codigo-editar-${contentId}`}
+            name="contenido"
+            required
+            rows={10}
+            value={valores.contenido}
+            onChange={(e) => setValores((v) => ({ ...v, contenido: e.target.value }))}
+            className="w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-2 font-mono text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+          />
+          <p className="text-xs text-muted-foreground">
+            La primera línea, si dice <code>lenguaje: python</code>, define el lenguaje que se
+            muestra sobre el bloque.
           </p>
         </div>
       )}

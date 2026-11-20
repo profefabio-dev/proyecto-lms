@@ -138,6 +138,69 @@ export async function editarContenido(
     }
   }
 
+  // US45: los dos tipos nuevos reusan los mismos campos del formulario que
+  // los de arriba — ENLACE la `url` (sin exigir YouTube) y CODIGO el
+  // `contenido` (donde viaja el lenguaje junto al código, ver
+  // `lib/code-content.ts`). Van ANTES del bloque de DOCUMENTO a propósito:
+  // ese bloque es el caso por defecto y, sin estas dos ramas, editar un
+  // enlace habría entrado por la lógica de archivos de Storage.
+  if (contenido.tipo === TipoContenido.ENLACE) {
+    const parsedUrl = z
+      .string()
+      .trim()
+      .url("La URL no es válida")
+      .refine((valor) => valor.startsWith("http://") || valor.startsWith("https://"), {
+        message: "La dirección debe empezar por http:// o https://",
+      })
+      .safeParse(formData.get("url"));
+
+    if (!parsedUrl.success) {
+      return { success: false, error: parsedUrl.error.issues[0]?.message ?? "URL inválida." };
+    }
+
+    try {
+      await prisma.contents.update({
+        where: { id: contentId },
+        data: { titulo, descripcion: descripcion || null, contenido: parsedUrl.data },
+      });
+
+      revalidatePath(`/tutor/cursos/${contenido.courseId}`);
+      revalidatePath(`/estudiante/cursos/${contenido.courseId}`);
+
+      return { success: true };
+    } catch (error) {
+      console.error("Error editando contenido de enlace:", error);
+      return { success: false, error: "No se pudo guardar el enlace. Intenta de nuevo." };
+    }
+  }
+
+  if (contenido.tipo === TipoContenido.CODIGO) {
+    // Sin `trim()`: la sangría del principio es parte del código.
+    const parsedCodigo = z
+      .string()
+      .min(2, "El código es obligatorio")
+      .safeParse(formData.get("contenido"));
+
+    if (!parsedCodigo.success) {
+      return { success: false, error: parsedCodigo.error.issues[0]?.message ?? "Datos inválidos." };
+    }
+
+    try {
+      await prisma.contents.update({
+        where: { id: contentId },
+        data: { titulo, descripcion: descripcion || null, contenido: parsedCodigo.data },
+      });
+
+      revalidatePath(`/tutor/cursos/${contenido.courseId}`);
+      revalidatePath(`/estudiante/cursos/${contenido.courseId}`);
+
+      return { success: true };
+    } catch (error) {
+      console.error("Error editando contenido de código:", error);
+      return { success: false, error: "No se pudo guardar el código. Intenta de nuevo." };
+    }
+  }
+
   // TipoContenido.DOCUMENTO: el archivo nuevo es opcional — si no llega
   // ninguno, se guardan solo título y descripción, sin tocar Storage.
   const archivo = formData.get("archivo");

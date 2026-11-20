@@ -20,11 +20,11 @@ import { UnenrollStudentsForm } from "@/components/unenroll-students-form";
 import { CreateVideoContentForm } from "@/components/create-video-content-form";
 import { UploadDocumentForm } from "@/components/upload-document-form";
 import { CreateTextContentForm } from "@/components/create-text-content-form";
+import { CreateLinkContentForm } from "@/components/create-link-content-form";
+import { CreateCodeContentForm } from "@/components/create-code-content-form";
+import { ContentBody } from "@/components/content-body";
 import { CreateActivityForm } from "@/components/create-activity-form";
 import { CreateQuizForm } from "@/components/create-quiz-form";
-import { YoutubeEmbed } from "@/components/youtube-embed";
-import { MarkdownContent } from "@/components/markdown-content";
-import { DocumentContentList } from "@/components/document-content-list";
 import { ContentOrderControls } from "@/components/content-order-controls";
 import { SectionControls } from "@/components/section-controls";
 import { CreateSectionForm } from "@/components/create-section-form";
@@ -325,15 +325,16 @@ export default async function CursoDetallePage({
                             </p>
                           )}
 
-                          {contenido.tipo === "VIDEO" && (
-                            <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
-                          )}
-                          {contenido.tipo === "TEXTO" && (
-                            <MarkdownContent contenido={contenido.contenido} />
-                          )}
-                          {contenido.tipo === "DOCUMENTO" && (
-                            <DocumentContentList documentos={contenido.documentosConUrl} />
-                          )}
+                          {/* US45: el cuerpo de cada tipo vive en un solo
+                              componente (`ContentBody`) — antes este switch
+                              estaba repetido cuatro veces entre las páginas
+                              del Tutor y del Estudiante. */}
+                          <ContentBody
+                            tipo={contenido.tipo}
+                            titulo={contenido.titulo}
+                            contenido={contenido.contenido}
+                            documentos={contenido.documentosConUrl}
+                          />
                         </li>
                       ))}
                     </ul>
@@ -401,15 +402,16 @@ export default async function CursoDetallePage({
                             </p>
                           )}
 
-                          {contenido.tipo === "VIDEO" && (
-                            <YoutubeEmbed url={contenido.contenido} titulo={contenido.titulo} />
-                          )}
-                          {contenido.tipo === "TEXTO" && (
-                            <MarkdownContent contenido={contenido.contenido} />
-                          )}
-                          {contenido.tipo === "DOCUMENTO" && (
-                            <DocumentContentList documentos={contenido.documentosConUrl} />
-                          )}
+                          {/* US45: el cuerpo de cada tipo vive en un solo
+                              componente (`ContentBody`) — antes este switch
+                              estaba repetido cuatro veces entre las páginas
+                              del Tutor y del Estudiante. */}
+                          <ContentBody
+                            tipo={contenido.tipo}
+                            titulo={contenido.titulo}
+                            contenido={contenido.contenido}
+                            documentos={contenido.documentosConUrl}
+                          />
                         </li>
                       ))}
                     </ul>
@@ -441,6 +443,10 @@ export default async function CursoDetallePage({
             <CreateVideoContentForm courseId={curso.id} />
             <UploadDocumentForm courseId={curso.id} />
             <CreateTextContentForm courseId={curso.id} />
+            {/* US45 (20/11/2026): dos tipos más, para que un curso no sea
+                siempre la misma mezcla de video, texto y PDF. */}
+            <CreateLinkContentForm courseId={curso.id} />
+            <CreateCodeContentForm courseId={curso.id} />
           </div>
         </section>
 
