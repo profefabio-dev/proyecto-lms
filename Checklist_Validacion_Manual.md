@@ -114,3 +114,82 @@ misma función `resetSyncedUserPassword`, y esos sí estaban confirmados).
 
 **OP01 queda `Hecho` y confirmada — ver `progress.md` y la fila de OP01 en `Backlog.md`. No queda
 ninguna validación manual abierta en el proyecto.**
+
+---
+
+## Addendum (20/11/2026) — Épicas Evaluación y calificación (US36-US41) y El curso como recorrido (US43-US46)
+
+Diez historias implementadas entre el 19 y el 20/11/2026 que **todavía no se han probado en navegador
+real**. Esta es la lista para hacerlo de una sola pasada, en orden: cada paso deja sembrado lo que
+necesita el siguiente.
+
+**Antes de empezar**, en `C:\Users\Usuario\Desktop\proyecto-lms`:
+
+```
+npx prisma migrate deploy
+npx prisma generate
+npm run dev
+```
+
+(`migrate deploy`, nunca `migrate dev` — está roto en este proyecto desde el 12/11/2026, ver
+`progress.md`.) Opcionalmente, para no crear todo a mano:
+`npx tsx scripts/seed-curso-demo.ts --con-datos`.
+
+### Como Tutor
+
+- [ ] **A.1** En un curso tuyo, crea una **actividad** con puntaje y fecha límite (US36). Debe
+      aparecer en la lista de actividades del curso.
+- [ ] **A.2** Crea una **evaluación**, cárgale 3 preguntas y publícala (US40). Comprueba que **no te
+      deja publicarla sin preguntas**.
+- [ ] **A.3** Publica un **enlace** a un sitio externo y un bloque de **código** con su lenguaje
+      (US45). En el curso, el enlace debe mostrar el dominio y abrirse en otra pestaña; el código,
+      en monoespaciado y con su sangría.
+- [ ] **A.4** Edita el enlace y el código recién creados (cambia el título y la dirección / el
+      código). Debe guardarse sin pedirte ningún archivo.
+- [ ] **A.5** En **Rutas** (menú lateral), crea una ruta y agrégale 2 o 3 cursos (US44). Comprueba
+      que **no te deja publicarla vacía**, y publícala cuando ya tenga cursos.
+
+### Como Estudiante (otra sesión o ventana privada)
+
+- [ ] **B.1** Entra a un curso. Debe verse el **temario** (no todo el contenido desplegado) con la
+      tarjeta de "Comenzar el curso" o "Continuar donde quedaste" (US43).
+- [ ] **B.2** Abre una lección. Debe verse **una sola** lección, el temario al lado, "Lección N de M"
+      y el botón "Completar y continuar".
+- [ ] **B.3** Pulsa "Completar y continuar" varias veces seguidas: debe ir avanzando lección por
+      lección, marcando cada una en verde, y al terminar la última volver al temario con el 100 %.
+- [ ] **B.4** Vuelve a "Mis cursos" y pulsa **"Reanudar clase"**: debe entrar directo a la lección
+      pendiente, no a la portada del curso.
+- [ ] **B.5** Entrega la actividad de A.1 (texto, archivo o los dos) (US37).
+- [ ] **B.6** Responde la evaluación de A.2 y comprueba que el resultado sale al instante (US41).
+- [ ] **B.7** En **Rutas**, asóciate a la ruta de A.5 (US44). Sus cursos deben aparecer enseguida en
+      "Mis cursos", y la ruta debe mostrar su avance y un botón que lleve a la lección exacta.
+- [ ] **B.8** Entra a **Mis notas** (US46). Debe estar el resultado de la evaluación de B.6; la
+      actividad aparecerá cuando la califiques en C.1.
+
+### De vuelta como Tutor
+
+- [ ] **C.1** Califica la entrega de B.5 con nota y comentario (US38). Comprueba que ves también la
+      lista de **quienes no han entregado**.
+- [ ] **C.2** Entra a **Seguimiento** del curso (US39): el estudiante debe aparecer con su avance,
+      su entrega y su promedio.
+- [ ] **C.3** En la ruta de A.5, comprueba que el estudiante aparece en "Quién está recorriendo la
+      ruta" con su porcentaje.
+- [ ] **C.4** Agrega **un curso publicado más** a esa ruta. Como el estudiante ya estaba asociado,
+      debe quedar inscrito en ese curso automáticamente (compruébalo desde su sesión).
+
+### Pruebas de seguridad (vale la pena hacerlas, son las que el código protege a propósito)
+
+- [ ] **D.1** Como Estudiante, copia la URL de una lección de una sección que el Tutor tenga en **No
+      disponible** y entra directo: debe dar 404, no mostrar la lección.
+- [ ] **D.2** En la página de una evaluación, abre el código fuente (Ctrl+U) y busca la palabra
+      `esCorrecta`: **no debe aparecer**. Si apareciera, la hoja de respuestas estaría publicada.
+- [ ] **D.3** Como Estudiante, intenta entrar a `/estudiante/rutas/<id>` de una ruta en **borrador**:
+      debe dar 404.
+
+### Como Estudiante, de nuevo
+
+- [ ] **E.1** Vuelve a **Mis notas**: ahora deben estar las dos calificaciones, con el comentario del
+      profesor y el promedio general en escala 1.0–5.0.
+
+**Al terminar**, anota en `progress.md` qué pasó con cada punto y actualiza el `Estado` de US36-US41 y
+US43-US46 en `Backlog.md` (de "Pendiente de validación en navegador real" a validado, con la fecha).

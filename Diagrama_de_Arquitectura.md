@@ -92,8 +92,8 @@ flowchart TB
         LoginPage["/login"]
         SuperAdminPages["/superadmin<br/>listado y gestión de espacios (US25/US27/US28), OP03"]
         AdminPages["/admin, /admin/usuarios, /admin/tutores"]
-        TutorPages["/tutor, /tutor/cursos, /tutor/estudiantes"]
-        EstudiantePages["/estudiante, /estudiante/cursos, /estudiante/buscar"]
+        TutorPages["/tutor, /tutor/cursos, /tutor/estudiantes,<br/>/tutor/rutas (US44)"]
+        EstudiantePages["/estudiante, /estudiante/cursos,<br/>/estudiante/cursos/[courseId]/lecciones (US43),<br/>/estudiante/rutas (US44), /estudiante/notas (US46),<br/>/estudiante/buscar"]
         DashboardDispatch["/dashboard<br/>despachador único por rol"]
     end
 
@@ -103,14 +103,14 @@ flowchart TB
         LibSupabase["supabase/*.ts<br/>clientes: browser, server, admin, storage, sync-user"]
         LibPrisma["prisma.ts<br/>cliente Prisma singleton"]
         LibContentIcon["content-type-icon.ts<br/>ícono/color por tipo de contenido (compartido)"]
-        LibPuras["course-progress.ts, course-status.ts,<br/>search.ts, admin-stats.ts, streak.ts<br/>(funciones puras, con pruebas unitarias)"]
+        LibPuras["course-progress.ts, course-status.ts,<br/>course-lessons.ts (US43), route-progress.ts (US44),<br/>grades.ts (US46), code-content.ts (US45),<br/>search.ts, admin-stats.ts, streak.ts<br/>(funciones puras, con pruebas unitarias)"]
     end
 
     subgraph componentes["components/ — UI reutilizable"]
         UIBase["ui/*.tsx<br/>Button, Card, Input, Label, Badge, Progress, Avatar (shadcn)"]
         AppShell["app-shell.tsx, breadcrumbs.tsx, logout-button.tsx<br/>menú lateral, navegación y sesión"]
         Formularios["*-form.tsx<br/>formularios conectados a Server Actions"]
-        ContentUI["youtube-embed, markdown-content,<br/>document-content-list, mark-content-viewed-button,<br/>course-content-item, course-content-outline (US31)"]
+        ContentUI["content-body (cuerpo por tipo, US45),<br/>youtube-embed, markdown-content, document-content-list,<br/>lesson-row, lesson-curriculum, complete-lesson-button (US43)"]
     end
 
     Middleware["middleware.ts<br/>protección de rutas a nivel de edge"]
@@ -149,26 +149,55 @@ sequenceDiagram
     end
 ```
 
-### Un Estudiante marca un contenido como visto (US19)
+### Un Estudiante completa una lección y pasa a la siguiente (US19 + US43)
+
+> Reemplaza al flujo original de US19 ("Marcar como visto" sobre la página larga del curso): desde el
+> 20/11/2026 el curso se recorre lección por lección y el mismo botón marca y avanza.
+>
+> Lo importante del diagrama está en el paso resaltado: **la lección destino la calcula el servidor**.
+> Si viniera en el formulario, bastaría editarla para saltar a una lección de una sección que el Tutor
+> no ha habilitado. Por eso `completarLeccion` reconstruye la secuencia accesible del curso con el
+> mismo módulo que usan el temario y el reproductor (`lib/course-lessons.ts`) antes de redirigir.
 
 ```mermaid
 sequenceDiagram
     actor E as Estudiante
-    participant Btn as MarkContentViewedButton (cliente)
-    participant Action as marcarContenidoVisto (Server Action)
+    participant Btn as CompleteLessonButton (cliente)
+    participant Action as completarLeccion (Server Action)
     participant DB as Postgres (vía Prisma)
 
-    E->>Btn: clic en "Marcar como visto"
+    E->>Btn: clic en "Completar y continuar"
     Btn->>Action: formAction(contentId)
     Action->>DB: valida sesión, rol Estudiante,<br/>contenido visible e inscripción
     alt no autorizado o inválido
         Action-->>Btn: { success: false, error }
+        Btn-->>E: mensaje de error
     else válido
         Action->>DB: contentViews.createMany({ skipDuplicates: true })
+        Action->>DB: contents + secciones del curso
+        Action->>Action: filtrarContenidosAccesibles → ordenarLecciones<br/>→ ubicarLeccion = ¿cuál sigue?
+        Note over Action: El destino NUNCA viene del formulario:<br/>así no se puede saltar por URL a una<br/>lección de una sección cerrada (US30).
         Action->>Action: revalidatePath("/estudiante" y curso)
-        Action-->>Btn: { success: true }
-        Btn-->>E: insignia "✓ Visto"
+        Action-->>E: redirect a la lección siguiente<br/>(o al temario, si era la última)
     end
+```
+
+### Un Estudiante se asocia a una ruta de aprendizaje (US44)
+
+```mermaid
+sequenceDiagram
+    actor E as Estudiante
+    participant Btn as JoinRutaForm (cliente)
+    participant Action as asociarseARuta (Server Action)
+    participant DB as Postgres (vía Prisma)
+
+    E->>Btn: clic en "Asociarme a esta ruta"
+    Btn->>Action: formAction(rutaId)
+    Action->>DB: valida sesión, rol Estudiante,<br/>matrícula activa y ruta PUBLICADA
+    Action->>DB: rutaUsuarios.upsert (idempotente)
+    Action->>DB: courseUsers.createMany(cursos PUBLICADOS,<br/>skipDuplicates)
+    Note over Action,DB: El acceso al contenido sigue decidiéndose por<br/>CourseUsers, igual que cuando el Tutor asigna a<br/>mano (US26): la ruta no crea una segunda vía de<br/>permisos. skipDuplicates conserva inscripciones<br/>previas, con su avance, entregas y notas.
+    Action-->>E: la ruta pasa a "Mis rutas" con su avance<br/>y sus cursos aparecen en "Mis cursos"
 ```
 
 ### Un Administrador/Tutor consulta sus Estudiantes disponibles (aislamiento por espacio, US24)
@@ -246,6 +275,48 @@ erDiagram
   `/admin/usuarios` el 02/09/2026 confirmó que solo ve su propia cuenta, ningún usuario de otros
   espacios; y pruebas unitarias dedicadas confirman que un Administrador/Tutor no puede leer ni
   escribir datos de otro espacio aunque conozca su ID directamente.
+
+## Modelo de datos de las rutas de aprendizaje (US44, 20/11/2026)
+
+```mermaid
+erDiagram
+    USERS ||--o{ RUTAS : "tutorId (si es Tutor)"
+    RUTAS ||--o{ RUTACURSOS : "pasos del camino"
+    COURSES ||--o{ RUTACURSOS : "puede estar en varias rutas"
+    RUTAS ||--o{ RUTAUSUARIOS : "estudiantes asociados"
+    USERS ||--o{ RUTAUSUARIOS : "rutas que recorre (si es Estudiante)"
+    RUTAS ||--|| COURSEUSERS : "asociarse crea las inscripciones"
+    RUTAS {
+        string id PK
+        string tutorId FK
+        string estado "BORRADOR / PUBLICADA"
+    }
+    RUTACURSOS {
+        string rutaId FK
+        string courseId FK
+        int orden "posición en el camino"
+    }
+    RUTAUSUARIOS {
+        string rutaId FK
+        string userId FK "Estudiante"
+    }
+```
+
+**Puntos clave:**
+
+- **`RutaCursos` es una tabla intermedia y no un `rutaId` en `Courses`:** un mismo curso puede servir
+  en varias rutas (un curso de fundamentos aparece tanto en la ruta de programación como en la de
+  robótica) y el `orden` pertenece a la relación, no al curso.
+- **`RutaUsuarios` no otorga acceso al contenido; `CourseUsers` sí.** Asociarse a una ruta crea las
+  filas de `CourseUsers` de sus cursos publicados, así que todo el control de acceso ya escrito (US11,
+  US30, actividades, quizzes) sigue valiendo sin cambiarle una línea. Las dos tablas conviven con
+  papeles distintos: una registra el camino, la otra el permiso.
+- **El avance de la ruta no se guarda:** se calcula al vuelo cruzando `ContentViews` con las lecciones
+  accesibles de sus cursos (`lib/route-progress.ts`), igual que el avance de un curso desde US19. No
+  hay ningún porcentaje almacenado que pueda quedar desactualizado cuando el Tutor publique una
+  lección nueva.
+- **Las tres tablas nacen con Row Level Security activado** en la misma migración que las crea —
+  `ruta_usuarios` relaciona cuentas de menores de edad con lo que están estudiando.
 
 ## Stack tecnológico
 

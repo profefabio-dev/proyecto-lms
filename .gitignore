@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Datos de estudiantes menores de edad: este repositorio es publico
+estudiantes.txt
+
+# Configuracion local de otra herramienta, no forma parte del proyecto
+.codex/

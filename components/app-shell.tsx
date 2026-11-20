@@ -9,6 +9,8 @@ import {
   UserCog,
   GraduationCap,
   BookOpen,
+  Route as RouteIcon,
+  Award,
   Search,
   Building2,
   Menu,
@@ -34,9 +36,17 @@ const NAV_POR_ROL: Record<RolConocido, { href: string; label: string; icon: Luci
     { href: "/tutor", label: "Panel", icon: LayoutDashboard },
     { href: "/tutor/estudiantes", label: "Estudiantes", icon: GraduationCap },
     { href: "/tutor/cursos", label: "Mis cursos", icon: BookOpen },
+    // US44 (20/11/2026): las rutas de aprendizaje son una entidad propia,
+    // no una pestaña dentro de un curso — un curso puede estar en varias
+    // rutas, así que tienen su lugar en el menú al mismo nivel.
+    { href: "/tutor/rutas", label: "Rutas", icon: RouteIcon },
   ],
   ESTUDIANTE: [
     { href: "/estudiante", label: "Mis cursos", icon: BookOpen },
+    { href: "/estudiante/rutas", label: "Rutas", icon: RouteIcon },
+    // US46 (20/11/2026): el estudiante tenía sus notas repartidas dentro de
+    // cada actividad y cada quiz, sin ningún lugar donde ver "cómo voy".
+    { href: "/estudiante/notas", label: "Mis notas", icon: Award },
     { href: "/estudiante/buscar", label: "Buscar", icon: Search },
   ],
   // US25: el Super Administrador solo gestiona espacios, no cursos ni
