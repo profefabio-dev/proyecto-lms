@@ -2,7 +2,17 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-21 — **Primera prueba real en navegador, OP08 (seis correcciones salidas de ahí) y OP09 (la plataforma pasa a tema oscuro con una dirección de diseño escrita).**
+Última actualización: 2026-11-21 — **Primera prueba real en navegador, OP08 (seis correcciones salidas de ahí), OP09 (la plataforma pasa a tema oscuro con una dirección de diseño escrita) y OP10 (tres cursos de tecnología de verdad reemplazan los de prueba).**
+
+## OP10 — los cursos de ejemplo
+
+El docente pidió borrar los cursos que había en la plataforma —todos de prueba, "cursos sin sentido"— y crear tres de tecnología que usaran **todos** los recursos que la plataforma sabe manejar hoy. Salió `scripts/cursos-de-tecnologia.ts`: borra en orden de claves foráneas y con los archivos de Storage primero, exige un `--confirmar` aparte porque se lleva entregas y notas, nunca toca cuentas de usuario, y después siembra *Fundamentos de la informática*, *Ciudadanía digital y seguridad en internet* y *Pensamiento computacional y programación con Python*, cada uno con secciones en sus tres estados, los cinco tipos de contenido, contenido oculto, actividades con fecha límite y evaluaciones —una con límite de intentos, otra sin él—, más la ruta de aprendizaje que encadena los tres.
+
+**Los enlaces de YouTube salieron mal y conviene dejar escrito por qué.** Se escribieron de memoria, sin comprobarlos, y presentados al docente como un punto de partida que él podía cambiar. Al abrir la plataforma se encontró con "Este video es privado". Comprobados después uno por uno contra YouTube: **dos no existían** y **tres estaban en inglés y eran de otro tema** —uno era un documental canadiense de 1983 sobre compiladores—. Los seis se reemplazaron por videos reales en español, verificados con la API: públicos, en la categoría Educación, disponibles en Colombia y con el título correspondiendo al tema. **La regla que queda: un enlace externo no se escribe de memoria, se comprueba antes de entregarlo.**
+
+**De ahí salieron dos arreglos de producto, no solo de datos.** El primero: cuando el dueño de un video prohíbe incrustarlo, el reproductor muestra un "Error 153" y el estudiante se queda sin la clase, sin salida. Eso no se puede detectar desde el código —el iframe es de otro dominio y no informa qué le pasó—, así que ahora debajo de cada video hay siempre un enlace *"Si el video no carga, ábrelo en YouTube"* (`construirUrlWatch` en `lib/youtube.ts`, +3 pruebas). El segundo: cambiar el script de siembra no cambia los cursos ya creados —el enlace malo sigue guardado en la base de datos—, así que se agregó `scripts/corregir-videos.ts`, que cambia solo los enlaces rotos por los buenos comparando por id de YouTube (no por la cadena, para que dé igual el formato del enlace) y sin borrar cursos, progreso, entregas ni notas.
+
+**Un error del script de siembra encontrado de paso:** la ruta de aprendizaje sobrevivía al borrado, de modo que al volver a sembrar quedaba apuntando a cursos que ya no existían, es decir, vacía. Ahora los cursos se reasocian a la ruta en cada siembra.
 
 ## OP09 — el rediseño
 

@@ -51,3 +51,18 @@ export function construirEmbedUrl(url: string): string | null {
   const id = extraerYoutubeId(url);
   return id ? `https://www.youtube.com/embed/${id}` : null;
 }
+
+/**
+ * La URL normal del video en YouTube (21/11/2026).
+ *
+ * Hace falta porque el dueño de un video puede prohibir que se incruste en
+ * otros sitios: cuando eso pasa, el reproductor de la lección muestra un
+ * "Error 153" y el estudiante queda sin manera de ver la clase. Con esta
+ * URL se le ofrece el enlace para abrirlo en YouTube, que sí funciona
+ * siempre. Normaliza de paso cualquier formato de enlace (youtu.be,
+ * /shorts/, /embed/) a la forma `watch?v=`.
+ */
+export function construirUrlWatch(url: string): string | null {
+  const id = extraerYoutubeId(url);
+  return id ? `https://www.youtube.com/watch?v=${id}` : null;
+}

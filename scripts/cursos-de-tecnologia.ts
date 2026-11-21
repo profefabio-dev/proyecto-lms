@@ -41,19 +41,31 @@ const sinInscribir = args.includes("--sin-inscribir");
 const tutorPedido = args.find((a) => a.startsWith("--tutor="))?.split("=")[1];
 
 // ---------------------------------------------------------------------------
-// REVISA ESTOS ENLACES ANTES DE CORRER EL SCRIPT
+// VIDEOS DE LOS CURSOS
 //
-// Son los videos de YouTube que quedarán en los cursos. Los dejé como punto de
-// partida, pero **tú conoces mejor que nadie cuáles usas en clase**: cámbialos
-// por los tuyos aquí y el resto del script se encarga. Si un enlace estuviera
-// caído, el curso igual se crea y solo ese reproductor saldría vacío.
+// Los seis están comprobados contra YouTube el 21/11/2026: existen, son
+// públicos, están en español y el título corresponde al tema. Aun así, tú
+// conoces mejor que nadie cuáles usas en clase — si prefieres otros, cámbialos
+// aquí y el resto del script se encarga.
+//
+// Lo que NO se puede comprobar desde fuera es si el dueño de un video permite
+// incrustarlo: si alguno muestra "Error 153" en el reproductor, cámbialo por
+// otro. El enlace "ábrelo en YouTube" que ahora aparece debajo de cada
+// reproductor es justamente para que el estudiante no quede atascado mientras
+// eso pasa.
 // ---------------------------------------------------------------------------
 const VIDEOS = {
-  hardwareSoftware: "https://www.youtube.com/watch?v=0ofN2x0C2vk",
-  sistemaOperativo: "https://www.youtube.com/watch?v=_C5AHaS1mOA",
-  huellaDigital: "https://www.youtube.com/watch?v=4P_gj3oRn8s",
-  contrasenas: "https://www.youtube.com/watch?v=3NjQ9b3pgIg",
-  pensamientoComputacional: "https://www.youtube.com/watch?v=sxUJKn6TJOI",
+  // El Salón de Informática · 3:14 · "HARDWARE y SOFTWARE — Definición"
+  hardwareSoftware: "https://www.youtube.com/watch?v=gVaE2F0jOJs",
+  // Profe Emir · 1:52 · "Los sistemas operativos"
+  sistemaOperativo: "https://www.youtube.com/watch?v=KmId8zVw0DQ",
+  // Smile and Learn · 3:21 · "Privacidad online para niños"
+  huellaDigital: "https://www.youtube.com/watch?v=rHDTJQKW2y8",
+  // Yoigo · 2:28 · "Phishing: cómo evitar estafas por Internet"
+  phishing: "https://www.youtube.com/watch?v=sVKaQUCG73g",
+  // Code and Play · 3:04 · "¿Qué es el Pensamiento Computacional? Para niños"
+  pensamientoComputacional: "https://www.youtube.com/watch?v=vDrfsiy21To",
+  // Fazt · curso completo en español · ver los primeros 20 minutos
   primerPrograma: "https://www.youtube.com/watch?v=chPhlsHoEPo",
 };
 
@@ -352,9 +364,9 @@ const CURSOS: DefinicionCurso[] = [
       },
       {
         titulo: "Señales de una estafa por internet",
-        descripcion: "Video sobre phishing y mensajes falsos.",
+        descripcion: "Qué es el phishing y cómo reconocer un mensaje falso.",
         tipo: "VIDEO",
-        cuerpo: VIDEOS.contrasenas,
+        cuerpo: VIDEOS.phishing,
         seccion: 1,
       },
       {
@@ -493,6 +505,14 @@ const CURSOS: DefinicionCurso[] = [
         tipo: "ENLACE",
         cuerpo: "https://www.programiz.com/python-programming/online-compiler/",
         seccion: 0,
+      },
+      {
+        titulo: "Python desde cero",
+        descripcion:
+          "Curso completo en español. Para esta semana basta con los primeros 20 minutos: instalación, variables y entrada de datos.",
+        tipo: "VIDEO",
+        cuerpo: VIDEOS.primerPrograma,
+        seccion: 1,
       },
       {
         titulo: "Tu primer programa",
@@ -966,10 +986,13 @@ async function crearCursos() {
 
   // La ruta de aprendizaje encadena los tres en el orden en que se cursan.
   const TITULO_RUTA = "Tecnología e Informática — recorrido completo";
-  const rutaExistente = await prisma.rutas.findFirst({ where: { titulo: TITULO_RUTA } });
 
-  if (!rutaExistente) {
-    const ruta = await prisma.rutas.create({
+  // La ruta se crea solo si falta, pero sus cursos se reasocian siempre: al
+  // volver a sembrar (--borrar --crear) los cursos son nuevos y la ruta que
+  // sobrevivió quedó apuntando a cursos que ya no existen, es decir, vacía.
+  const ruta =
+    (await prisma.rutas.findFirst({ where: { titulo: TITULO_RUTA } })) ??
+    (await prisma.rutas.create({
       data: {
         titulo: TITULO_RUTA,
         descripcion:
@@ -977,18 +1000,18 @@ async function crearCursos() {
         tutorId: tutor.id,
         estado: EstadoRuta.PUBLICADA,
       },
+    }));
+
+  await prisma.rutaCursos.deleteMany({ where: { rutaId: ruta.id } });
+  for (const [indice, c] of cursosCreados.entries()) {
+    await prisma.rutaCursos.create({
+      data: { rutaId: ruta.id, courseId: c.id, orden: indice },
     });
-
-    for (const [indice, c] of cursosCreados.entries()) {
-      await prisma.rutaCursos.create({
-        data: { rutaId: ruta.id, courseId: c.id, orden: indice },
-      });
-    }
-
-    console.log(`\nCreada la ruta "${TITULO_RUTA}" con los ${cursosCreados.length} cursos, publicada.`);
-  } else {
-    console.log(`\nLa ruta "${TITULO_RUTA}" ya existía, la dejo como está.`);
   }
+
+  console.log(
+    `\nRuta "${TITULO_RUTA}": ${cursosCreados.length} cursos en orden, publicada.`
+  );
 
   console.log("\nListo. Entra como tutor a /tutor/cursos para verlos.\n");
 }

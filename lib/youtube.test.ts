@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { extraerYoutubeId, esUrlDeYoutubeValida, construirEmbedUrl } from "./youtube";
+import {
+  extraerYoutubeId,
+  esUrlDeYoutubeValida,
+  construirEmbedUrl,
+  construirUrlWatch,
+} from "./youtube";
 
 describe("extraerYoutubeId (US08)", () => {
   it("extrae el id de una URL watch?v=", () => {
@@ -72,5 +77,23 @@ describe("construirEmbedUrl", () => {
 
   it("devuelve null si la URL no es de YouTube", () => {
     expect(construirEmbedUrl("https://vimeo.com/12345")).toBeNull();
+  });
+});
+
+describe("construirUrlWatch (21/11/2026)", () => {
+  it("normaliza un enlace youtu.be a la forma watch", () => {
+    expect(construirUrlWatch("https://youtu.be/dQw4w9WgXcQ")).toBe(
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    );
+  });
+
+  it("normaliza un enlace de embed a la forma watch", () => {
+    expect(construirUrlWatch("https://www.youtube.com/embed/dQw4w9WgXcQ")).toBe(
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    );
+  });
+
+  it("devuelve null si la URL no es de YouTube", () => {
+    expect(construirUrlWatch("https://vimeo.com/12345")).toBeNull();
   });
 });
