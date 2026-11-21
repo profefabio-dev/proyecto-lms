@@ -135,6 +135,13 @@ npm run dev
 `progress.md`.) Opcionalmente, para no crear todo a mano:
 `npx tsx scripts/seed-curso-demo.ts --con-datos`.
 
+> **Estado al 21/11/2026 — primera pasada hecha.** El docente recorrió los pasos A.1 a A.5 (menos
+> publicar la ruta, que sí hizo) y B.1, B.2, B.3, B.4, B.6 y la primera mitad de B.8. **Falta:** B.5
+> (entregar la actividad), B.7 (asociarse a la ruta), todo el bloque C (calificar, seguimiento,
+> ruta), todo el bloque D (seguridad) y E.1. De esa pasada salieron seis correcciones, agrupadas
+> como **OP08** en `Backlog.md` — entre ellas el límite de intentos por evaluación, que agrega una
+> migración más por aplicar antes de seguir probando.
+
 ### Como Tutor
 
 - [ ] **A.1** En un curso tuyo, crea una **actividad** con puntaje y fecha límite (US36). Debe
