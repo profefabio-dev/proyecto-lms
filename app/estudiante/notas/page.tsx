@@ -153,9 +153,9 @@ export default async function NotasEstudiantePage() {
         />
 
         {promedioGeneral !== null && (
-          <div className="flex flex-wrap items-center gap-6 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 shadow-xs">
+          <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-border bg-card p-6">
             <div
-              className="flex size-20 shrink-0 flex-col items-center justify-center rounded-3xl bg-duo-blue text-white shadow-xs"
+              className="flex size-20 shrink-0 flex-col items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-xs"
               aria-hidden="true"
             >
               <span className="font-heading text-2xl font-extrabold leading-none">
@@ -228,9 +228,9 @@ export default async function NotasEstudiantePage() {
                         <div className="min-w-0 space-y-0.5">
                           <p className="flex items-center gap-2 text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
                             {calificacion.clase === "ACTIVIDAD" ? (
-                              <ClipboardList className="size-3.5 text-duo-orange" aria-hidden="true" />
+                              <ClipboardList className="size-3.5 text-muted-foreground" aria-hidden="true" />
                             ) : (
-                              <ListChecks className="size-3.5 text-duo-green" aria-hidden="true" />
+                              <ListChecks className="size-3.5 text-muted-foreground" aria-hidden="true" />
                             )}
                             {calificacion.clase === "ACTIVIDAD" ? "Actividad" : "Evaluación"}
                           </p>

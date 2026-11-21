@@ -55,7 +55,7 @@ export default async function TutorPage() {
     <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-4 sm:px-6 py-8">
         {/* BANNER DE BIENVENIDA AL DOCENTE */}
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 sm:p-8 shadow-xs">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           <div className="space-y-3 relative z-10">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider">
@@ -112,7 +112,7 @@ export default async function TutorPage() {
 
             <Card className="rounded-2xl border border-border/80 shadow-xs">
               <CardContent className="p-5 flex items-center gap-4">
-                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-duo-blue/10 text-duo-blue">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <FileText className="size-6" aria-hidden="true" />
                 </div>
                 <div>

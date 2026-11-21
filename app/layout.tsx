@@ -25,7 +25,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
+      // OP09 (21/11/2026): la plataforma pasa a tema oscuro. Los tokens de
+      // `.dark` ya existían en `app/globals.css` desde el pase de diseño de
+      // agosto, pero nada le ponía esa clase al documento: estaban escritos
+      // y muertos. Esta línea es la que los activa, y por eso el cambio se
+      // propaga a todas las pantallas sin tocar ningún componente.
+      className={cn(
+        "dark",
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+        "font-sans",
+        inter.variable
+      )}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

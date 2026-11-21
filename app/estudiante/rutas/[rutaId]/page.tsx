@@ -134,7 +134,7 @@ export default async function RutaEstudiantePage({
     >
       <main className="mx-auto max-w-4xl space-y-8 px-4 py-8 sm:px-6">
         {/* CABECERA DE LA RUTA */}
-        <div className="space-y-4 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 shadow-xs sm:p-8">
+        <div className="space-y-4 rounded-2xl border border-border bg-card p-6 sm:p-8">
           <Link
             href="/estudiante/rutas"
             className={cn(
@@ -224,14 +224,14 @@ export default async function RutaEstudiantePage({
                   key={paso.courseId}
                   className={cn(
                     "space-y-3 rounded-2xl border bg-card p-5 shadow-xs",
-                    completado ? "border-duo-green/40" : "border-border/80"
+                    completado ? "border-success/40" : "border-border/80"
                   )}
                 >
                   <div className="flex flex-wrap items-start gap-4">
                     <span
                       className={cn(
                         "flex size-10 shrink-0 items-center justify-center rounded-xl font-heading text-base font-extrabold text-white shadow-xs",
-                        completado ? "bg-duo-green" : "bg-duo-blue"
+                        completado ? "bg-success/15 text-success" : "bg-primary text-primary-foreground"
                       )}
                       aria-hidden="true"
                     >

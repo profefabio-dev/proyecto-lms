@@ -39,7 +39,7 @@ export function CreateQuizForm({
       <DialogTrigger
         render={
           <Button type="button" variant="outline">
-            <ListChecks className="size-4 text-duo-blue" aria-hidden="true" />
+            <ListChecks className="size-4 text-muted-foreground" aria-hidden="true" />
             Crear evaluación
           </Button>
         }
@@ -60,6 +60,25 @@ export function CreateQuizForm({
           <div className="space-y-2">
             <Label htmlFor="descripcion-quiz">Descripción (opcional)</Label>
             <Input id="descripcion-quiz" name="descripcion" />
+          </div>
+
+          {/* OP08 (21/11/2026): límite de intentos, pedido por el docente al
+              probar una evaluación. Vacío = sin límite, que es como se han
+              comportado todas hasta hoy. */}
+          <div className="space-y-2">
+            <Label htmlFor="intentos-quiz">Intentos permitidos por estudiante</Label>
+            <Input
+              id="intentos-quiz"
+              name="intentosMaximos"
+              type="number"
+              min={1}
+              max={20}
+              placeholder="Déjalo vacío para no poner límite"
+            />
+            <p className="text-xs text-muted-foreground">
+              Sin límite, un estudiante puede repetir hasta acertar por eliminación. Con límite, al
+              agotarlo se queda con su mejor resultado.
+            </p>
           </div>
 
           {secciones.length > 0 && (

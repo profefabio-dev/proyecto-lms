@@ -203,7 +203,7 @@ export default async function RutasEstudiantePage() {
                     <p className="text-sm text-muted-foreground">{ruta.descripcion}</p>
                     <p className="flex flex-wrap items-center gap-3 pt-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1.5">
-                        <BookOpen className="size-3.5 text-duo-blue" />
+                        <BookOpen className="size-3.5 text-muted-foreground" />
                         {ruta.totalCursos} {ruta.totalCursos === 1 ? "curso" : "cursos"}
                       </span>
                       {ruta.tutor && (

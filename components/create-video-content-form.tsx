@@ -37,7 +37,7 @@ export function CreateVideoContentForm({ courseId }: { courseId: string }) {
       <DialogTrigger
         render={
           <Button type="button" variant="outline">
-            <Video className="size-4 text-duo-blue" aria-hidden="true" />
+            <Video className="size-4 text-muted-foreground" aria-hidden="true" />
             Publicar video
           </Button>
         }

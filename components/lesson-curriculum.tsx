@@ -54,8 +54,8 @@ export function LessonCurriculum({
       <div className="flex items-center gap-4">
         <div
           className={cn(
-            "flex size-14 shrink-0 items-center justify-center rounded-2xl text-lg font-extrabold text-white shadow-xs",
-            progreso === 100 ? "bg-duo-green" : "bg-duo-blue"
+            "flex size-14 shrink-0 items-center justify-center rounded-2xl text-lg font-extrabold shadow-xs",
+            progreso === 100 ? "bg-success text-background" : "bg-primary text-primary-foreground"
           )}
           aria-hidden="true"
         >
@@ -87,7 +87,7 @@ export function LessonCurriculum({
             <p className="flex items-center gap-2 px-1 text-xs font-bold text-foreground">
               {modulo.titulo ?? "Contenidos generales"}
               {modulo.esActual && (
-                <span className="rounded-full bg-duo-green/15 px-2 py-0.5 text-[10px] font-bold text-duo-green uppercase">
+                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary uppercase">
                   Actual
                 </span>
               )}
@@ -112,8 +112,8 @@ export function LessonCurriculum({
                     >
                       <span
                         className={cn(
-                          "flex size-6 shrink-0 items-center justify-center rounded-lg text-white shadow-xs",
-                          leccion.visto ? "bg-duo-green" : clase
+                          "flex size-6 shrink-0 items-center justify-center rounded-lg shadow-xs",
+                          leccion.visto ? "bg-success/15 text-success" : clase
                         )}
                         aria-hidden="true"
                       >

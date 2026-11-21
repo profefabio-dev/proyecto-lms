@@ -41,7 +41,7 @@ export default async function CursosPage() {
   // Franja de acento usando los colores del tema
   const ACENTO_ESTADO_CURSO = {
     PUBLICADO: "bg-success",
-    BORRADOR: "bg-duo-gold",
+    BORRADOR: "bg-muted-foreground/50",
     ARCHIVADO: "bg-muted-foreground/40",
   } as const;
 
@@ -82,7 +82,7 @@ export default async function CursosPage() {
                         className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex aspect-video w-full items-center justify-center bg-gradient-to-br from-primary/10 to-duo-blue/10">
+                      <div className="flex aspect-video w-full items-center justify-center bg-muted">
                         <BookOpen className="size-10 text-primary/60" aria-hidden="true" />
                       </div>
                     )}

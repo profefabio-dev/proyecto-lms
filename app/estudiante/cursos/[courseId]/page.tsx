@@ -9,6 +9,7 @@ import {
   ListChecks,
   Lock,
   BookOpen,
+  GraduationCap,
   PlayCircle,
   Layers,
 } from "lucide-react";
@@ -73,6 +74,11 @@ export default async function CursoEstudiantePage({
   const curso = await prisma.courses.findUnique({
     where: { id: courseId },
     include: {
+      // OP08 (21/11/2026): el docente pidió que al estudiante le quede claro
+      // con qué profesor está inscrito — "y si es con varios, poderse
+      // identificar de manera más fácil". El nombre ya salía en la tarjeta de
+      // "Mis cursos", pero no dentro del curso, que es donde pasa el tiempo.
+      tutor: { select: { nombre: true, apellido: true } },
       contenidos: {
         orderBy: { orden: "asc" },
         include: { documentos: true },
@@ -177,9 +183,9 @@ export default async function CursoEstudiantePage({
       usuario={usuarioActual}
       breadcrumbs={[{ label: "Mis cursos", href: "/estudiante" }, { label: curso.titulo }]}
     >
-      <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
         {/* CABECERA DEL CURSO */}
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 shadow-xs sm:p-8">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Link
@@ -210,6 +216,12 @@ export default async function CursoEstudiantePage({
                   {curso.descripcion}
                 </p>
               )}
+              {curso.tutor && (
+                <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                  <GraduationCap className="size-4 text-primary" aria-hidden="true" />
+                  Docente: {curso.tutor.nombre} {curso.tutor.apellido}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-4 border-t border-border/60 pt-2 text-xs font-medium text-muted-foreground">
@@ -218,17 +230,17 @@ export default async function CursoEstudiantePage({
                 {lecciones.length} {lecciones.length === 1 ? "lección" : "lecciones"}
               </span>
               <span className="flex items-center gap-1.5">
-                <Layers className="size-4 text-duo-blue" />
+                <Layers className="size-4 text-muted-foreground" />
                 {curso.secciones.length}{" "}
                 {curso.secciones.length === 1 ? "módulo / semana" : "módulos / semanas"}
               </span>
               <span className="flex items-center gap-1.5">
-                <ClipboardList className="size-4 text-duo-orange" />
+                <ClipboardList className="size-4 text-muted-foreground" />
                 {curso.actividades.length}{" "}
                 {curso.actividades.length === 1 ? "actividad" : "actividades"}
               </span>
               <span className="flex items-center gap-1.5">
-                <ListChecks className="size-4 text-duo-green" />
+                <ListChecks className="size-4 text-muted-foreground" />
                 {curso.quizzes.length}{" "}
                 {curso.quizzes.length === 1 ? "evaluación" : "evaluaciones"}
               </span>
@@ -490,6 +502,12 @@ export default async function CursoEstudiantePage({
                           {quiz._count.preguntas}{" "}
                           {quiz._count.preguntas === 1 ? "pregunta" : "preguntas"} · se califica al
                           instante
+                          {/* OP08: si el tutor puso tope, que se sepa antes de entrar. */}
+                          {quiz.intentosMaximos
+                            ? ` · máximo ${quiz.intentosMaximos} ${
+                                quiz.intentosMaximos === 1 ? "intento" : "intentos"
+                              }`
+                            : ""}
                         </p>
                       </div>
 

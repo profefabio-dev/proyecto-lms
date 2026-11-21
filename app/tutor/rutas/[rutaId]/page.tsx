@@ -155,7 +155,7 @@ export default async function RutaTutorPage({
     >
       <main className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6">
         {/* CABECERA */}
-        <div className="space-y-4 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 shadow-xs sm:p-8">
+        <div className="space-y-4 rounded-2xl border border-border bg-card p-6 sm:p-8">
           <Link
             href="/tutor/rutas"
             className={cn(
@@ -190,7 +190,7 @@ export default async function RutaTutorPage({
 
           <div className="flex flex-wrap items-center gap-4 border-t border-border/60 pt-3 text-xs font-medium text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <BookOpen className="size-4 text-duo-blue" />
+              <BookOpen className="size-4 text-muted-foreground" />
               {ruta.cursos.length} {ruta.cursos.length === 1 ? "curso" : "cursos"}
             </span>
             <span className="flex items-center gap-1.5">
@@ -198,14 +198,14 @@ export default async function RutaTutorPage({
               {totalLecciones} {totalLecciones === 1 ? "lección" : "lecciones"} en total
             </span>
             <span className="flex items-center gap-1.5">
-              <Users className="size-4 text-duo-green" />
+              <Users className="size-4 text-muted-foreground" />
               {ruta.inscritos.length}{" "}
               {ruta.inscritos.length === 1 ? "estudiante asociado" : "estudiantes asociados"}
             </span>
           </div>
 
           {ruta.estado === "BORRADOR" && (
-            <p className="rounded-2xl border border-duo-gold/40 bg-duo-gold/10 px-4 py-3 text-sm text-foreground">
+            <p className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm text-foreground">
               Mientras esté en borrador, los estudiantes no ven esta ruta. Agrégale los cursos en
               el orden en que quieres que la recorran y luego publícala.
             </p>

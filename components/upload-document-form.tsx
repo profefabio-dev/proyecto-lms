@@ -32,7 +32,7 @@ export function UploadDocumentForm({ courseId }: { courseId: string }) {
       <DialogTrigger
         render={
           <Button type="button" variant="outline">
-            <FileUp className="size-4 text-duo-orange" aria-hidden="true" />
+            <FileUp className="size-4 text-muted-foreground" aria-hidden="true" />
             Subir documento
           </Button>
         }

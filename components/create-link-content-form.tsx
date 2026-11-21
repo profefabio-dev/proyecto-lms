@@ -28,7 +28,7 @@ export function CreateLinkContentForm({ courseId }: { courseId: string }) {
       <DialogTrigger
         render={
           <Button type="button" variant="outline">
-            <Link2 className="size-4 text-duo-gold" aria-hidden="true" />
+            <Link2 className="size-4 text-muted-foreground" aria-hidden="true" />
             Publicar enlace
           </Button>
         }

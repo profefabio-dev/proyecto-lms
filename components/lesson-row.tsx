@@ -38,8 +38,11 @@ export function LessonRow({
       >
         <span
           className={cn(
-            "flex size-11 shrink-0 items-center justify-center rounded-xl text-white shadow-xs",
-            visto ? "bg-duo-green" : clase
+            // OP09 (21/11/2026): el chulo de "completada" era verde vivo y
+            // pesaba mas que la leccion que sigue. Pasa a un verde apagado:
+            // se sigue leyendo como logro, deja de competir.
+            "flex size-11 shrink-0 items-center justify-center rounded-xl shadow-xs",
+            visto ? "bg-success/15 text-success" : clase
           )}
           aria-hidden="true"
         >
@@ -51,8 +54,10 @@ export function LessonRow({
             <span className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
               Lección {numero} · {etiqueta}
             </span>
+            {/* OP09: en gris. El chulo ya dio la senal; repetirla en verde
+                era el tercer verde de la misma fila. */}
             {visto && (
-              <span className="text-[11px] font-bold tracking-wide text-duo-green uppercase">
+              <span className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
                 Completada
               </span>
             )}

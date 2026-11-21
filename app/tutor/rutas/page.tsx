@@ -89,11 +89,11 @@ export default async function RutasTutorPage() {
 
                       <div className="flex flex-wrap items-center gap-4 pt-1 text-xs font-medium text-muted-foreground">
                         <span className="flex items-center gap-1.5">
-                          <BookOpen className="size-3.5 text-duo-blue" />
+                          <BookOpen className="size-3.5 text-muted-foreground" />
                           {ruta._count.cursos} {ruta._count.cursos === 1 ? "curso" : "cursos"}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <Users className="size-3.5 text-duo-green" />
+                          <Users className="size-3.5 text-muted-foreground" />
                           {ruta._count.inscritos}{" "}
                           {ruta._count.inscritos === 1 ? "estudiante" : "estudiantes"}
                         </span>

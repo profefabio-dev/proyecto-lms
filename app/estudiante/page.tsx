@@ -136,9 +136,9 @@ export default async function EstudiantePage() {
 
   return (
     <AppShell usuario={usuarioActual} breadcrumbs={[{ label: "Mis cursos" }]}>
-      <main className="mx-auto max-w-6xl space-y-8 px-4 sm:px-6 py-8">
+      <main className="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 py-8">
         {/* BANNER DE BIENVENIDA Y RACHA */}
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-indigo-500/5 p-6 sm:p-8 shadow-xs">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div className="space-y-2 max-w-xl">
               <div className="flex items-center gap-2">
@@ -224,7 +224,7 @@ export default async function EstudiantePage() {
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-duo-blue/10 text-duo-blue">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <CheckCircle2 className="size-5" />
               </div>
               <div>

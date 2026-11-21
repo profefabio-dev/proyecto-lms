@@ -1,9 +1,11 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, HelpCircle, ListChecks, Users } from "lucide-react";
+import { ArrowLeft, CheckCircle2, HelpCircle, ListChecks, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 import { AddQuestionForm } from "@/components/add-question-form";
 import { ToggleQuizVisibilityForm } from "@/components/toggle-quiz-visibility-form";
@@ -102,9 +104,13 @@ export default async function EditarQuizPage({
         <div className="space-y-3">
           <Link
             href={`/tutor/cursos/${courseId}`}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "min-h-11 gap-2 font-semibold"
+            )}
           >
-            ← Volver al curso
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Volver al curso
           </Link>
 
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -123,6 +129,15 @@ export default async function EditarQuizPage({
                 </Badge>
                 <Badge variant={quiz.visible ? "success" : "secondary"} className="font-semibold">
                   {quiz.visible ? "Publicada" : "Oculta"}
+                </Badge>
+                {/* OP08 (21/11/2026): el límite de intentos se fija al crear
+                    la evaluación; aquí se recuerda cuál quedó. */}
+                <Badge variant="outline" className="text-xs font-semibold">
+                  {quiz.intentosMaximos
+                    ? `Máximo ${quiz.intentosMaximos} ${
+                        quiz.intentosMaximos === 1 ? "intento" : "intentos"
+                      } por estudiante`
+                    : "Intentos sin límite"}
                 </Badge>
               </div>
             </div>
@@ -175,6 +190,38 @@ export default async function EditarQuizPage({
         <section className="space-y-4">
           <h2 className="font-heading text-xl font-bold text-foreground">Agregar una pregunta</h2>
           <AddQuestionForm quizId={quiz.id} />
+
+          {/* OP08 (21/11/2026): el formulario se queda abierto a propósito,
+              porque el tutor carga varias preguntas seguidas — pero el docente
+              reportó que "al cargar preguntas falta algún botón para confirmar
+              y regresar al estado anterior": nada le decía que ya había
+              terminado. Cada pregunta guardada aparece arriba en la lista (esa
+              es la confirmación) y esta franja cierra el ciclo: dice cuántas
+              lleva, recuerda publicar si todavía está oculta, y ofrece la
+              salida. */}
+          <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              {quiz.preguntas.length === 0
+                ? "Todavía no has agregado ninguna pregunta."
+                : `Llevas ${quiz.preguntas.length} ${
+                    quiz.preguntas.length === 1 ? "pregunta cargada" : "preguntas cargadas"
+                  }.`}
+              {quiz.preguntas.length > 0 &&
+                !quiz.visible &&
+                " Recuerda publicar la evaluación arriba para que tus estudiantes la vean."}
+            </p>
+
+            <Link
+              href={`/tutor/cursos/${courseId}`}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "min-h-11 shrink-0 gap-2 font-semibold"
+              )}
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              Listo, volver al curso
+            </Link>
+          </div>
         </section>
 
         <section className="space-y-4">

@@ -1,10 +1,13 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { HelpCircle } from "lucide-react";
+import { ArrowLeft, HelpCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { TakeQuizForm } from "@/components/take-quiz-form";
+import { intentosRestantes } from "@/lib/quiz-attempts";
 import { Badge } from "@/components/ui/badge";
 
 // Pantalla del Estudiante para responder una evaluación (19/11/2026).
@@ -75,6 +78,9 @@ export default async function ResponderQuizPage({
     0
   );
 
+  // OP08: cuántos intentos le quedan (ver `lib/quiz-attempts.ts`).
+  const restantes = intentosRestantes(quiz.intentosMaximos, intentos.length);
+
   return (
     <AppShell
       usuario={usuarioActual}
@@ -88,9 +94,13 @@ export default async function ResponderQuizPage({
         <div className="space-y-3">
           <Link
             href={`/estudiante/cursos/${courseId}`}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "min-h-11 gap-2 font-semibold"
+            )}
           >
-            ← Volver al curso
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Volver al curso
           </Link>
 
           <div className="space-y-1">
@@ -112,14 +122,40 @@ export default async function ResponderQuizPage({
                 Tu mejor resultado: {mejor}%
               </Badge>
             )}
+            {/* OP08 (21/11/2026): si el Tutor puso un límite, el estudiante
+                tiene que saber cuántos intentos le quedan ANTES de empezar. */}
+            {quiz.intentosMaximos !== null && (
+              <Badge
+                variant={restantes > 0 ? "outline" : "secondary"}
+                className="font-semibold"
+              >
+                {restantes > 0
+                  ? `Te ${restantes === 1 ? "queda" : "quedan"} ${restantes} de ${quiz.intentosMaximos} ${quiz.intentosMaximos === 1 ? "intento" : "intentos"}`
+                  : `Sin intentos disponibles (${quiz.intentosMaximos} de ${quiz.intentosMaximos} usados)`}
+              </Badge>
+            )}
           </div>
         </div>
 
-        <TakeQuizForm
-          quizId={quiz.id}
-          preguntas={quiz.preguntas}
-          yaIntentado={intentos.length > 0}
-        />
+        {/* El bloqueo real está en `responderQuiz`, del lado del servidor;
+            esto solo evita mostrarle un formulario que ya no puede enviar. */}
+        {restantes === 0 ? (
+          <div className="space-y-2 rounded-2xl border border-border/80 bg-muted/30 p-6">
+            <p className="font-heading text-base font-bold text-foreground">
+              Ya usaste todos tus intentos en esta evaluación.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Tu mejor resultado fue {mejor}% y es el que queda registrado. Si crees que necesitas
+              otra oportunidad, háblalo con tu docente.
+            </p>
+          </div>
+        ) : (
+          <TakeQuizForm
+            quizId={quiz.id}
+            preguntas={quiz.preguntas}
+            yaIntentado={intentos.length > 0}
+          />
+        )}
       </main>
     </AppShell>
   );

@@ -33,7 +33,7 @@ export function CreateTextContentForm({ courseId }: { courseId: string }) {
       <DialogTrigger
         render={
           <Button type="button" variant="outline">
-            <FileText className="size-4 text-duo-green" aria-hidden="true" />
+            <FileText className="size-4 text-muted-foreground" aria-hidden="true" />
             Publicar texto
           </Button>
         }

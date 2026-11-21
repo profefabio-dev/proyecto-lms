@@ -76,17 +76,17 @@ export default async function AdminPage() {
     tono: string;
   }[] = [
     { etiqueta: "Administradores", valor: administradores, icon: ShieldCheck, tono: "bg-primary/10 text-primary" },
-    { etiqueta: "Tutores", valor: tutores, icon: UserCog, tono: "bg-duo-blue/10 text-duo-blue" },
+    { etiqueta: "Tutores", valor: tutores, icon: UserCog, tono: "bg-primary/10 text-primary" },
     { etiqueta: "Estudiantes", valor: estudiantesInscritos.length, icon: GraduationCap, tono: "bg-success-soft text-success" },
     { etiqueta: "Cursos activos", valor: cursosActivos, icon: BookOpen, tono: "bg-primary/10 text-primary" },
-    { etiqueta: "Contenidos totales", valor: totalContenidos, icon: FileText, tono: "bg-duo-blue/10 text-duo-blue" },
+    { etiqueta: "Contenidos totales", valor: totalContenidos, icon: FileText, tono: "bg-primary/10 text-primary" },
   ];
 
   return (
     <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
         {/* Banner de bienvenida (mismo estilo que el panel del Tutor) */}
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 shadow-xs sm:p-8">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           <div className="relative z-10 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider">

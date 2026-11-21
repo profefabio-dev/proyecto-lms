@@ -73,7 +73,7 @@ function EnlaceExterno({ url, titulo }: { url: string; titulo: string }) {
       className="group flex flex-wrap items-center gap-4 rounded-2xl border border-border/80 bg-muted/30 p-5 transition-colors hover:border-primary/40 hover:bg-muted/60"
     >
       <span
-        className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-duo-gold text-white shadow-xs"
+        className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground shadow-xs"
         aria-hidden="true"
       >
         <Link2 className="size-6" />

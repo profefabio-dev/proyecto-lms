@@ -8,6 +8,7 @@ import {
   Calendar,
   ClipboardList,
   Layers,
+  Plus,
   Settings2,
   TrendingUp,
   UserPlus,
@@ -25,6 +26,7 @@ import { CreateCodeContentForm } from "@/components/create-code-content-form";
 import { ContentBody } from "@/components/content-body";
 import { CreateActivityForm } from "@/components/create-activity-form";
 import { CreateQuizForm } from "@/components/create-quiz-form";
+import { DeleteEvaluacionForm } from "@/components/delete-evaluacion-form";
 import { ContentOrderControls } from "@/components/content-order-controls";
 import { SectionControls } from "@/components/section-controls";
 import { CreateSectionForm } from "@/components/create-section-form";
@@ -36,6 +38,8 @@ import { crearUrlDescarga } from "@/lib/supabase/storage";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { agruparContenidoPorSeccion, contenidoSinSeccion } from "@/lib/group-content-by-section";
 
 export default async function CursoDetallePage({
@@ -159,7 +163,7 @@ export default async function CursoDetallePage({
     >
       <main className="mx-auto max-w-5xl space-y-10 px-4 sm:px-6 py-8">
         {/* CABECERA DEL CURSO */}
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-duo-blue/10 p-6 sm:p-8 shadow-xs space-y-4">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs font-semibold">
@@ -193,15 +197,46 @@ export default async function CursoDetallePage({
               {curso.inscritos.length === 1 ? "estudiante inscrito" : "estudiantes inscritos"}
             </span>
             <span className="flex items-center gap-1.5">
-              <Layers className="size-4 text-duo-blue" />
+              <Layers className="size-4 text-muted-foreground" />
               {curso.secciones.length}{" "}
               {curso.secciones.length === 1 ? "sección / módulo" : "secciones / módulos"}
             </span>
             <span className="flex items-center gap-1.5">
-              <BookOpen className="size-4 text-duo-green" />
+              <BookOpen className="size-4 text-muted-foreground" />
               {curso.contenidos.length}{" "}
               {curso.contenidos.length === 1 ? "lección publicada" : "lecciones publicadas"}
             </span>
+          </div>
+
+          {/* OP08 (21/11/2026): accesos directos a lo que no se ve desde arriba.
+              El docente probó la pantalla y reportó que "el tutor no tiene manera
+              de ingresar e inscribir estudiantes de forma manual" — sí la tiene,
+              pero vive al final de la página, debajo del contenido, de los
+              formularios de publicación, de las actividades y de las
+              evaluaciones: en un curso con material hay que bajar mucho para
+              llegar, así que en la práctica no existe. */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <a
+              href="#estudiantes"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 gap-2")}
+            >
+              <UserPlus className="size-4" aria-hidden="true" />
+              Inscribir estudiantes
+            </a>
+            <Link
+              href={`/tutor/cursos/${curso.id}/seguimiento`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 gap-2")}
+            >
+              <TrendingUp className="size-4" aria-hidden="true" />
+              Seguimiento
+            </Link>
+            <a
+              href="#publicar"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 gap-2")}
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Publicar material
+            </a>
           </div>
         </div>
 
@@ -424,7 +459,7 @@ export default async function CursoDetallePage({
         </section>
 
         {/* ÁREA 2: PUBLICACIÓN DE NUEVO MATERIAL */}
-        <section className="space-y-4 pt-4 border-t border-border/60">
+        <section id="publicar" className="scroll-mt-6 space-y-4 pt-4 border-t border-border/60">
           <div>
             <h2 className="font-heading text-2xl font-bold text-foreground">
               Publicar Nuevo Material en el Curso
@@ -482,16 +517,24 @@ export default async function CursoDetallePage({
             />
           ) : (
             <ul className="space-y-3">
+              {/* OP08 (21/11/2026): la fila dejó de ser un único <Link> que
+                  envolvía todo. El botón de eliminar es un formulario, y un
+                  formulario dentro de un enlace no es HTML válido: cualquier
+                  clic dentro habría navegado al detalle de la actividad. Ahora
+                  el enlace es solo el título. */}
               {curso.actividades.map((actividad) => (
-                <li key={actividad.id}>
-                  <Link
-                    href={`/tutor/cursos/${curso.id}/actividades/${actividad.id}`}
-                    className="group flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
-                  >
+                <li
+                  key={actividad.id}
+                  className="space-y-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="space-y-0.5">
-                      <p className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                      <Link
+                        href={`/tutor/cursos/${curso.id}/actividades/${actividad.id}`}
+                        className="font-heading text-base font-bold text-foreground transition-colors hover:text-primary"
+                      >
                         {actividad.titulo}
-                      </p>
+                      </Link>
                       <p className="text-xs text-muted-foreground">
                         {actividad.puntajeMaximo} puntos
                         {actividad.fechaLimite
@@ -500,13 +543,22 @@ export default async function CursoDetallePage({
                       </p>
                     </div>
 
-                    <Badge
-                      variant={actividad._count.entregas > 0 ? "success" : "secondary"}
-                      className="font-semibold"
-                    >
-                      {actividad._count.entregas} de {curso.inscritos.length} entregaron
-                    </Badge>
-                  </Link>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Badge
+                        variant={actividad._count.entregas > 0 ? "success" : "secondary"}
+                        className="font-semibold"
+                      >
+                        {actividad._count.entregas} de {curso.inscritos.length} entregaron
+                      </Badge>
+
+                      <DeleteEvaluacionForm
+                        tipo="actividad"
+                        id={actividad.id}
+                        titulo={actividad.titulo}
+                        trabajoAsociado={actividad._count.entregas}
+                      />
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -519,30 +571,45 @@ export default async function CursoDetallePage({
               </h3>
               <ul className="space-y-3">
                 {curso.quizzes.map((quiz) => (
-                  <li key={quiz.id}>
-                    <Link
-                      href={`/tutor/cursos/${curso.id}/quizzes/${quiz.id}`}
-                      className="group flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
-                    >
+                  <li
+                    key={quiz.id}
+                    className="space-y-3 rounded-2xl border border-border/80 bg-card p-4 transition-colors hover:border-primary/40"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="space-y-0.5">
-                        <p className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                        <Link
+                          href={`/tutor/cursos/${curso.id}/quizzes/${quiz.id}`}
+                          className="font-heading text-base font-bold text-foreground transition-colors hover:text-primary"
+                        >
                           {quiz.titulo}
-                        </p>
+                        </Link>
                         <p className="text-xs text-muted-foreground">
                           {quiz._count.preguntas}{" "}
                           {quiz._count.preguntas === 1 ? "pregunta" : "preguntas"} ·{" "}
                           {quiz._count.intentos}{" "}
                           {quiz._count.intentos === 1 ? "intento" : "intentos"}
+                          {quiz.intentosMaximos
+                            ? ` · máximo ${quiz.intentosMaximos} por estudiante`
+                            : ""}
                         </p>
                       </div>
 
-                      <Badge
-                        variant={quiz.visible ? "success" : "secondary"}
-                        className="font-semibold"
-                      >
-                        {quiz.visible ? "Publicada" : "Oculta"}
-                      </Badge>
-                    </Link>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Badge
+                          variant={quiz.visible ? "success" : "secondary"}
+                          className="font-semibold"
+                        >
+                          {quiz.visible ? "Publicada" : "Oculta"}
+                        </Badge>
+
+                        <DeleteEvaluacionForm
+                          tipo="evaluacion"
+                          id={quiz.id}
+                          titulo={quiz.titulo}
+                          trabajoAsociado={quiz._count.intentos}
+                        />
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -551,7 +618,7 @@ export default async function CursoDetallePage({
         </section>
 
         {/* ÁREA 3: GESTIÓN DE ESTUDIANTES DEL CURSO */}
-        <section className="space-y-6 pt-4 border-t border-border/60">
+        <section id="estudiantes" className="scroll-mt-6 space-y-6 pt-4 border-t border-border/60">
           <div>
             <h2 className="font-heading text-2xl font-bold text-foreground">
               Estudiantes del Curso
