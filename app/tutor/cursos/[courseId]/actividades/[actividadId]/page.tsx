@@ -1,9 +1,11 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { CalendarClock, ClipboardList, Download, Inbox, Users } from "lucide-react";
+import { ArrowLeft, CalendarClock, ClipboardList, Download, Inbox, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 import { MarkdownContent } from "@/components/markdown-content";
 import { GradeSubmissionForm } from "@/components/grade-submission-form";
@@ -93,9 +95,13 @@ export default async function RevisarActividadPage({
         <div className="space-y-3">
           <Link
             href={`/tutor/cursos/${courseId}`}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "min-h-11 gap-2 font-semibold"
+            )}
           >
-            ← Volver al curso
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Volver al curso
           </Link>
 
           <div className="flex flex-wrap items-start justify-between gap-4">

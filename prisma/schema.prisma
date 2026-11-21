@@ -252,6 +252,11 @@ model Quizzes {
   descripcion String?
   visible     Boolean  @default(true)
   orden       Int      @default(0)
+  // OP08 (21/11/2026): límite de intentos por estudiante, pedido por el
+  // docente al probar la evaluación. `null` significa sin límite, que es
+  // como se comportaban todas las evaluaciones hasta hoy — así las ya
+  // creadas no cambian de reglas a mitad de curso.
+  intentosMaximos Int?
   createdAt   DateTime @default(now())
 
   course    Courses         @relation(fields: [courseId], references: [id])

@@ -68,6 +68,26 @@ export async function responderQuiz(
     return { success: false, error: "Esta evaluación todavía no tiene preguntas." };
   }
 
+  // OP08 (21/11/2026): límite de intentos, si el Tutor le puso uno.
+  // `intentosMaximos` en null significa sin límite, como se comportaban
+  // todas las evaluaciones hasta hoy. La verificación va AQUÍ, en el
+  // servidor, y no solo escondiendo el formulario en la pantalla: ocultar
+  // el botón no impide reenviar la petición a mano.
+  if (quiz.intentosMaximos !== null) {
+    const intentosPrevios = await prisma.intentosQuiz.count({
+      where: { quizId: quiz.id, userId: usuarioActual.id },
+    });
+
+    if (intentosPrevios >= quiz.intentosMaximos) {
+      return {
+        success: false,
+        error: `Ya usaste tus ${quiz.intentosMaximos} ${
+          quiz.intentosMaximos === 1 ? "intento" : "intentos"
+        } en esta evaluación.`,
+      };
+    }
+  }
+
   // Se exige responder todas: dejar una en blanco casi siempre es un olvido
   // al desplazarse, y es mejor avisar que calificarla como incorrecta.
   const respuestas: Record<string, string> = {};

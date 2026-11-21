@@ -19,6 +19,12 @@ const crearQuizSchema = z.object({
   seccionId: z.string().optional(),
   titulo: z.string().trim().min(3, "El título debe tener al menos 3 caracteres"),
   descripcion: z.string().trim().optional(),
+  // OP08 (21/11/2026): vacío significa "sin límite", el comportamiento de
+  // siempre. Un límite de 0 no tendría sentido (nadie podría responder) y
+  // más de 20 equivale a no tener límite, así que se acota el rango.
+  intentosMaximos: z
+    .union([z.literal(""), z.coerce.number().int().min(1, "El mínimo es 1 intento").max(20, "El máximo es 20 intentos")])
+    .optional(),
 });
 
 type ResultadoCrearQuiz = { success: true; quizId: string } | { success: false; error: string };
@@ -47,13 +53,14 @@ export async function crearQuiz(
     seccionId: formData.get("seccionId") || undefined,
     titulo: formData.get("titulo"),
     descripcion: formData.get("descripcion") || undefined,
+    intentosMaximos: formData.get("intentosMaximos") ?? undefined,
   });
 
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  const { courseId, seccionId, titulo, descripcion } = parsed.data;
+  const { courseId, seccionId, titulo, descripcion, intentosMaximos } = parsed.data;
 
   const curso = await prisma.courses.findUnique({ where: { id: courseId } });
 
@@ -78,6 +85,10 @@ export async function crearQuiz(
         seccionId: seccionId ?? null,
         titulo,
         descripcion: descripcion || null,
+        intentosMaximos:
+          typeof intentosMaximos === "number" && Number.isFinite(intentosMaximos)
+            ? intentosMaximos
+            : null,
         visible: false,
         orden: total,
       },

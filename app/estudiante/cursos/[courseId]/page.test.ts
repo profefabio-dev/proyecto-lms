@@ -96,6 +96,7 @@ describe("CursoEstudiantePage (US15)", () => {
       id: "curso-1",
       titulo: "Curso",
       descripcion: "desc",
+      tutor: { nombre: "Ana", apellido: "Rios" },
       contenidos: [],
       secciones: [],
       actividades: [],
@@ -118,6 +119,7 @@ describe("CursoEstudiantePage (US15)", () => {
       id: "curso-1",
       titulo: "Curso",
       descripcion: "desc",
+      tutor: { nombre: "Ana", apellido: "Rios" },
       contenidos: [
         { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true, seccionId: null },
         { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false, seccionId: null },
@@ -135,6 +137,7 @@ describe("CursoEstudiantePage (US15)", () => {
     expect(prisma.courses.findUnique).toHaveBeenCalledWith({
       where: { id: "curso-1" },
       include: {
+        tutor: { select: { nombre: true, apellido: true } },
         contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } },
         secciones: { orderBy: { orden: "asc" } },
         actividades: {
@@ -161,6 +164,7 @@ describe("CursoEstudiantePage (US15)", () => {
       id: "curso-1",
       titulo: "Curso",
       descripcion: "desc",
+      tutor: { nombre: "Ana", apellido: "Rios" },
       contenidos: [
         { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true, seccionId: null },
         { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false, seccionId: null },
@@ -187,6 +191,7 @@ describe("CursoEstudiantePage (US15)", () => {
       id: "curso-1",
       titulo: "Curso",
       descripcion: "desc",
+      tutor: { nombre: "Ana", apellido: "Rios" },
       contenidos: [],
       secciones: [],
       actividades: [],
@@ -206,6 +211,7 @@ describe("CursoEstudiantePage (US15)", () => {
       id: "curso-1",
       titulo: "Curso",
       descripcion: "desc",
+      tutor: { nombre: "Ana", apellido: "Rios" },
       contenidos: [
         { id: "c1", titulo: "Video 1", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true, seccionId: "sec-1" },
         { id: "c2", titulo: "Video 2", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: true, seccionId: "sec-2" },

@@ -1,9 +1,11 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, ClipboardList, TrendingUp, Users } from "lucide-react";
+import { ArrowLeft, BookOpen, ClipboardList, TrendingUp, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { DataTable, Th, Td } from "@/components/data-table";
@@ -148,9 +150,13 @@ export default async function SeguimientoPage({
         <div className="space-y-3">
           <Link
             href={`/tutor/cursos/${courseId}`}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "min-h-11 gap-2 font-semibold"
+            )}
           >
-            ← Volver al curso
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Volver al curso
           </Link>
 
           <PageHeader
