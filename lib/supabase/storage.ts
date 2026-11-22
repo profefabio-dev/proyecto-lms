@@ -63,6 +63,33 @@ export async function eliminarDocumentoDeStorage(path: string): Promise<void> {
   await supabaseAdmin.storage.from(BUCKET_DOCUMENTOS).remove([path]);
 }
 
+/**
+ * Duplica un documento dentro del bucket y devuelve la ruta de la copia
+ * (US47, 23/11/2026).
+ *
+ * Hace falta al adoptar el curso de otro docente: si las dos copias
+ * apuntaran al mismo archivo, el día que el autor borre su curso el
+ * adoptante se queda con documentos rotos y sin saber por qué. Duplicar
+ * cuesta espacio y evita exactamente eso.
+ */
+export async function copiarDocumentoEnStorage(
+  pathOriginal: string,
+  courseIdDestino: string
+): Promise<{ path: string }> {
+  const nombre = pathOriginal.split("/").pop() ?? "documento";
+  const path = `${courseIdDestino}/${randomUUID()}-${sanearNombreArchivo(nombre)}`;
+
+  const { error } = await supabaseAdmin.storage
+    .from(BUCKET_DOCUMENTOS)
+    .copy(pathOriginal, path);
+
+  if (error) {
+    throw new Error(`No se pudo copiar el archivo: ${error.message}`);
+  }
+
+  return { path };
+}
+
 export async function crearUrlDescarga(
   path: string,
   expiraEnSegundos = 60

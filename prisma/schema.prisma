@@ -125,6 +125,18 @@ model Courses {
   tutorId     String
   estado      EstadoCurso @default(BORRADOR)
   createdAt   DateTime    @default(now())
+  // US47 (23/11/2026): otro Tutor puede tomar este curso y quedarse con su
+  // propia copia. Nace en `false` a propósito — nada se comparte sin que su
+  // autor lo diga.
+  compartible Boolean     @default(false)
+  // De qué curso salió esta copia, si salió de alguno. Se guarda el id para
+  // poder contar adopciones, y **el nombre del autor como texto** en vez de
+  // una relación: así el crédito sobrevive aunque el curso original se
+  // borre o su autor deje la plataforma, que es justo cuando una clave
+  // foránea obligaría a elegir entre perder el crédito o impedir el
+  // borrado.
+  origenCursoId String?
+  origenAutor   String?
 
   tutor       Users         @relation("TutorCourses", fields: [tutorId], references: [id])
   inscritos   CourseUsers[]

@@ -222,6 +222,16 @@ export default async function CursoEstudiantePage({
                   Docente: {curso.tutor.nombre} {curso.tutor.apellido}
                 </p>
               )}
+              {/* US47 (23/11/2026): si el curso es una adaptación, el autor
+                  original también se acredita ante el estudiante. Quien hizo
+                  el material merece el crédito donde se usa, no solo en la
+                  pantalla del docente que lo adoptó. */}
+              {curso.origenAutor && (
+                <p className="text-sm text-muted-foreground">
+                  Material original de{" "}
+                  <span className="font-medium text-foreground">{curso.origenAutor}</span>
+                </p>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-4 border-t border-border/60 pt-2 text-xs font-medium text-muted-foreground">

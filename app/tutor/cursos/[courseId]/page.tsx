@@ -10,10 +10,12 @@ import {
   Layers,
   Plus,
   Settings2,
+  Share2,
   TrendingUp,
   UserPlus,
   Users,
 } from "lucide-react";
+import { ShareCourseForm } from "@/components/share-course-form";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AssignStudentsForm } from "@/components/assign-students-form";
@@ -97,6 +99,10 @@ export default async function CursoDetallePage({
   if (!curso || curso.tutorId !== usuarioActual.id) {
     notFound();
   }
+
+  // US47: cuántos docentes tomaron este curso. Es la señal que hace que
+  // compartir se sienta útil, y la que US48 usará para ordenar el catálogo.
+  const adopciones = await prisma.courses.count({ where: { origenCursoId: curso.id } });
 
   const idsInscritos = curso.inscritos.map((inscripcion) => inscripcion.userId);
 
@@ -238,7 +244,25 @@ export default async function CursoDetallePage({
               Publicar material
             </a>
           </div>
+
+          {/* US47 (23/11/2026): el crédito al autor cuando este curso es
+              una copia. Va arriba y a la vista, no en letra pequeña: es lo
+              que hace que compartir tenga sentido para quien comparte. */}
+          {curso.origenAutor && (
+            <p className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+              <Share2 className="size-4 shrink-0" aria-hidden="true" />
+              Adaptado de un curso de{" "}
+              <span className="font-semibold text-foreground">{curso.origenAutor}</span>
+            </p>
+          )}
         </div>
+
+        {/* US47: compartir este curso con otros docentes. */}
+        <ShareCourseForm
+          courseId={curso.id}
+          compartible={curso.compartible}
+          adopciones={adopciones}
+        />
 
         {/* ÁREA 1: CONTENIDO Y MÓDULOS DE LA RUTA */}
         <section className="space-y-6">
