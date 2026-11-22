@@ -2,7 +2,33 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-21 — **Primera prueba real en navegador, OP08 (seis correcciones salidas de ahí), OP09 (la plataforma pasa a tema oscuro con una dirección de diseño escrita) y OP10 (tres cursos de tecnología de verdad reemplazan los de prueba).**
+Última actualización: 2026-11-22 — **OP11: la planilla de notas del curso, las novedades del Estudiante y tres cursos más con rutas que se cruzan. Se propone US47 (recursos compartidos entre tutores).**
+
+## OP11 — lo que salió de probar las entregas
+
+El docente siguió el recorrido de validación y llegó a entregar una actividad y a calificarla. De ahí salieron cuatro cosas, tres corregidas el mismo día y una anotada para después.
+
+**1. No se podía quitar un archivo de una entrega.** Se podía reemplazar por otro, pero nunca volver a una entrega de solo texto: quien adjuntaba algo por error quedaba con ese archivo pegado para siempre. Ahora hay una casilla para quitarlo. Adjuntar uno nuevo manda sobre la casilla —si eligió un archivo, está reemplazando, no borrando—, el archivo viejo se borra de Storage en los dos casos pero solo después de que el guardado salió bien, y sigue sin dejarse una entrega vacía de texto *y* de archivo.
+
+**2. "Ya entré como tutor pero no veo las calificaciones que presenté".** La pantalla de revisión existe desde US38, pero para llegar hay que entrar al curso y bajar hasta la actividad — el mismo problema de descubribilidad de "Asignar estudiantes" en OP08, y con el mismo resultado: en la práctica no existe. Se resolvió por donde el docente ya iba a mirar.
+
+**3. La planilla de notas (lo que pidió literalmente).** *"El tutor debería ver fácilmente el listado de estudiantes por curso y ver quiénes han entregado las actividades, quiénes no y la puntuación de cada una"*. El panel de US39 respondía "¿cómo va cada estudiante?" con un promedio, pero no permitía ver quién no entregó **qué**. Se agregó debajo una matriz: una fila por estudiante, una columna por actividad **y por evaluación** — hasta ahora el seguimiento solo miraba actividades, así que la mitad de lo que se califica en el curso no aparecía en ningún lado. Cada celda dice una de tres cosas, y son tres situaciones que el docente trata distinto, por eso no se colapsan en un número: `—` no entregó (hay que reclamarle), **Por calificar** (espera al docente) y el porcentaje. **El título de cada columna enlaza a la pantalla donde se califica**, que es lo que cierra el punto 2. La lógica quedó en `lib/gradebook.ts`, pura y probada, igual que `grades.ts` y `route-progress.ts`.
+
+**4. Novedades para el Estudiante.** *"El estudiante también debe ver las noticias, que pueden ser una calificación nueva"*. Bloque nuevo en su panel, arriba de "Continuar aprendiendo", con tres tipos en este orden: **lo que vence pronto y no ha entregado** (primero porque es lo único sobre lo que puede actuar hoy), **las calificaciones nuevas** con la nota sobre 5.0 y el comentario del profesor, y **el material publicado** hace poco. Cada novedad enlaza a donde se actúa sobre ella.
+
+**La decisión de fondo de ese bloque: una ventana de dos semanas, no un estado leído/no leído.** Marcar cosas como vistas obliga a guardar por estudiante qué vio y cuándo, y se equivoca justo cuando más importa — basta con que la página cargue un segundo para que algo quede "leído" sin haberlo visto, que es exactamente el error corregido en US19 cuando el progreso se marcaba solo por abrir la página. "Lo de las últimas dos semanas" no se equivoca y no necesita ninguna tabla nueva. Si más adelante se quiere el punto rojo de no leído, se agrega encima sin rehacer nada.
+
+**Una migración:** `contents` era la única tabla de contenido del curso sin fecha de creación (`actividades`, `quizzes`, `secciones` y `courses` ya la tienen), y sin ella no hay forma de saber qué lección es nueva. Efecto secundario anotado al docente: **los primeros días todo el material anterior cuenta como nuevo**, porque esa fecha empieza a correr cuando se aplica la migración.
+
+**Y, de paso, tres cursos más con rutas que se cruzan.** El docente pidió más material para ensayar rutas de aprendizaje: se agregaron *Diseño y creación digital*, *Robótica y electrónica básica* y *Datos, hojas de cálculo e inteligencia artificial* al script de siembra, con sus cinco videos comprobados uno por uno contra YouTube (la regla que quedó de OP10). Lo importante no son los cursos sino las rutas: **se pasó de una ruta a tres, y comparten cursos a propósito** — *Fundamentos* está en dos y *Python* también. Con una sola ruta no se podía ensayar lo que el modelo de US44 sí soporta: qué pasa cuando alguien se asocia a dos rutas que comparten un curso, o cuando se quita un curso de una ruta y sigue estando en otra. Las rutas pasaron a definirse como datos, por título de curso, y se rearman solas en cada siembra.
+
+**Corrección menor del mismo día:** los títulos de columna de la planilla salían cortados con puntos suspensivos y en mayúsculas, así que no se distinguía una actividad de otra — justo lo que esa tabla tiene que dejar claro. Ahora van completos, en caja normal y en varias líneas: la tabla crece en alto, no en ancho.
+
+**US47 (propuesta, sin construir).** El docente pidió que un tutor pueda tomar recursos que no son suyos, usarlos en sus rutas con sus estudiantes *"como administrador mas no creador"*, y adaptarlos para su propio uso. Quedó definida en `Backlog.md` con la distinción entre **creador** y **administrador**, y con un punto que hay que decidir antes de construirla: *adaptar para mi uso* y *editar el recurso de otro* son cosas opuestas — si el segundo docente edita el original, les cambia el curso a los estudiantes del primero sin que se entere. Por eso está planteada como **copia al adoptar** (contenidos, secciones, actividades y evaluaciones; nunca entregas, notas ni inscripciones). Quedan cuatro preguntas abiertas anotadas; se revisa mañana.
+
+**Verificación:** `tsc --noEmit` y `eslint` limpios sobre todo lo tocado, 21 pruebas nuevas (`gradebook` 10, `novedades` 11) y actualizada la prueba de la página del Estudiante, que volvió a avisar en cuanto la consulta cambió — como las otras tres veces.
+
+**Pendiente del recorrido:** faltan **B.7** (asociarse a una ruta como estudiante), **C.3** y **C.4** (la ruta desde el lado del tutor), **todo el bloque D** de seguridad y **E.1**. Para el bloque D se dejó `scripts/urls-de-prueba.ts`, que imprime las URLs exactas que hay que pedir a mano — sin él habría que ir cazando ids en el código fuente.
 
 ## OP10 — los cursos de ejemplo
 
