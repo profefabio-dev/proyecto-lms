@@ -66,7 +66,9 @@ export async function alternarCursoCompartible(
 
     revalidatePath(`/tutor/cursos/${curso.id}`);
     revalidatePath("/tutor/cursos");
-    revalidatePath("/tutor/catalogo");
+    // La ficha pública de este curso, que acaba de aparecer o desaparecer.
+    // El índice del catálogo todavía no existe (US48).
+    revalidatePath(`/tutor/catalogo/${curso.id}`);
 
     return { success: true, compartible: actualizado.compartible };
   } catch (error) {

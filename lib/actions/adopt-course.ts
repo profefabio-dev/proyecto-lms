@@ -204,7 +204,10 @@ export async function adoptarCurso(
   }
 
   revalidatePath("/tutor/cursos");
-  revalidatePath("/tutor/catalogo");
+  // La ficha del curso original: su botón pasa a "ya tienes tu copia", y el
+  // conteo de adopciones que ve su autor sube.
+  revalidatePath(`/tutor/catalogo/${original.id}`);
+  revalidatePath(`/tutor/cursos/${original.id}`);
 
   // Se entra directo a la copia: lo siguiente que va a hacer el tutor es
   // revisarla y adaptarla, que es para lo que nace en borrador.

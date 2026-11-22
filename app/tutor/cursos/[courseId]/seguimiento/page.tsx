@@ -1,6 +1,13 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, ClipboardList, TrendingUp, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  ClipboardList,
+  FileQuestion,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
@@ -202,7 +209,12 @@ export default async function SeguimientoPage({
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        {/* 23/11/2026: faltaba la tarjeta de evaluaciones. La planilla de
+            abajo sí las cuenta como columnas, así que un curso con una
+            actividad y una evaluación mostraba "Actividades 1" encima de
+            una tabla con dos columnas — un número que no cuadraba con lo
+            que se veía justo debajo. */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1 rounded-2xl border border-border/80 bg-card p-4">
             <div className="flex items-center gap-2 text-muted-foreground">
               <BookOpen className="size-4" aria-hidden="true" />
@@ -220,6 +232,16 @@ export default async function SeguimientoPage({
             </div>
             <p className="font-heading text-2xl font-bold text-foreground">
               {curso.actividades.length}
+            </p>
+          </div>
+
+          <div className="space-y-1 rounded-2xl border border-border/80 bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <FileQuestion className="size-4" aria-hidden="true" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Evaluaciones</span>
+            </div>
+            <p className="font-heading text-2xl font-bold text-foreground">
+              {curso.quizzes.length}
             </p>
           </div>
 

@@ -180,10 +180,13 @@ const CURSOS: DefinicionCurso[] = [
         seccion: 0,
       },
       {
-        titulo: "Simulador: arma un computador pieza por pieza",
-        descripcion: "Recurso externo. Practica el ensamble sin riesgo de dañar nada.",
+        // 23/11/2026: antes apuntaba a edu.gcfglobal.org/es/informatica-basica,
+        // que dejó de existir — hoy redirige a learnfree.org, en inglés.
+        titulo: "Mapa interactivo: identifica las partes del computador",
+        descripcion:
+          "Recurso externo. Arrastra cada nombre a su lugar en la imagen y comprueba cuántas reconoces.",
         tipo: "ENLACE",
-        cuerpo: "https://edu.gcfglobal.org/es/informatica-basica/",
+        cuerpo: "https://es.educaplay.com/recursos-educativos/1008791-partes_de_la_computadora.html",
         seccion: 0,
       },
       {
