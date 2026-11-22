@@ -21,6 +21,19 @@ vi.mock("@/lib/prisma", () => ({
     contentViews: {
       findMany: vi.fn(),
     },
+    // 22/11/2026: las cuatro consultas del bloque de novedades.
+    entregas: {
+      findMany: vi.fn(),
+    },
+    actividades: {
+      findMany: vi.fn(),
+    },
+    contents: {
+      findMany: vi.fn(),
+    },
+    quizzes: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -37,6 +50,16 @@ function mockSesion(authUserId: string | null) {
         .mockResolvedValue({ data: { user: authUserId ? { id: authUserId } : null } }),
     },
   });
+}
+
+// Las cuatro consultas del bloque de novedades (22/11/2026). Casi todas
+// las pruebas de esta página no van sobre novedades, así que por defecto
+// se dejan vacías.
+function mockNovedadesVacias() {
+  (prisma.entregas.findMany as any).mockResolvedValue([]);
+  (prisma.actividades.findMany as any).mockResolvedValue([]);
+  (prisma.contents.findMany as any).mockResolvedValue([]);
+  (prisma.quizzes.findMany as any).mockResolvedValue([]);
 }
 
 describe("EstudiantePage (US14 minimo / US15)", () => {
@@ -67,6 +90,7 @@ describe("EstudiantePage (US14 minimo / US15)", () => {
     (prisma.courseUsers.findMany as any).mockResolvedValue([
       {
         id: "insc-1",
+        courseId: "curso-1",
         course: {
           id: "curso-1",
           titulo: "Curso 1",
@@ -83,6 +107,7 @@ describe("EstudiantePage (US14 minimo / US15)", () => {
     (prisma.contentViews.findMany as any).mockResolvedValue([
       { contentId: "c1", vistoEn: new Date("2026-09-04T09:00:00") },
     ]);
+    mockNovedadesVacias();
 
     await EstudiantePage();
 

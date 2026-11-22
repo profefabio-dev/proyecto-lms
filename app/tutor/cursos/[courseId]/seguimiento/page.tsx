@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/page-header";
 import { DataTable, Th, Td } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { construirPlanilla } from "@/lib/gradebook";
 
 // Panel de seguimiento del curso (19/11/2026): una fila por estudiante
 // inscrito, con cuánto contenido ha visto, cuántas actividades entregó y su
@@ -54,7 +55,16 @@ export default async function SeguimientoPage({
       },
       actividades: {
         where: { visible: true },
-        select: { id: true, puntajeMaximo: true },
+        orderBy: { orden: "asc" },
+        select: { id: true, titulo: true, puntajeMaximo: true },
+      },
+      // 22/11/2026: las evaluaciones entran a esta pantalla por la planilla
+      // de abajo — hasta ahora el seguimiento solo miraba actividades, así
+      // que la mitad de lo que se califica en el curso no aparecía.
+      quizzes: {
+        where: { visible: true },
+        orderBy: { orden: "asc" },
+        select: { id: true, titulo: true },
       },
     },
   });
@@ -80,6 +90,15 @@ export default async function SeguimientoPage({
     ? await prisma.entregas.findMany({
         where: { actividadId: { in: idsActividades } },
         select: { userId: true, nota: true, actividadId: true },
+      })
+    : [];
+
+  const idsQuizzes = curso.quizzes.map((quiz: { id: string }) => quiz.id);
+
+  const intentos = idsQuizzes.length
+    ? await prisma.intentosQuiz.findMany({
+        where: { quizId: { in: idsQuizzes } },
+        select: { userId: true, quizId: true, puntaje: true },
       })
     : [];
 
@@ -117,6 +136,7 @@ export default async function SeguimientoPage({
 
       return {
         id: inscripcion.id,
+        userId: inscripcion.userId,
         nombre: `${inscripcion.user.nombre} ${inscripcion.user.apellido}`,
         grado: inscripcion.user.grado,
         vistas: vistasDelEstudiante,
@@ -128,6 +148,21 @@ export default async function SeguimientoPage({
     })
     // Primero quien va más atrasado: es a quien el docente necesita ver.
     .sort((a, b) => a.avance - b.avance || a.nombre.localeCompare(b.nombre, "es"));
+
+  // La planilla usa el mismo orden de filas que la tabla de arriba (más
+  // atrasado primero), para que el docente no tenga que buscar al mismo
+  // estudiante en dos ordenamientos distintos.
+  // El parámetro de tipo va explícito: `filas` viene de datos de Prisma, y
+  // sin él TypeScript infiere el genérico como su cota (`{ id: string }`) y
+  // pierde el nombre del estudiante — el mismo caso ya documentado en el
+  // reproductor de lecciones (US43).
+  const planilla = construirPlanilla<{ id: string; nombre: string }>({
+    estudiantes: filas.map((fila) => ({ id: fila.userId, nombre: fila.nombre })),
+    actividades: curso.actividades,
+    quizzes: curso.quizzes,
+    entregas,
+    intentos,
+  });
 
   const promedioCurso = (() => {
     const conPromedio = filas.filter((fila) => fila.promedio !== null);
@@ -146,7 +181,7 @@ export default async function SeguimientoPage({
         { label: "Seguimiento" },
       ]}
     >
-      <main className="mx-auto max-w-5xl space-y-8 px-4 sm:px-6 py-8">
+      <main className="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 py-8">
         <div className="space-y-3">
           <Link
             href={`/tutor/cursos/${courseId}`}
@@ -259,6 +294,100 @@ export default async function SeguimientoPage({
               ))}
             </tbody>
           </DataTable>
+        )}
+
+        {/* PLANILLA DE NOTAS (22/11/2026)
+            La tabla de arriba resume; esta responde "¿quién no entregó qué?".
+            Cada encabezado enlaza a la pantalla donde se califica esa
+            columna, porque antes había que volver al curso y bajar hasta la
+            actividad para llegar ahí, y en la práctica no se encontraba. */}
+        {filas.length > 0 && planilla.columnas.length > 0 && (
+          <section className="space-y-3">
+            <div className="space-y-1">
+              <h2 className="font-heading text-xl font-bold text-foreground">Planilla de notas</h2>
+              <p className="text-sm text-muted-foreground">
+                Una columna por actividad y evaluación. Toca el título de una columna para
+                calificarla.
+              </p>
+            </div>
+
+            <DataTable anchoMinimo={`${16 + planilla.columnas.length * 9}rem`}>
+              <thead>
+                <tr className="border-b border-border/60 bg-muted/40">
+                  <Th primera>Estudiante</Th>
+                  {planilla.columnas.map((columna) => (
+                    <Th key={columna.id}>
+                      <Link
+                        href={
+                          columna.tipo === "ACTIVIDAD"
+                            ? `/tutor/cursos/${courseId}/actividades/${columna.id}`
+                            : `/tutor/cursos/${courseId}/quizzes/${columna.id}`
+                        }
+                        className="underline-offset-4 hover:text-foreground hover:underline"
+                        title={columna.titulo}
+                      >
+                        <span className="line-clamp-2 max-w-32">{columna.titulo}</span>
+                      </Link>
+                    </Th>
+                  ))}
+                  <Th ultima>Promedio</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {planilla.filas.map((fila) => (
+                  <tr
+                    key={fila.estudiante.id}
+                    className="border-b border-border/40 last:border-0"
+                  >
+                    <Td primera>
+                      <span className="font-medium text-foreground">{fila.estudiante.nombre}</span>
+                    </Td>
+
+                    {fila.celdas.map((celda, indice) => (
+                      <Td key={planilla.columnas[indice].id}>
+                        {celda.estado === "sin_entregar" && (
+                          <span
+                            className="text-muted-foreground"
+                            title="Todavía no ha entregado"
+                          >
+                            —
+                          </span>
+                        )}
+                        {celda.estado === "sin_calificar" && (
+                          <Badge variant="warning" className="font-semibold">
+                            Por calificar
+                          </Badge>
+                        )}
+                        {celda.estado === "calificada" && (
+                          <span className="font-semibold tabular-nums text-foreground">
+                            {celda.porcentaje}%
+                          </span>
+                        )}
+                      </Td>
+                    ))}
+
+                    <Td ultima>
+                      {fila.promedio === null ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <Badge
+                          variant={fila.promedio >= 60 ? "success" : "destructive"}
+                          className="font-semibold tabular-nums"
+                        >
+                          {fila.promedio}%
+                        </Badge>
+                      )}
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </DataTable>
+
+            <p className="text-xs text-muted-foreground">
+              — sin entregar · <span className="font-semibold">Por calificar</span> espera tu
+              revisión · el porcentaje es la nota sobre el puntaje máximo de esa actividad.
+            </p>
+          </section>
         )}
       </main>
     </AppShell>

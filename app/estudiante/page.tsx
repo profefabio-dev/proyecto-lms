@@ -21,6 +21,16 @@ import {
   siguienteLeccionPendiente,
 } from "@/lib/course-lessons";
 import { calcularRacha } from "@/lib/streak";
+import { porcentajeDeNota } from "@/lib/grades";
+import {
+  DIAS_DE_VENTANA,
+  DIAS_DE_AVISO_DE_PLAZO,
+  diasHasta,
+  ordenarNovedades,
+  proximosDias,
+  type Novedad,
+} from "@/lib/novedades";
+import { NewsFeed } from "@/components/news-feed";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { CourseCard } from "@/components/course-card";
@@ -77,6 +87,125 @@ export default async function EstudiantePage() {
 
   const idsVistos = new Set<string>(vistas.map((vista) => vista.contentId));
   const racha = calcularRacha(vistas.map((vista) => vista.vistoEn));
+
+  // NOVEDADES (22/11/2026) — ver `lib/novedades.ts` para por qué es una
+  // ventana de tiempo y no un estado leído/no leído.
+  const ahora = new Date();
+  const desde = new Date(ahora);
+  desde.setDate(desde.getDate() - DIAS_DE_VENTANA);
+
+  const idsCursos = inscripciones.map(
+    (inscripcion: { courseId: string }) => inscripcion.courseId
+  );
+  const tituloPorCurso = new Map<string, string>(
+    inscripciones.map((inscripcion: { courseId: string; course: { titulo: string } }) => [
+      inscripcion.courseId,
+      inscripcion.course.titulo,
+    ])
+  );
+
+  const [calificadas, actividadesAbiertas, leccionesNuevas, evaluacionesNuevas] = idsCursos.length
+    ? await Promise.all([
+        prisma.entregas.findMany({
+          where: {
+            userId: usuarioActual.id,
+            calificadaEn: { gte: desde },
+            actividad: { courseId: { in: idsCursos } },
+          },
+          select: {
+            nota: true,
+            retroalimentacion: true,
+            calificadaEn: true,
+            actividad: { select: { id: true, titulo: true, courseId: true, puntajeMaximo: true } },
+          },
+        }),
+        // Para el aviso de plazo: actividades visibles con fecha límite
+        // próxima. Se piden todas las del rango y se descartan después las
+        // que el estudiante ya entregó.
+        prisma.actividades.findMany({
+          where: {
+            courseId: { in: idsCursos },
+            visible: true,
+            fechaLimite: { not: null, lte: proximosDias(ahora, DIAS_DE_AVISO_DE_PLAZO) },
+          },
+          select: {
+            id: true,
+            titulo: true,
+            courseId: true,
+            fechaLimite: true,
+            entregas: { where: { userId: usuarioActual.id }, select: { id: true } },
+          },
+        }),
+        prisma.contents.findMany({
+          where: { courseId: { in: idsCursos }, visible: true, createdAt: { gte: desde } },
+          select: { id: true, titulo: true, courseId: true, createdAt: true },
+        }),
+        prisma.quizzes.findMany({
+          where: { courseId: { in: idsCursos }, visible: true, createdAt: { gte: desde } },
+          select: { id: true, titulo: true, courseId: true, createdAt: true },
+        }),
+      ])
+    : [[], [], [], []];
+
+  const novedades = ordenarNovedades([
+    ...actividadesAbiertas
+      .filter((a: { entregas: unknown[] }) => a.entregas.length === 0)
+      .map(
+        (a: {
+          id: string;
+          titulo: string;
+          courseId: string;
+          fechaLimite: Date | null;
+        }): Novedad => ({
+          tipo: "plazo",
+          cursoId: a.courseId,
+          cursoTitulo: tituloPorCurso.get(a.courseId) ?? "",
+          titulo: a.titulo,
+          href: `/estudiante/cursos/${a.courseId}`,
+          fecha: a.fechaLimite as Date,
+          diasRestantes: diasHasta(a.fechaLimite as Date, ahora),
+        })
+      ),
+    ...calificadas.map(
+      (e: {
+        nota: number | null;
+        retroalimentacion: string | null;
+        calificadaEn: Date | null;
+        actividad: { id: string; titulo: string; courseId: string; puntajeMaximo: number };
+      }): Novedad => ({
+        tipo: "nota",
+        cursoId: e.actividad.courseId,
+        cursoTitulo: tituloPorCurso.get(e.actividad.courseId) ?? "",
+        titulo: e.actividad.titulo,
+        href: "/estudiante/notas",
+        fecha: e.calificadaEn as Date,
+        porcentaje: porcentajeDeNota(e.nota ?? 0, e.actividad.puntajeMaximo),
+        retroalimentacion: e.retroalimentacion,
+      })
+    ),
+    ...leccionesNuevas.map(
+      (c: { id: string; titulo: string; courseId: string; createdAt: Date }): Novedad => ({
+        tipo: "material",
+        cursoId: c.courseId,
+        cursoTitulo: tituloPorCurso.get(c.courseId) ?? "",
+        titulo: c.titulo,
+        href: `/estudiante/cursos/${c.courseId}/lecciones/${c.id}`,
+        fecha: c.createdAt,
+        clase: "leccion",
+      })
+    ),
+    ...evaluacionesNuevas.map(
+      (q: { id: string; titulo: string; courseId: string; createdAt: Date }): Novedad => ({
+        tipo: "material",
+        cursoId: q.courseId,
+        cursoTitulo: tituloPorCurso.get(q.courseId) ?? "",
+        titulo: q.titulo,
+        href: `/estudiante/cursos/${q.courseId}/quizzes/${q.id}`,
+        fecha: q.createdAt,
+        clase: "evaluacion",
+      })
+    ),
+  ]);
 
   // Procesamos cada curso con sus métricas
   const cursosConMetricas = inscripciones.map((inscripcion) => {
@@ -244,6 +373,10 @@ export default async function EstudiantePage() {
             </div>
           </div>
         )}
+
+        {/* NOVEDADES — va antes de "Continuar aprendiendo" porque lo que
+            vence pronto pesa más que seguir donde se quedó. */}
+        <NewsFeed novedades={novedades} />
 
         {/* TARJETA DESTACADA: "CONTINUAR APRENDIENDO" */}
         {cursoEnProgreso && (

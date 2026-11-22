@@ -408,6 +408,10 @@ model Contents {
   // `Secciones` arriba) — sin sección asignada, el contenido se comporta
   // exactamente igual que antes de US30 (lista plana, siempre visible).
   seccionId   String?
+  // 22/11/2026: era la única tabla de contenido del curso sin fecha de
+  // creación, y sin ella no hay forma de saber qué lección es nueva para el
+  // bloque de novedades del Estudiante.
+  createdAt   DateTime      @default(now())
 
   course     Courses        @relation(fields: [courseId], references: [id])
   seccion    Secciones?     @relation(fields: [seccionId], references: [id])

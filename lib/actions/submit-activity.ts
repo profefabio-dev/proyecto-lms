@@ -30,6 +30,11 @@ import {
 const entregarSchema = z.object({
   actividadId: z.string().min(1, "Actividad inválida"),
   texto: z.string().trim().optional(),
+  // 22/11/2026: hasta ahora un archivo adjunto solo se podía reemplazar por
+  // otro, nunca quitar — quien adjuntaba algo por error quedaba con ese
+  // archivo pegado a su entrega para siempre. Esta casilla permite volver a
+  // una entrega de solo texto.
+  quitarArchivo: z.boolean().optional(),
 });
 
 // Para las entregas se aceptan además imágenes (una foto del cuaderno es
@@ -68,13 +73,14 @@ export async function entregarActividad(
   const parsed = entregarSchema.safeParse({
     actividadId: formData.get("actividadId"),
     texto: formData.get("texto") || undefined,
+    quitarArchivo: formData.get("quitarArchivo") === "on",
   });
 
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  const { actividadId, texto } = parsed.data;
+  const { actividadId, texto, quitarArchivo } = parsed.data;
 
   const actividad = await prisma.actividades.findUnique({ where: { id: actividadId } });
 
@@ -95,7 +101,19 @@ export async function entregarActividad(
   // para que TypeScript lo siga tratando como archivo más abajo.
   const archivo = adjunto instanceof File && adjunto.size > 0 ? adjunto : null;
 
-  if (!texto && !archivo) {
+  const entregaPrevia = await prisma.entregas.findUnique({
+    where: { actividadId_userId: { actividadId, userId: usuarioActual.id } },
+  });
+
+  // Adjuntar uno nuevo manda sobre la casilla de quitar: si el estudiante
+  // eligió un archivo, está reemplazando, no borrando.
+  const conservaElAnterior = !archivo && !quitarArchivo && Boolean(entregaPrevia?.archivo);
+  const quedaraConArchivo = Boolean(archivo) || conservaElAnterior;
+
+  // La validación mira cómo queda la entrega, no solo lo que llegó en este
+  // envío: corregir el texto de una entrega que ya tenía archivo es válido,
+  // y quedarse sin texto y sin archivo nunca lo es.
+  if (!texto && !quedaraConArchivo) {
     return { success: false, error: "Escribe tu respuesta o adjunta un archivo." };
   }
 
@@ -111,10 +129,6 @@ export async function entregarActividad(
       return { success: false, error: "El archivo no puede superar los 10 MB." };
     }
   }
-
-  const entregaPrevia = await prisma.entregas.findUnique({
-    where: { actividadId_userId: { actividadId, userId: usuarioActual.id } },
-  });
 
   // Mismo orden y patrón de compensación que en US09: primero Storage,
   // después la base de datos, y si la base de datos falla se borra el
@@ -137,10 +151,15 @@ export async function entregarActividad(
   try {
     const datos = {
       texto: texto || null,
-      // Si esta vez no adjuntó archivo, se conserva el de la entrega
-      // anterior: así puede corregir solo el texto sin volver a subirlo.
-      archivo: pathNuevo ?? entregaPrevia?.archivo ?? null,
-      nombreArchivo: archivo ? archivo.name : (entregaPrevia?.nombreArchivo ?? null),
+      // Tres casos, en este orden: subió uno nuevo, pidió quitar el que
+      // tenía, o no tocó el archivo — y entonces se conserva el anterior,
+      // así puede corregir solo el texto sin volver a subirlo.
+      archivo: pathNuevo ?? (conservaElAnterior ? (entregaPrevia?.archivo ?? null) : null),
+      nombreArchivo: archivo
+        ? archivo.name
+        : conservaElAnterior
+          ? (entregaPrevia?.nombreArchivo ?? null)
+          : null,
       entregadaEn: new Date(),
       // La nota anterior ya no aplica al trabajo nuevo.
       nota: null,
@@ -154,8 +173,10 @@ export async function entregarActividad(
       update: datos,
     });
 
-    // El archivo viejo solo se borra una vez que el guardado salió bien.
-    if (pathNuevo && entregaPrevia?.archivo) {
+    // El archivo viejo solo se borra una vez que el guardado salió bien, y
+    // tanto si lo reemplazó como si pidió quitarlo: en los dos casos la
+    // entrega ya no lo referencia, así que dejarlo en Storage sería basura.
+    if (entregaPrevia?.archivo && !conservaElAnterior) {
       await eliminarDocumentoDeStorage(entregaPrevia.archivo);
     }
 

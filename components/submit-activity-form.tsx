@@ -85,6 +85,20 @@ export function SubmitActivityForm({
                 ? ` Ahora tienes adjunto "${nombreArchivoPrevio}"; si no eliges otro, se conserva.`
                 : ""}
             </p>
+
+            {/* Sin esta casilla, un archivo adjunto por error se quedaba
+                pegado a la entrega para siempre: se podía reemplazar por
+                otro, pero nunca volver a entregar solo texto. */}
+            {nombreArchivoPrevio && (
+              <label className="flex min-h-11 items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  name="quitarArchivo"
+                  className="size-5 accent-primary"
+                />
+                Quitar el archivo adjunto y entregar solo el texto
+              </label>
+            )}
           </div>
 
           {estado && !estado.success && (
