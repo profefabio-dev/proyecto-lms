@@ -67,6 +67,19 @@ const VIDEOS = {
   pensamientoComputacional: "https://www.youtube.com/watch?v=vDrfsiy21To",
   // Fazt · curso completo en español · ver los primeros 20 minutos
   primerPrograma: "https://www.youtube.com/watch?v=chPhlsHoEPo",
+
+  // Los tres cursos agregados el 22/11/2026, para tener material con el que
+  // ensayar rutas de aprendizaje. Mismos criterios y misma comprobación.
+  // Qué es · 3:55 · "¿Qué es la resolución de una imagen?"
+  resolucionImagen: "https://www.youtube.com/watch?v=5SIR8meSAqc",
+  // A Cierta Ciencia · 2:12 · "Circuitos eléctricos: serie y paralelo"
+  circuitos: "https://www.youtube.com/watch?v=GUESpG6inds",
+  // Viterbo Barrera · 3:53 · "Cómo usar una protoboard para principiantes"
+  protoboard: "https://www.youtube.com/watch?v=AaXXu292iNg",
+  // Smile and Learn · 3:27 · "Inteligencia artificial para niños"
+  inteligenciaArtificial: "https://www.youtube.com/watch?v=UKncFg0PyEk",
+  // Saber Programas · 2:44 · "Calcular porcentajes en Excel"
+  porcentajesExcel: "https://www.youtube.com/watch?v=GCHVz9fHn_k",
 };
 
 type DefinicionContenido = {
@@ -666,6 +679,582 @@ const CURSOS: DefinicionCurso[] = [
       },
     ],
   },
+
+  // =========================================================================
+  {
+    titulo: "Diseño y creación digital",
+    descripcion:
+      "Hacer, no solo consumir. Imagen, sonido y video: por qué una foto se ve pixelada, qué formato usar para cada cosa, y cómo producir material propio con herramientas gratuitas.",
+    imagen: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=1200",
+    secciones: [
+      { titulo: "Semana 1 — La imagen digital", estado: "DISPONIBLE", esActual: true },
+      { titulo: "Semana 2 — Producir y publicar", estado: "DISPONIBLE" },
+      { titulo: "Semana 3 — Sonido y video", estado: "NO_DISPONIBLE" },
+    ],
+    contenidos: [
+      {
+        titulo: "Píxeles y resolución",
+        descripcion: "Por qué una imagen se ve 'cuadriculada' al agrandarla.",
+        tipo: "VIDEO",
+        cuerpo: VIDEOS.resolucionImagen,
+        seccion: 0,
+      },
+      {
+        titulo: "Qué formato usar para cada cosa",
+        descripcion: "JPG, PNG, WEBP, SVG: no son intercambiables.",
+        tipo: "TEXTO",
+        seccion: 0,
+        cuerpo: [
+          "## La imagen por dentro",
+          "",
+          "Una imagen digital es una cuadrícula de **píxeles**, cada uno con su color. La *resolución* dice cuántos hay: 1920×1080 son algo más de dos millones. Si agrandas una imagen pequeña, el computador no inventa detalle que no estaba — solo hace los píxeles más grandes, y por eso se ve cuadriculada.",
+          "",
+          "## Cuál usar",
+          "",
+          "| Formato | Para qué sirve | Ojo con |",
+          "|---|---|---|",
+          "| **JPG** | Fotos | Pierde calidad cada vez que guardas |",
+          "| **PNG** | Logos, capturas, lo que necesite fondo transparente | Pesa más que un JPG |",
+          "| **WEBP** | Lo mismo que los dos anteriores, pesando menos | Programas muy viejos no lo abren |",
+          "| **SVG** | Dibujos y logos que deben agrandarse sin perder nitidez | No sirve para fotos |",
+          "",
+          "## La diferencia que importa",
+          "",
+          "JPG, PNG y WEBP son **mapas de píxeles**: tienen un tamaño fijo y agrandarlos los daña. SVG es **vectorial**: guarda instrucciones de dibujo (\"una línea de aquí a allá\"), así que se puede agrandar a un aviso de tres metros y sigue perfecto.",
+          "",
+          "> Regla práctica: si es una foto, JPG o WEBP. Si es un dibujo o un logo, SVG o PNG.",
+        ].join("\n"),
+      },
+      {
+        titulo: "Photopea: edita imágenes sin instalar nada",
+        descripcion: "Recurso externo. Funciona en el navegador y abre archivos de Photoshop.",
+        tipo: "ENLACE",
+        cuerpo: "https://www.photopea.com/",
+        seccion: 0,
+      },
+      {
+        titulo: "Guía: licencias y de dónde sacar imágenes",
+        descripcion: "Qué puedes usar, qué debes citar y qué no puedes tocar.",
+        tipo: "DOCUMENTO",
+        pdf: "Licencias de uso e imagenes libres - Diseno y creacion digital",
+        seccion: 1,
+      },
+      {
+        titulo: "Cambiar el tamaño de muchas imágenes a la vez",
+        descripcion: "Cuando son cincuenta fotos, no se hace a mano.",
+        tipo: "CODIGO",
+        lenguaje: "python",
+        seccion: 1,
+        cuerpo: [
+          "# Necesita la librería Pillow:  pip install pillow",
+          "from PIL import Image",
+          "from pathlib import Path",
+          "",
+          "ANCHO = 800",
+          "",
+          "for foto in Path(\"fotos\").glob(\"*.jpg\"):",
+          "    imagen = Image.open(foto)",
+          "",
+          "    # Se calcula el alto para no deformar la foto:",
+          "    proporcion = ANCHO / imagen.width",
+          "    alto = int(imagen.height * proporcion)",
+          "",
+          "    imagen.resize((ANCHO, alto)).save(f\"listas/{foto.name}\")",
+          "    print(f\"{foto.name}: {imagen.width}px -> {ANCHO}px\")",
+        ].join("\n"),
+      },
+      {
+        titulo: "Borrador: grabar y editar audio con Audacity",
+        descripcion: "Material de la semana 3, todavía sin terminar.",
+        tipo: "TEXTO",
+        cuerpo: "Pendiente de redactar. Este contenido está oculto a propósito.",
+        seccion: 2,
+        visible: false,
+      },
+    ],
+    actividades: [
+      {
+        titulo: "Rediseña un afiche de tu colegio",
+        descripcion: "Entrega el archivo final y una explicación de tus decisiones.",
+        puntajeMaximo: 100,
+        diasDePlazo: 10,
+        seccion: 1,
+        instrucciones: [
+          "## Qué tienes que hacer",
+          "",
+          "Busca un afiche, cartelera o aviso de tu colegio que se pueda mejorar y **rehazlo**. Puedes usar Photopea, Canva o lo que prefieras.",
+          "",
+          "Requisitos:",
+          "",
+          "1. Que se lea desde lejos: el texto más importante, grande.",
+          "2. Máximo **dos** tipos de letra y **tres** colores.",
+          "3. Guárdalo en el formato que corresponda y explica por qué ese y no otro.",
+          "",
+          "## Cómo entregar",
+          "",
+          "Adjunta el archivo final **y** escribe aquí tres decisiones que tomaste y por qué. El diseño sin la explicación vale la mitad: lo que se evalúa es el criterio, no la herramienta.",
+          "",
+          "## Cómo se califica",
+          "",
+          "| Criterio | Puntos |",
+          "|---|---|",
+          "| Se lee a distancia y la jerarquía es clara | 30 |",
+          "| Respeta el límite de letras y colores | 20 |",
+          "| El formato elegido es el correcto y lo justifica | 20 |",
+          "| Explica tres decisiones propias | 30 |",
+        ].join("\n"),
+      },
+    ],
+    quizzes: [
+      {
+        titulo: "Repaso: formatos de imagen",
+        descripcion: "Dos intentos.",
+        intentosMaximos: 2,
+        seccion: 0,
+        preguntas: [
+          {
+            enunciado: "Necesitas un logo que se vea nítido en una pancarta de tres metros. ¿Qué formato usas?",
+            opciones: ["JPG", "PNG", "SVG", "WEBP"],
+            correcta: 2,
+          },
+          {
+            enunciado: "¿Por qué una foto pequeña se ve cuadriculada al agrandarla?",
+            opciones: [
+              "Porque el programa la daña al abrirla",
+              "Porque no tiene más píxeles y solo se agrandan los que ya había",
+              "Porque está en el formato equivocado",
+              "Porque la pantalla es de baja calidad",
+            ],
+            correcta: 1,
+          },
+          {
+            enunciado: "¿Cuál de estos formatos conserva el fondo transparente?",
+            opciones: ["JPG", "PNG", "BMP", "Ninguno"],
+            correcta: 1,
+          },
+        ],
+      },
+    ],
+  },
+
+  // =========================================================================
+  {
+    titulo: "Robótica y electrónica básica",
+    descripcion:
+      "De la idea al circuito que funciona. Corriente, circuitos en serie y en paralelo, el protoboard, y los primeros montajes con sensores y luces programadas.",
+    imagen: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200",
+    secciones: [
+      { titulo: "Semana 1 — Electricidad y circuitos", estado: "DISPONIBLE", esActual: true },
+      { titulo: "Semana 2 — Montar y programar", estado: "DISPONIBLE" },
+      { titulo: "Semana 3 — Sensores", estado: "NO_DISPONIBLE" },
+    ],
+    contenidos: [
+      {
+        titulo: "Circuitos en serie y en paralelo",
+        descripcion: "La diferencia que explica por qué un bombillo apaga a los demás.",
+        tipo: "VIDEO",
+        cuerpo: VIDEOS.circuitos,
+        seccion: 0,
+      },
+      {
+        titulo: "Las tres magnitudes y cómo se relacionan",
+        descripcion: "Voltaje, corriente y resistencia, con una analogía que sí funciona.",
+        tipo: "TEXTO",
+        seccion: 0,
+        cuerpo: [
+          "## El agua en la manguera",
+          "",
+          "Es la comparación de siempre y sirve bien:",
+          "",
+          "| En electricidad | En la manguera | Se mide en |",
+          "|---|---|---|",
+          "| **Voltaje (V)** | La presión del agua | Voltios |",
+          "| **Corriente (I)** | Cuánta agua pasa | Amperios |",
+          "| **Resistencia (R)** | Lo angosta que es la manguera | Ohmios |",
+          "",
+          "## La ley de Ohm",
+          "",
+          "```",
+          "V = I × R",
+          "```",
+          "",
+          "Más presión, más agua. Manguera más angosta, menos agua. Con dos de los tres valores siempre puedes hallar el tercero, y eso es lo que te deja calcular qué resistencia necesita un LED para no quemarse.",
+          "",
+          "## Serie y paralelo, en una frase",
+          "",
+          "- **En serie**: una sola ruta. Si se quema un bombillo, se apagan todos — las luces viejas de navidad.",
+          "- **En paralelo**: cada uno con su ruta. Si se quema uno, los demás siguen — las luces de tu casa.",
+          "",
+          "> Por eso tu casa está cableada en paralelo: nadie querría quedarse sin luz en toda la casa porque se fundió un bombillo del baño.",
+        ].join("\n"),
+      },
+      {
+        titulo: "Cómo usar un protoboard",
+        descripcion: "Montar un circuito sin soldar nada.",
+        tipo: "VIDEO",
+        cuerpo: VIDEOS.protoboard,
+        seccion: 1,
+      },
+      {
+        titulo: "Tinkercad Circuits: arma circuitos en el navegador",
+        descripcion: "Recurso externo. Simula protoboard y Arduino sin tener los componentes.",
+        tipo: "ENLACE",
+        cuerpo: "https://www.tinkercad.com/circuits",
+        seccion: 1,
+      },
+      {
+        titulo: "Tu primer programa de Arduino",
+        descripcion: "Hacer parpadear un LED: el 'hola mundo' de la electrónica.",
+        tipo: "CODIGO",
+        lenguaje: "cpp",
+        seccion: 1,
+        cuerpo: [
+          "// Todo programa de Arduino tiene estas dos partes, siempre.",
+          "",
+          "const int LED = 13;   // el pin donde está conectado el LED",
+          "",
+          "void setup() {",
+          "  // setup() corre UNA vez, al encender la placa.",
+          "  pinMode(LED, OUTPUT);",
+          "}",
+          "",
+          "void loop() {",
+          "  // loop() se repite para siempre, mientras haya corriente.",
+          "  digitalWrite(LED, HIGH);   // encender",
+          "  delay(500);                // esperar medio segundo",
+          "  digitalWrite(LED, LOW);    // apagar",
+          "  delay(500);",
+          "}",
+        ].join("\n"),
+      },
+      {
+        titulo: "Guía de componentes y símbolos",
+        descripcion: "Para tener al lado mientras montas.",
+        tipo: "DOCUMENTO",
+        pdf: "Componentes electronicos y sus simbolos - Robotica basica",
+        seccion: 0,
+      },
+    ],
+    actividades: [
+      {
+        titulo: "Monta un circuito y explícalo",
+        descripcion: "Puedes hacerlo en Tinkercad si no tienes los materiales.",
+        puntajeMaximo: 100,
+        diasDePlazo: 12,
+        seccion: 1,
+        instrucciones: [
+          "## Qué tienes que hacer",
+          "",
+          "Monta un circuito con **al menos dos LED** — real o simulado en Tinkercad, las dos cosas valen igual.",
+          "",
+          "1. Ármalo primero **en serie**. Desconecta un LED: ¿qué pasa?",
+          "2. Ármalo después **en paralelo**. Desconecta un LED: ¿qué pasa ahora?",
+          "3. Explica la diferencia con tus palabras y di cuál usarías para las luces de un salón.",
+          "",
+          "## Cómo entregar",
+          "",
+          "Una foto o captura de cada montaje, más tus respuestas por escrito.",
+          "",
+          "## Cómo se califica",
+          "",
+          "| Criterio | Puntos |",
+          "|---|---|",
+          "| Los dos montajes funcionan | 40 |",
+          "| Describe bien qué pasó al desconectar en cada caso | 30 |",
+          "| Explica la diferencia y elige con criterio | 30 |",
+        ].join("\n"),
+      },
+    ],
+    quizzes: [
+      {
+        titulo: "Repaso: circuitos",
+        descripcion: "Sin límite de intentos.",
+        intentosMaximos: null,
+        seccion: 0,
+        preguntas: [
+          {
+            enunciado: "En un circuito en serie se funde un bombillo. ¿Qué pasa con los demás?",
+            opciones: [
+              "Siguen encendidos",
+              "Se apagan todos",
+              "Alumbran más",
+              "Depende del voltaje",
+            ],
+            correcta: 1,
+          },
+          {
+            enunciado: "Según la ley de Ohm, si la resistencia sube y el voltaje no cambia, la corriente...",
+            opciones: ["Sube", "Baja", "No cambia", "Se vuelve cero"],
+            correcta: 1,
+          },
+          {
+            enunciado: "¿Por qué las casas se cablean en paralelo?",
+            opciones: [
+              "Porque gasta menos energía",
+              "Porque es más barato de instalar",
+              "Para que al fundirse un bombillo los demás sigan funcionando",
+              "Porque la ley lo exige",
+            ],
+            correcta: 2,
+          },
+          {
+            enunciado: "En un programa de Arduino, ¿qué hace la parte loop()?",
+            opciones: [
+              "Corre una sola vez al encender",
+              "Se repite para siempre mientras haya corriente",
+              "Configura los pines",
+              "Apaga la placa",
+            ],
+            correcta: 1,
+          },
+        ],
+      },
+    ],
+  },
+
+  // =========================================================================
+  {
+    titulo: "Datos, hojas de cálculo e inteligencia artificial",
+    descripcion:
+      "Ordenar datos, sacarles una conclusión y presentarla. Y entender qué hace de verdad una inteligencia artificial, para usarla con criterio en vez de creerle todo.",
+    imagen: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200",
+    secciones: [
+      { titulo: "Semana 1 — Datos y hojas de cálculo", estado: "DISPONIBLE", esActual: true },
+      { titulo: "Semana 2 — Inteligencia artificial", estado: "DISPONIBLE" },
+      { titulo: "Semana 3 — Presentar hallazgos", estado: "NO_DISPONIBLE" },
+    ],
+    contenidos: [
+      {
+        titulo: "Calcular porcentajes en una hoja de cálculo",
+        descripcion: "La fórmula que más vas a usar, y cómo fijar una celda.",
+        tipo: "VIDEO",
+        cuerpo: VIDEOS.porcentajesExcel,
+        seccion: 0,
+      },
+      {
+        titulo: "De una lista de datos a una conclusión",
+        descripcion: "Las cuatro preguntas que se le hacen a cualquier tabla.",
+        tipo: "TEXTO",
+        seccion: 0,
+        cuerpo: [
+          "## Una tabla no dice nada por sí sola",
+          "",
+          "Tienes las notas de tu curso. ¿Y entonces? Hay cuatro preguntas que casi siempre sirven:",
+          "",
+          "1. **¿Cuánto en total?** → `SUMA`",
+          "2. **¿Cuánto en promedio?** → `PROMEDIO`",
+          "3. **¿Cuál es el más alto y el más bajo?** → `MAX` y `MIN`",
+          "4. **¿Cuántos cumplen una condición?** → `CONTAR.SI`",
+          "",
+          "## Un ejemplo completo",
+          "",
+          "| | A | B |",
+          "|---|---|---|",
+          "| 1 | Estudiante | Nota |",
+          "| 2 | Ana | 4.5 |",
+          "| 3 | Luis | 2.8 |",
+          "| 4 | Sara | 3.9 |",
+          "",
+          "```",
+          "=PROMEDIO(B2:B4)          → 3.7",
+          "=MAX(B2:B4)               → 4.5",
+          "=CONTAR.SI(B2:B4;\">=3\")   → 2   (cuántos aprobaron)",
+          "```",
+          "",
+          "## El error más común",
+          "",
+          "Confundir el **promedio** con lo que pasa de verdad. Si cuatro sacan 1.0 y uno saca 5.0, el promedio es 1.8 — y ese número no describe a nadie del grupo. Mira siempre también el máximo, el mínimo y cuántos hay en cada rango.",
+        ].join("\n"),
+      },
+      {
+        titulo: "Qué es la inteligencia artificial",
+        descripcion: "Qué hace realmente, explicado sin exagerar.",
+        tipo: "VIDEO",
+        cuerpo: VIDEOS.inteligenciaArtificial,
+        seccion: 1,
+      },
+      {
+        titulo: "Teachable Machine: entrena tu propio modelo",
+        descripcion: "Recurso externo. Enséñale a reconocer imágenes en cinco minutos.",
+        tipo: "ENLACE",
+        cuerpo: "https://teachablemachine.withgoogle.com/",
+        seccion: 1,
+      },
+      {
+        titulo: "Analizar unas notas con Python",
+        descripcion: "Lo mismo de la hoja de cálculo, escrito en código.",
+        tipo: "CODIGO",
+        lenguaje: "python",
+        seccion: 0,
+        cuerpo: [
+          "notas = [4.5, 2.8, 3.9, 1.0, 5.0]",
+          "",
+          "promedio = sum(notas) / len(notas)",
+          "aprobaron = [n for n in notas if n >= 3.0]",
+          "",
+          'print(f"Promedio: {promedio:.1f}")',
+          'print(f"Más alta: {max(notas)}   Más baja: {min(notas)}")',
+          'print(f"Aprobaron {len(aprobaron)} de {len(notas)}")',
+          "",
+          "# Fíjate en esto: el promedio es 3.4, pero dos personas",
+          "# están muy lejos de ahí. El promedio solo nunca basta.",
+        ].join("\n"),
+      },
+      {
+        titulo: "Guía: cómo verificar lo que te responde una IA",
+        descripcion: "Una IA puede equivocarse con mucha seguridad.",
+        tipo: "DOCUMENTO",
+        pdf: "Como verificar lo que responde una inteligencia artificial",
+        seccion: 1,
+      },
+      {
+        titulo: "Borrador: hacer gráficas que no engañen",
+        descripcion: "Material de la semana 3, todavía sin terminar.",
+        tipo: "TEXTO",
+        cuerpo: "Pendiente de redactar. Este contenido está oculto a propósito.",
+        seccion: 2,
+        visible: false,
+      },
+    ],
+    actividades: [
+      {
+        titulo: "Encuesta a tu curso y saca una conclusión",
+        descripcion: "Datos propios, no inventados.",
+        puntajeMaximo: 100,
+        diasDePlazo: 14,
+        seccion: 0,
+        instrucciones: [
+          "## Qué tienes que hacer",
+          "",
+          "Haz una pregunta a **al menos diez compañeros** (cuánto tiempo usan el celular al día, cuántos duermen menos de siete horas, lo que quieras) y organiza las respuestas en una hoja de cálculo.",
+          "",
+          "1. Calcula el **promedio**, el **máximo** y el **mínimo**.",
+          "2. Cuenta cuántos están por encima del promedio.",
+          "3. Escribe **una conclusión** en una sola frase.",
+          "4. Di algo que tu dato **no** permite afirmar, aunque lo parezca.",
+          "",
+          "El punto 4 vale tanto como los otros tres juntos: saber qué *no* dice un dato es la mitad del trabajo.",
+          "",
+          "## Cómo entregar",
+          "",
+          "Adjunta la hoja de cálculo y escribe aquí los puntos 3 y 4.",
+          "",
+          "## Cómo se califica",
+          "",
+          "| Criterio | Puntos |",
+          "|---|---|",
+          "| Diez respuestas o más, bien organizadas | 25 |",
+          "| Los tres cálculos correctos | 25 |",
+          "| La conclusión se sostiene con los datos | 25 |",
+          "| Identifica bien un límite de sus datos | 25 |",
+        ].join("\n"),
+      },
+      {
+        titulo: "Pilla a una IA equivocándose",
+        descripcion: "Entrega la conversación y la fuente que la desmiente.",
+        puntajeMaximo: 50,
+        diasDePlazo: 10,
+        seccion: 1,
+        instrucciones: [
+          "## Qué tienes que hacer",
+          "",
+          "Pregúntale a una inteligencia artificial algo que **tú ya sepas comprobar**: un dato de tu municipio, una fecha de un libro que leíste, una regla de un juego que dominas.",
+          "",
+          "1. Guarda la respuesta que te dio (captura o copiada).",
+          "2. Busca una **fuente confiable** que la confirme o la desmienta.",
+          "3. Escribe si acertó o no, y **cómo te diste cuenta**.",
+          "",
+          "## Por qué esta actividad",
+          "",
+          "Una IA puede equivocarse con total seguridad, sin avisar y sin dudar. El objetivo no es que dejes de usarla, sino que no le creas sin verificar.",
+          "",
+          "## Cómo se califica",
+          "",
+          "| Criterio | Puntos |",
+          "|---|---|",
+          "| Entrega la respuesta de la IA | 15 |",
+          "| La fuente de contraste es confiable y la cita | 20 |",
+          "| Explica cómo verificó | 15 |",
+        ].join("\n"),
+      },
+    ],
+    quizzes: [
+      {
+        titulo: "Repaso: datos e IA",
+        descripcion: "Tres intentos.",
+        intentosMaximos: 3,
+        seccion: 1,
+        preguntas: [
+          {
+            enunciado: "Cuatro estudiantes sacan 1.0 y uno saca 5.0. El promedio es 1.8. ¿Qué describe ese número?",
+            opciones: [
+              "A todo el grupo con precisión",
+              "Al estudiante típico del grupo",
+              "A nadie del grupo en realidad",
+              "Al mejor estudiante",
+            ],
+            correcta: 2,
+          },
+          {
+            enunciado: "¿Qué fórmula cuenta cuántas notas son mayores o iguales a 3?",
+            opciones: ["=SUMA(B2:B4)", "=PROMEDIO(B2:B4)", "=CONTAR.SI(B2:B4;\">=3\")", "=MAX(B2:B4)"],
+            correcta: 2,
+          },
+          {
+            enunciado: "Una IA te da una respuesta muy segura sobre tu municipio. ¿Qué haces?",
+            opciones: [
+              "La copio, suena confiable",
+              "La verifico en una fuente confiable antes de usarla",
+              "Le pregunto otra vez a la misma IA",
+              "La descarto, las IA siempre se equivocan",
+            ],
+            correcta: 1,
+          },
+        ],
+      },
+    ],
+  },
+];
+
+/**
+ * Las rutas de aprendizaje, definidas por el título de sus cursos.
+ *
+ * **Los cursos se repiten entre rutas a propósito** (22/11/2026): es lo que
+ * el modelo de US44 soporta con `RutaCursos` como tabla intermedia, y es
+ * justo lo que hay que poder ensayar — qué pasa cuando alguien se asocia a
+ * dos rutas que comparten un curso, o cuando se quita un curso de una ruta
+ * y sigue estando en otra.
+ */
+const RUTAS: { titulo: string; descripcion: string; cursos: string[] }[] = [
+  {
+    titulo: "Tecnología e Informática — recorrido completo",
+    descripcion:
+      "El camino completo del área, en orden: primero entender la máquina, después usarla con criterio y seguridad, y por último hacerla trabajar para ti programándola.",
+    cursos: [
+      "Fundamentos de la informática",
+      "Ciudadanía digital y seguridad en internet",
+      "Pensamiento computacional y programación con Python",
+    ],
+  },
+  {
+    titulo: "Crear con tecnología",
+    descripcion:
+      "Para quien quiere hacer cosas: entender el equipo, diseñar lo que se ve y construir lo que se enciende. Termina con un circuito propio funcionando.",
+    cursos: [
+      "Fundamentos de la informática",
+      "Diseño y creación digital",
+      "Robótica y electrónica básica",
+    ],
+  },
+  {
+    titulo: "Datos y pensamiento computacional",
+    descripcion:
+      "Del problema al dato y del dato a la decisión: resolver como lo haría una máquina, programarlo, y después leer datos reales sin dejarse engañar por ellos.",
+    cursos: [
+      "Pensamiento computacional y programación con Python",
+      "Datos, hojas de cálculo e inteligencia artificial",
+    ],
+  },
 ];
 
 // Un PDF mínimo y válido, escrito a mano: evita depender de una librería solo
@@ -985,33 +1574,49 @@ async function crearCursos() {
   }
 
   // La ruta de aprendizaje encadena los tres en el orden en que se cursan.
-  const TITULO_RUTA = "Tecnología e Informática — recorrido completo";
-
-  // La ruta se crea solo si falta, pero sus cursos se reasocian siempre: al
-  // volver a sembrar (--borrar --crear) los cursos son nuevos y la ruta que
-  // sobrevivió quedó apuntando a cursos que ya no existen, es decir, vacía.
-  const ruta =
-    (await prisma.rutas.findFirst({ where: { titulo: TITULO_RUTA } })) ??
-    (await prisma.rutas.create({
-      data: {
-        titulo: TITULO_RUTA,
-        descripcion:
-          "El camino completo del área, en orden: primero entender la máquina, después usarla con criterio y seguridad, y por último hacerla trabajar para ti programándola.",
-        tutorId: tutor.id,
-        estado: EstadoRuta.PUBLICADA,
-      },
-    }));
-
-  await prisma.rutaCursos.deleteMany({ where: { rutaId: ruta.id } });
-  for (const [indice, c] of cursosCreados.entries()) {
-    await prisma.rutaCursos.create({
-      data: { rutaId: ruta.id, courseId: c.id, orden: indice },
-    });
-  }
-
-  console.log(
-    `\nRuta "${TITULO_RUTA}": ${cursosCreados.length} cursos en orden, publicada.`
+  // Las rutas se arman por título de curso, así que da igual si un curso se
+  // acaba de crear o ya existía de una siembra anterior.
+  const idPorTitulo = new Map<string, string>(
+    cursosCreados.map((curso) => [curso.titulo, curso.id])
   );
+
+  console.log();
+
+  for (const definicion of RUTAS) {
+    const cursosDeLaRuta = definicion.cursos
+      .map((titulo) => idPorTitulo.get(titulo))
+      .filter((id): id is string => Boolean(id));
+
+    if (cursosDeLaRuta.length === 0) {
+      console.log(`Ruta "${definicion.titulo}": ninguno de sus cursos existe, la salto.`);
+      continue;
+    }
+
+    // La ruta se crea solo si falta, pero sus cursos se reasocian siempre:
+    // al volver a sembrar (--borrar --crear) los cursos son nuevos y la ruta
+    // que sobrevivió quedó apuntando a cursos que ya no existen, o sea vacía.
+    const ruta =
+      (await prisma.rutas.findFirst({ where: { titulo: definicion.titulo } })) ??
+      (await prisma.rutas.create({
+        data: {
+          titulo: definicion.titulo,
+          descripcion: definicion.descripcion,
+          tutorId: tutor.id,
+          estado: EstadoRuta.PUBLICADA,
+        },
+      }));
+
+    await prisma.rutaCursos.deleteMany({ where: { rutaId: ruta.id } });
+    for (const [indice, courseId] of cursosDeLaRuta.entries()) {
+      await prisma.rutaCursos.create({
+        data: { rutaId: ruta.id, courseId, orden: indice },
+      });
+    }
+
+    console.log(
+      `Ruta "${definicion.titulo}": ${cursosDeLaRuta.length} cursos en orden, publicada.`
+    );
+  }
 
   console.log("\nListo. Entra como tutor a /tutor/cursos para verlos.\n");
 }

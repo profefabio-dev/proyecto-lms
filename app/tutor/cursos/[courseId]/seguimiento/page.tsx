@@ -311,10 +311,14 @@ export default async function SeguimientoPage({
               </p>
             </div>
 
-            <DataTable anchoMinimo={`${16 + planilla.columnas.length * 9}rem`}>
+            <DataTable anchoMinimo={`${16 + planilla.columnas.length * 12}rem`}>
               <thead>
                 <tr className="border-b border-border/60 bg-muted/40">
                   <Th primera>Estudiante</Th>
+                  {/* El título va completo y en caja normal: cortado con
+                      puntos suspensivos y en mayúsculas no se distinguía
+                      una actividad de otra, que es justo lo que esta tabla
+                      tiene que dejar claro. Crece en alto, no en ancho. */}
                   {planilla.columnas.map((columna) => (
                     <Th key={columna.id}>
                       <Link
@@ -323,10 +327,14 @@ export default async function SeguimientoPage({
                             ? `/tutor/cursos/${courseId}/actividades/${columna.id}`
                             : `/tutor/cursos/${courseId}/quizzes/${columna.id}`
                         }
-                        className="underline-offset-4 hover:text-foreground hover:underline"
-                        title={columna.titulo}
+                        className="block max-w-44 normal-case underline-offset-4 hover:text-foreground hover:underline"
                       >
-                        <span className="line-clamp-2 max-w-32">{columna.titulo}</span>
+                        <span className="block text-xs font-semibold text-muted-foreground">
+                          {columna.tipo === "ACTIVIDAD" ? "Actividad" : "Evaluación"}
+                        </span>
+                        <span className="block whitespace-normal text-sm leading-snug text-foreground">
+                          {columna.titulo}
+                        </span>
                       </Link>
                     </Th>
                   ))}
