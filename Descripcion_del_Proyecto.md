@@ -96,6 +96,29 @@ paso se detectó que la documentación de la raíz del repositorio (`Backlog.md`
 mismos 6 documentos) llevaba desactualizada desde ~02/09 — este documento forma parte de esa
 sincronización.
 
+### Modelo de negocio previsto (anotado el 23/11/2026)
+
+A mediano plazo la plataforma busca ser **de suscripción para docentes**: el docente paga por tener
+una herramienta que le facilite dar clase y evaluar, y lo que lo retiene es la **calidad de los
+insumos** — material listo para usar, lo bastante bueno como para que le resulte más fácil quedarse
+que armarlo por su cuenta.
+
+Esto no es un detalle comercial al margen del producto; **cambia dos decisiones de diseño**:
+
+1. **El catálogo deja de ser una función y pasa a ser el producto.** Un docente que prueba la
+   plataforma y encuentra material flojo no culpa al colega que lo subió: concluye que la plataforma
+   no vale lo que cuesta. Por eso la calidad de lo que circula es responsabilidad de la plataforma,
+   no de la comunidad (ver US49, replanteada con este criterio).
+2. **Hacen falta dos clases de material, y conviene no confundirlas.** La **biblioteca de la
+   plataforma** —creada o curada por el dueño, con calidad garantizada por construcción— es el gancho
+   de la suscripción. Lo que **comparten los docentes entre sí** es la capa comunitaria que crece
+   encima, y lleva el sello de la plataforma solo cuando se revisa.
+
+**Consecuencia que conviene tener presente:** los seis cursos de tecnología sembrados el 22/11/2026
+(`scripts/cursos-de-tecnologia.ts`) son material de ejemplo para desarrollar y probar, **no una
+biblioteca comercial**. Producir esa biblioteca inicial es trabajo de contenido, no de código, y es
+probablemente lo que más tiempo tome antes de poder cobrar por el acceso.
+
 ## Stakeholders identificados
 
 | Stakeholder | Rol frente al proyecto | Interés principal |
