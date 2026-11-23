@@ -8,7 +8,7 @@ trabajos y responden evaluaciones; y el docente ve en una sola pantalla quién v
 quedando atrás. Varios docentes pueden convivir en la misma instalación, cada uno con su propio
 espacio aislado, y compartir material entre ellos.
 
-Es el **Proyecto Integrador 2**, y a la vez una herramienta en uso real.
+Es el **Proyecto Integrador 3**, y a la vez una herramienta en uso real.
 
 ---
 

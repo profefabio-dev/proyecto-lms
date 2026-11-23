@@ -1,6 +1,6 @@
 # Herramientas y Metodología — Plataforma Educativa LMS
 
-> Las instrucciones del Proyecto Integrador 2 sugieren un conjunto de herramientas por categoría.
+> Las instrucciones del Proyecto Integrador 3 sugieren un conjunto de herramientas por categoría.
 > Este documento dice cuáles se usaron realmente en este proyecto y por qué, en vez de repetir la
 > lista de sugerencias sin más.
 

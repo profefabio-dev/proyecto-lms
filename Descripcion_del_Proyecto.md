@@ -1,6 +1,6 @@
 # Documento de Descripción del Proyecto — Plataforma Educativa LMS
 
-> Documento ágil requerido por las instrucciones del Proyecto Integrador 2. Complementa a
+> Documento ágil requerido por las instrucciones del Proyecto Integrador 3. Complementa a
 > [`Backlog.md`](./Backlog.md) (qué se construye) y [`progress.md`](./progress.md) (qué tan avanzado
 > está); este documento responde el "por qué" y el "para quién".
 
@@ -123,12 +123,12 @@ probablemente lo que más tiempo tome antes de poder cobrar por el acceso.
 
 | Stakeholder | Rol frente al proyecto | Interés principal |
 |---|---|---|
-| Fabio Andrés Aguirre | Dueño del producto (Product Owner), Super Administrador de la plataforma y único Tutor real hoy; también desarrollador, asistido por Claude (Anthropic) como herramienta de generación de código bajo su dirección y revisión | Tener su propia plataforma de clases funcionando, y aprobar el Proyecto Integrador 2 con evidencia real de metodología ágil |
+| Fabio Andrés Aguirre | Dueño del producto (Product Owner), Super Administrador de la plataforma y único Tutor real hoy; también desarrollador, asistido por Claude (Anthropic) como herramienta de generación de código bajo su dirección y revisión | Tener su propia plataforma de clases funcionando, y aprobar el Proyecto Integrador 3 con evidencia real de metodología ágil |
 | Administrador de espacio | Usuario del rol Administrador (en la práctica, el mismo docente en su propio espacio, más el Administrador del espacio de prueba usado para validar la épica Multi-docente) | Gestionar tutores y usuarios de su propio espacio, y tener visibilidad general dentro de él |
 | Estudiantes | Usuarios finales del rol Estudiante; cuenta única y global — pueden tener cursos de distintos docentes/espacios con una sola cuenta | Acceder fácilmente al contenido de sus cursos y ver su propio progreso, sin importar cuántos docentes dicten esos cursos |
 | Futuros Tutores (docentes adicionales) | Usuarios potenciales del rol Tutor, con su propio espacio aislado a cargo de un Administrador propio (ya soportado desde la épica Multi-docente, pendiente de un segundo docente real) | Tener un espacio propio y aislado para programar sus cursos, sin tener que gestionar cuentas de Estudiante que ya existen en otro espacio |
 | Docente/evaluador externo del proyecto | Evaluador que revisó la plataforma en producción el 04-05/09/2026 y dio feedback directo sobre el diseño visual (referencia: LMS Canvas de la Universidad del Valle) | Que la plataforma se sienta a la altura de un LMS institucional real en su nivel visual, además de funcional |
-| Docente/evaluador del curso "Proyecto Integrador 2" | Evaluador académico del proyecto | Verificar que el proyecto siga una metodología ágil real (backlog, sprints, pruebas, CI/CD) y que el producto funcione |
+| Docente/evaluador del curso "Proyecto Integrador 3" | Evaluador académico del proyecto | Verificar que el proyecto siga una metodología ágil real (backlog, sprints, pruebas, CI/CD) y que el producto funcione |
 
 ## Restricciones y riesgos
 
