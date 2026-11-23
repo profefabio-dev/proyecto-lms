@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Rol } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { faltaParaCompartir, mensajeDeRequisitos } from "@/lib/course-shareable";
 
 /**
  * US47 — el Tutor decide si su curso puede ser tomado por otros docentes
@@ -50,12 +51,40 @@ export async function alternarCursoCompartible(
     return { success: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  const curso = await prisma.courses.findUnique({ where: { id: parsed.data.courseId } });
+  const curso = await prisma.courses.findUnique({
+    where: { id: parsed.data.courseId },
+    include: {
+      _count: {
+        select: {
+          contenidos: { where: { visible: true } },
+          actividades: { where: { visible: true } },
+          quizzes: { where: { visible: true } },
+        },
+      },
+    },
+  });
 
   // Mismo chequeo de propiedad que el resto de acciones sobre un curso: el
   // dueño y nadie más.
   if (!curso || curso.tutorId !== usuarioActual.id) {
     return { success: false, error: "No encontramos ese curso entre los tuyos." };
+  }
+
+  // US49: el piso de calidad. Se comprueba solo al compartir — dejar de
+  // compartir siempre se puede, y un curso que ya circulaba no se queda
+  // atrapado si el tutor le oculta una lección después.
+  if (!curso.compartible) {
+    const falta = faltaParaCompartir({
+      descripcion: curso.descripcion,
+      imagen: curso.imagen,
+      leccionesVisibles: curso._count.contenidos,
+      actividadesVisibles: curso._count.actividades,
+      evaluacionesVisibles: curso._count.quizzes,
+    });
+
+    if (falta.length > 0) {
+      return { success: false, error: mensajeDeRequisitos(falta) };
+    }
   }
 
   try {

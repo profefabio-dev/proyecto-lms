@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, ClipboardList, FileQuestion, Library, Search, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  BookOpen,
+  ClipboardList,
+  FileQuestion,
+  Library,
+  Search,
+  Users,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { construirFiltroBusqueda } from "@/lib/search";
@@ -10,6 +18,7 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * US48 — el catálogo de cursos que otros docentes compartieron
@@ -33,10 +42,11 @@ import { Button } from "@/components/ui/button";
 export default async function CatalogoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; soloVerificados?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, soloVerificados } = await searchParams;
   const termino = (q ?? "").trim();
+  const filtrarVerificados = soloVerificados === "1";
 
   const supabase = await createClient();
   const {
@@ -57,6 +67,7 @@ export default async function CatalogoPage({
     where: {
       compartible: true,
       tutorId: { not: usuarioActual.id },
+      ...(filtrarVerificados ? { verificado: true } : {}),
       ...(termino ? construirFiltroBusqueda(termino) : {}),
     },
     select: {
@@ -65,10 +76,12 @@ export default async function CatalogoPage({
       descripcion: true,
       imagen: true,
       origenAutor: true,
+      verificado: true,
       tutor: { select: { nombre: true, apellido: true } },
       _count: { select: { contenidos: true, actividades: true, quizzes: true } },
     },
-    orderBy: { createdAt: "desc" },
+    // Los verificados primero: es la razón de que el sello exista.
+    orderBy: [{ verificado: "desc" }, { createdAt: "desc" }],
   });
 
   // Cuántos docentes adoptaron cada uno. En una sola consulta para todo el
@@ -133,7 +146,8 @@ export default async function CatalogoPage({
             />
           </div>
           <Button type="submit">Buscar</Button>
-          {termino && (
+          {filtrarVerificados && <input type="hidden" name="soloVerificados" value="1" />}
+          {(termino || filtrarVerificados) && (
             <Link
               href="/tutor/catalogo"
               className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
@@ -143,13 +157,43 @@ export default async function CatalogoPage({
           )}
         </form>
 
+        {/* US49: el sello como filtro. El catálogo no excluye a nadie, pero
+            quien quiera ir sobre seguro puede ver solo lo revisado. */}
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <Link
+            href={termino ? `/tutor/catalogo?q=${encodeURIComponent(termino)}` : "/tutor/catalogo"}
+            className={cn(
+              "rounded-full border px-3 py-1.5 font-medium transition-colors",
+              filtrarVerificados
+                ? "border-border text-muted-foreground hover:text-foreground"
+                : "border-primary bg-primary/10 text-foreground"
+            )}
+          >
+            Todos
+          </Link>
+          <Link
+            href={`/tutor/catalogo?soloVerificados=1${termino ? `&q=${encodeURIComponent(termino)}` : ""}`}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium transition-colors",
+              filtrarVerificados
+                ? "border-primary bg-primary/10 text-foreground"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <BadgeCheck className="size-4" aria-hidden="true" />
+            Solo verificados
+          </Link>
+        </div>
+
         {cursos.length === 0 ? (
           <EmptyState
             icon={Library}
             message={
               termino
                 ? `Ningún curso compartido coincide con “${termino}”.`
-                : "Todavía ningún docente ha compartido un curso. Si compartes uno tuyo, aparecerá aquí para los demás."
+                : filtrarVerificados
+                  ? "Todavía no hay cursos verificados. Quita el filtro para ver todo lo que han compartido los docentes."
+                  : "Todavía ningún docente ha compartido un curso. Si compartes uno tuyo, aparecerá aquí para los demás."
             }
           />
         ) : (
@@ -161,6 +205,7 @@ export default async function CatalogoPage({
                 descripcion: string;
                 imagen: string | null;
                 origenAutor: string | null;
+                verificado: boolean;
                 tutor: { nombre: string; apellido: string };
                 _count: { contenidos: number; actividades: number; quizzes: number };
               }) => {
@@ -189,6 +234,12 @@ export default async function CatalogoPage({
 
                       <div className="space-y-3 p-5">
                         <div className="flex flex-wrap items-center gap-2">
+                          {curso.verificado && (
+                            <Badge variant="default" className="gap-1 font-semibold">
+                              <BadgeCheck className="size-3.5" aria-hidden="true" />
+                              Verificado
+                            </Badge>
+                          )}
                           {yaAdoptados.has(curso.id) && (
                             <Badge variant="success" className="font-semibold">
                               Ya lo tomaste

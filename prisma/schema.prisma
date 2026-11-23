@@ -137,6 +137,10 @@ model Courses {
   // borrado.
   origenCursoId String?
   origenAutor   String?
+  // US49 (24/11/2026): el sello de la plataforma. Solo lo otorga el Super
+  // Administrador, y no condiciona que el curso se publique: un curso
+  // compartido circula igual sin él, solo que sin el respaldo.
+  verificado  Boolean     @default(false)
 
   tutor       Users         @relation("TutorCourses", fields: [tutorId], references: [id])
   inscritos   CourseUsers[]

@@ -1,12 +1,20 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, ClipboardList, FileQuestion, User } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  BookOpen,
+  ClipboardList,
+  FileQuestion,
+  User,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AdoptCourseForm } from "@/components/adopt-course-form";
+import { ModerateCourseControls } from "@/components/moderate-course-controls";
 import { cn } from "@/lib/utils";
 
 /**
@@ -44,7 +52,12 @@ export default async function FichaCursoCompartidoPage({
 
   const usuarioActual = await prisma.users.findUnique({ where: { authId: user.id } });
 
-  if (!usuarioActual || usuarioActual.rol !== "TUTOR") {
+  // US49: el Super Administrador también entra aquí, para poder verificar o
+  // retirar un curso del catálogo. No puede adoptarlo — no es docente de
+  // ningún espacio — pero sí necesita verlo tal como lo ven los demás.
+  const esSuperAdmin = usuarioActual?.rol === "SUPERADMIN";
+
+  if (!usuarioActual || (usuarioActual.rol !== "TUTOR" && !esSuperAdmin)) {
     redirect("/login");
   }
 
@@ -57,6 +70,7 @@ export default async function FichaCursoCompartidoPage({
       imagen: true,
       tutorId: true,
       compartible: true,
+      verificado: true,
       origenAutor: true,
       tutor: { select: { nombre: true, apellido: true } },
       _count: {
@@ -109,9 +123,17 @@ export default async function FichaCursoCompartidoPage({
 
           <div className="space-y-5 p-6 sm:p-8">
             <div className="space-y-3">
-              <Badge variant="outline" className="font-semibold">
-                Curso compartido
-              </Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="font-semibold">
+                  Curso compartido
+                </Badge>
+                {curso.verificado && (
+                  <Badge variant="default" className="gap-1 font-semibold">
+                    <BadgeCheck className="size-3.5" aria-hidden="true" />
+                    Verificado por la plataforma
+                  </Badge>
+                )}
+              </div>
 
               <h1 className="font-heading text-3xl font-extrabold tracking-tight text-balance text-foreground">
                 {curso.titulo}
@@ -145,8 +167,16 @@ export default async function FichaCursoCompartidoPage({
               />
             </div>
 
-            <div className="border-t border-border/60 pt-5">
-              {esMio ? (
+            <div className="space-y-4 border-t border-border/60 pt-5">
+              {esSuperAdmin && (
+                <ModerateCourseControls
+                  courseId={curso.id}
+                  verificado={curso.verificado}
+                  compartible={curso.compartible}
+                />
+              )}
+
+              {esSuperAdmin ? null : esMio ? (
                 <p className="text-sm text-muted-foreground">
                   Este curso es tuyo. Así es como lo ven los demás docentes.
                 </p>
