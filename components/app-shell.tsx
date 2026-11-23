@@ -9,6 +9,7 @@ import {
   UserCog,
   GraduationCap,
   BookOpen,
+  Library,
   Route as RouteIcon,
   Award,
   Search,
@@ -40,6 +41,10 @@ const NAV_POR_ROL: Record<RolConocido, { href: string; label: string; icon: Luci
     // no una pestaña dentro de un curso — un curso puede estar en varias
     // rutas, así que tienen su lugar en el menú al mismo nivel.
     { href: "/tutor/rutas", label: "Rutas", icon: RouteIcon },
+    // US48 (23/11/2026): el material que comparten otros docentes. Va en el
+    // menú y no dentro de "Mis cursos" porque no es material propio — es la
+    // puerta a lo de los demás.
+    { href: "/tutor/catalogo", label: "Catálogo", icon: Library },
   ],
   ESTUDIANTE: [
     { href: "/estudiante", label: "Mis cursos", icon: BookOpen },

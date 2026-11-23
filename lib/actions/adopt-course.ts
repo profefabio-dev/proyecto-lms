@@ -204,8 +204,9 @@ export async function adoptarCurso(
   }
 
   revalidatePath("/tutor/cursos");
-  // La ficha del curso original: su botón pasa a "ya tienes tu copia", y el
-  // conteo de adopciones que ve su autor sube.
+  // El catálogo y la ficha del curso original: su botón pasa a "ya tienes
+  // tu copia", y el conteo de adopciones que ve su autor sube.
+  revalidatePath("/tutor/catalogo");
   revalidatePath(`/tutor/catalogo/${original.id}`);
   revalidatePath(`/tutor/cursos/${original.id}`);
 

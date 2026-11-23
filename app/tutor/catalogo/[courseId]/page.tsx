@@ -81,20 +81,20 @@ export default async function FichaCursoCompartidoPage({
     <AppShell
       usuario={usuarioActual}
       breadcrumbs={[
-        { label: "Mis cursos", href: "/tutor/cursos" },
+        { label: "Catálogo", href: "/tutor/catalogo" },
         { label: curso.titulo },
       ]}
     >
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">
         <Link
-          href="/tutor/cursos"
+          href="/tutor/catalogo"
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
             "min-h-11 gap-2 font-semibold"
           )}
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Volver a mis cursos
+          Volver al catálogo
         </Link>
 
         <article className="overflow-hidden rounded-3xl border border-border/80 bg-card">

@@ -2,7 +2,31 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-22 — **OP11: la planilla de notas del curso, las novedades del Estudiante y tres cursos más con rutas que se cruzan. Se propone US47 (recursos compartidos entre tutores).**
+Última actualización: 2026-11-23 — **US47 construida (un tutor adopta el curso de otro como copia propia), las tres pruebas de seguridad del bloque D automatizadas, y una revisión general de enlaces que encontró uno caído.**
+
+## US47 — tomar el curso de otro docente
+
+Se definió con el docente resolviendo tres preguntas, y la primera cambió la forma de la historia: **adoptar copia el curso**, no lo comparte vivo. "Adaptar para mi uso" y "editar el recurso de otro" son cosas opuestas — si el adoptante editara el original, le cambiaría el curso a los estudiantes del autor sin que este se entere.
+
+**Al elegir copia desapareció la parte más frágil de la propuesta original.** El docente había pedido que el segundo tutor fuera *"administrador mas no creador"*, lo que exigía un segundo sistema de permisos conviviendo con el de US24. Con la copia, el adoptante es dueño de lo suyo y toda la autorización existente (`curso.tutorId === usuarioActual.id`) sigue valiendo sin tocar una línea. Lo que ese rol buscaba evitar —que alguien se cuelgue la autoría ajena— lo resuelve el crédito visible, que aparece tanto en la pantalla del tutor como **en el temario del estudiante**: quien hizo el material merece el crédito donde se usa, no solo donde se administra.
+
+**Tres decisiones tomadas al construir, que no estaban en la historia y conviene no perder.** La **fecha límite de las actividades no se copia**: era la del calendario del otro docente y, copiada, la copia nacería con todo vencido. Los **documentos se duplican** en Storage en vez de compartir el archivo: cuesta espacio y evita que el día que el autor borre su curso el adoptante se quede con lecciones rotas sin saber por qué. Y el **autor se guarda como texto**, no como relación a su usuario: con una clave foránea habría que elegir entre perder el crédito o impedir el borrado del original, y ninguna de las dos sirve.
+
+La guarda que sostiene todo: **solo se puede adoptar un curso marcado como compartible**, y la comprobación corre antes de tocar Storage. Sin ella, conocer un id bastaría para sacar un curso privado del espacio de otro docente — es la única operación del proyecto que lee un curso de otro espacio.
+
+**Verificación:** 33 pruebas nuevas. Las 14 de las Server Actions fallan en el entorno de nube por el límite ya conocido del enum `Rol`; se volvieron a correr con el enum real simulado y pasan las 14.
+
+## El bloque D, automatizado
+
+Las tres pruebas de seguridad llevaban días sin hacerse, y una prueba manual solo protege el día que alguien se acuerda de repetirla. Se revisaron las guardas en el código —las tres bien escritas— y se fijaron en **15 pruebas** que corren en cada push: una lección oculta da 404 y **también una lección visible dentro de una sección cerrada** (el caso que una comprobación ingenua de `visible` dejaría pasar); la consulta de la evaluación trae de cada opción solo `id` y `texto`, afirmado sobre el `select` exacto más una red de seguridad que busca la palabra `esCorrecta` en toda la consulta; y una ruta en borrador da 404 aunque se conozca su id.
+
+## La revisión general de enlaces
+
+A pedido del docente, barrido completo. **Enlaces internos:** se cruzaron todos los `href` del código con las rutas que existen; había uno roto, `/tutor/catalogo`, apuntando al índice que todavía no existe (US48), cambiado por la ficha concreta. **Enlaces externos de los cursos:** los seis recursos y las seis portadas, uno por uno en el navegador — **uno estaba caído**: `edu.gcfglobal.org/es/informatica-basica` ya no existe y redirige a LearnFree **en inglés**, así que un estudiante de séptimo habría caído en otro idioma. Reemplazado por un mapa interactivo de Educaplay en español, y corregido el título, que prometía un simulador de ensamble cuando el recurso nuevo es de identificación. **Campos del modelo:** ninguno se guarda sin mostrarse (el problema que tuvo `imagen` en agosto). **Guardas:** las 25 páginas y todas las Server Actions revisadas; los dos avisos resultaron correctos (el dashboard usa `switch` sobre el rol, y la comprobación de cuenta desactivada corre sin sesión a propósito y está documentada).
+
+**Y una incoherencia que salió de una captura del docente:** la cabecera de Seguimiento decía "Actividades 1" justo encima de una planilla con dos columnas, porque las evaluaciones no se contaban arriba. Se agregó la tarjeta que faltaba.
+
+Actualización anterior — 2026-11-22 — **OP11: la planilla de notas del curso, las novedades del Estudiante y tres cursos más con rutas que se cruzan. Se propone US47 (recursos compartidos entre tutores).**
 
 ## OP11 — lo que salió de probar las entregas
 
