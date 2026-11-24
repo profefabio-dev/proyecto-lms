@@ -4,11 +4,12 @@
 > estado de cada historia es [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md); este
 > archivo solo dice **dónde quedamos y qué sigue**, y se reescribe al cerrar cada sesión.
 
-Última sesión: **22 de noviembre de 2026.** Se sembraron tres cursos de tecnología de verdad en lugar
-de los de prueba (**OP10**), se arreglaron los videos de YouTube —que estaban todos mal— y de ahí
-salió **OP11**: la planilla de notas del curso, las novedades del Estudiante y la opción de quitar un
-archivo de una entrega. Al final se agregaron tres cursos más con rutas que se cruzan, para poder
-ensayar rutas de aprendizaje.
+Última sesión: **24 de noviembre de 2026.** Se cerró la épica de **compartir material entre
+docentes**: US47 (un tutor adopta el curso de otro como copia propia), **US48** (el catálogo) y
+**US49** (el piso de calidad para compartir, el sello de verificado y el retiro del catálogo). Antes
+de eso se automatizaron las tres pruebas de seguridad del bloque D y se hizo una revisión general de
+enlaces que encontró uno caído. El docente hizo los commits; **no alcanzó a probar nada en
+navegador.**
 
 ---
 
@@ -20,30 +21,37 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 
 ## Estado del repositorio al cerrar
 
-- Último commit **en GitHub** confirmado: `c9afe19` (21/11). Sobre él se le dejaron al docente los
-  comandos para los commits del 21/11 (OP08, OP09, documentación) y del 22/11 (OP10 y OP11).
-  **Confirmar cuáles corrió** antes de seguir.
-- **Hay dos migraciones nuevas sin confirmar que estén aplicadas:**
-  `20261121040000_add_intentos_maximos_quiz` y `20261122040000_add_created_at_contents`. Siempre con
+- Último commit: `1015ef2` ("Ignora los PDF generados de la entrega"). **`main` está al día con
+  `origin/main`** — el docente ya subió todo lo del 23 y 24/11.
+- **Dos migraciones nuevas sin confirmar que estén aplicadas:**
+  `20261123040000_add_curso_compartible` y `20261124040000_add_curso_verificado`. Siempre con
   `npx prisma migrate deploy` + `npx prisma generate`, nunca `migrate dev`.
+- **Dos scripts quedaron sin seguimiento en git** (`scripts/listar-estudiantes.ts` y
+  `scripts/borrar-carga-excel.ts`, de septiembre). **No llevan nombres embebidos** —consultan la base
+  de datos—, así que subirlos es seguro; pero **no están en `.gitignore`**, así que conviene decidir:
+  commit explícito o ignorarlos. Lo que no se puede es dejarlos ahí y usar `git add -A` alguna vez.
 - **`estudiantes.txt`, `.codex/` y `scripts/borrar-listado-1.ts` están en `.gitignore`.** El último
   lleva embebidos los nombres completos de 229 estudiantes menores de edad y el repositorio es
   público: **nunca debe subirse.**
 
 ## Lo pendiente, en orden
 
-1. **US47 — el docente pidió revisarla mañana.** Está definida en `Backlog.md`: un tutor toma
-   recursos de otro, los usa en sus rutas como **administrador y no creador**, y los adapta para su
-   uso. Hay **cuatro preguntas abiertas** anotadas ahí que hay que resolver con él antes de estimar
-   (cómo se descubre el material de otros, quién autoriza compartir, qué pasa si el original cambia
-   después, y si se acredita al autor). La historia está planteada como **copia al adoptar**, no como
-   edición compartida — ese punto conviene explicárselo antes de que decida.
-2. **Terminar el recorrido de prueba.** Lo validado y lo que falta está en
-   `Checklist_Validacion_Manual.md`. Al cerrar hoy faltan: **B.7** (asociarse a una ruta como
-   estudiante), **C.3** y **C.4** (la ruta desde el lado del tutor), **todo el bloque D** de
-   seguridad y **E.1**. Para el bloque D está `scripts/urls-de-prueba.ts`, que imprime las URLs
-   exactas. Para B.7, quitar antes al estudiante de uno de los cursos de la ruta, porque la siembra
-   ya lo inscribe en todos y si no la prueba no demuestra nada.
+1. **El recorrido de prueba, que es lo más atrasado.** `Checklist_Validacion_Manual.md` tiene dos
+   bloques abiertos:
+   - Del addendum del 20/11 faltan **B.7** (asociarse a una ruta como estudiante), **C.3** y **C.4**
+     (la ruta desde el lado del tutor) y **E.1**. El bloque D ya no hace falta: quedó automatizado en
+     15 pruebas. Para B.7, quitar antes al estudiante de uno de los cursos de la ruta, porque la
+     siembra ya lo inscribe en todos y si no la prueba no demuestra nada.
+   - El addendum del 24/11 (**bloques F y G**, diez pasos) cubre US47, US48 y US49, ninguna vista en
+     navegador. **Necesita dos cuentas de Tutor** —una comparte, la otra adopta— y la de Super
+     Administrador para el bloque G. El paso que más importa es **F.10**: el 404 sobre un curso no
+     compartido, lo único que impide que conocer un id baste para leer el curso de otro espacio.
+   - **Diez historias construidas siguen marcadas "pendiente de validación en navegador real"** en
+     `Backlog.md`. Al cerrar el recorrido hay que pasarlas a validadas con la fecha.
+2. **Las dos piezas que faltan de US49**, reconocidas como deuda en `progress.md`: el botón para que
+   un Tutor **reporte** un curso (es por seguridad, no por calidad — la plataforma es para menores) y
+   el **contador de impacto** en el panel del Tutor ("tu curso lo usan 4 docentes y 112
+   estudiantes"), que sale gratis de los datos que US47 ya guarda y es lo que más mueve a compartir.
 3. **Seguir el rediseño donde quedó**, según `DESIGN.md`: unificar los seis radios en uno, y después
    la capa "para niños". **No se hace con más colores en la interfaz** —era lo que había y lo que la
    hacía ver amateur— sino con imágenes, momentos de premio y forma/voz.
@@ -52,6 +60,9 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 5. Replicar el patrón de ventana en `create-tutor-form.tsx` y `create-student-form.tsx`.
 6. Propuestas viejas sin construir: US32 (grupos), US33 (perfil del tutor), US35 (documento de
    identidad).
+7. **La biblioteca de contenido de la plataforma.** No es código: es el material propio o curado que
+   sostiene la suscripción (ver el modelo de negocio en `Descripcion_del_Proyecto.md` y la lógica de
+   los dos niveles en US49). Es lo que más tiempo va a tomar y nada de lo construido lo reemplaza.
 
 ## Lo que se aprendió estos días
 
@@ -72,6 +83,13 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 - **La prueba que fija la consulta exacta de la página del estudiante avisa siempre.** Volvió a
   romperse el 22/11 al agregar las consultas de novedades — es la cuarta vez. **Revisarla en cada
   cambio de esa consulta.**
+- **El estado de una historia se cambia en el commit que la construye, no después.** US48 y US49
+  quedaron construidas el 23 y el 24/11 y el backlog siguió diciendo "sin construir" hasta que se
+  revisó a propósito. Es lo único que se desincronizó en todo el proyecto, y pasó por documentar al
+  final en vez de al cerrar cada historia.
+- **Una regex de auditoría escrita para código da falsos positivos en prosa española.** Buscar
+  `\bTODO\b` sin distinguir mayúsculas en la revisión general marcó 35 coincidencias de la palabra
+  "todo". Anclar las búsquedas de auditoría a sintaxis de código (`// TODO`, `FIXME:`), no a palabras.
 - **Cuando TypeScript pierde el tipo al pasar datos de Prisma a una función genérica** (pasa en el
   clon porque el cliente no está generado), pasarle los parámetros de tipo explícitos. Volvió a
   pasar con `construirPlanilla`.

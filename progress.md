@@ -2,7 +2,33 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-23 — **US47 construida (un tutor adopta el curso de otro como copia propia), las tres pruebas de seguridad del bloque D automatizadas, y una revisión general de enlaces que encontró uno caído.**
+Última actualización: 2026-11-24 — **El catálogo de cursos compartidos (US48) y el piso de calidad con el sello de verificado (US49). Con eso la épica de compartir material entre docentes queda construida de punta a punta — y entera sin probar en navegador.**
+
+## US48 — el catálogo de cursos compartidos
+
+El escaparate de lo que US47 hizo posible: `/tutor/catalogo` con los cursos que otros docentes marcaron como compartibles, buscador por título y descripción —reutilizando `construirFiltroBusqueda` de US17, porque el criterio es exactamente el mismo y no tenía sentido escribirlo dos veces— y, en cada tarjeta, cuánto material trae.
+
+**Dos decisiones tomadas al construir.** Los **cursos propios no aparecen** en el catálogo: es para encontrar lo de otros, y verse a uno mismo ahí solo ocupa sitio; para ver cómo lo ven los demás está la ficha, enlazada desde el propio curso. Y el *"adoptado por N docentes"* se resuelve con **un solo `groupBy`** para todo el catálogo, no con una consulta por tarjeta — la misma razón que en el panel de Seguimiento (US39), con el añadido de que ese número dice sobre un curso más que cualquier descripción que escriba su autor.
+
+El campo `destacado` que la historia preveía **no se construyó con ese nombre**: quedó subsumido en el `verificado` de US49, que significa algo bastante más fuerte que "destacado".
+
+## US49 — el piso de calidad, y quién responde por lo que circula
+
+Esta es la historia que **el modelo de negocio dio vuelta el mismo día en que se definió**, y vale la pena que quede escrito por qué. La respuesta inicial fue no poner porteros: en una comunidad gratuita lo que mata un catálogo es que esté vacío, así que una cola de aprobación obligatoria hace más daño que el material flojo. Al conocer que la plataforma busca ser **de suscripción para docentes**, el riesgo se invierte: en una plataforma de pago el catálogo *es* el producto, y un docente que prueba y encuentra material pobre no culpa al colega que lo subió, concluye que no vale lo que cuesta. La calidad pasa a ser responsabilidad comercial del dueño.
+
+**Pero la respuesta sigue sin ser aprobar todo por adelantado.** Lo que se agregó fue un **sello de verificado**: dos niveles en el catálogo —*de la comunidad*, que cumple los requisitos automáticos y se publica sin pedirle permiso a nadie, y *verificado*, revisado por el Super Administrador y con el respaldo de la plataforma— más un filtro para ver solo los segundos. El filtro no decide qué se publica, decide **qué lleva el nombre de la plataforma**: nadie queda bloqueado, nada sin revisar lleva el sello, y el docente gana un motivo real para esforzarse.
+
+Lo que se construyó, en tres piezas. **El piso de calidad:** `faltaParaCompartir()` exige tres lecciones publicadas, una actividad o evaluación, portada y ochenta caracteres de descripción. Devuelve **frases en español que dicen qué falta** —"te faltan 2 lecciones más publicadas"— en vez de un booleano, y eso es lo que convierte el requisito en enseñanza en vez de muro: el docente sabe qué hacer para pasarlo. **Las señales:** el contador de adopciones y el filtro del sello, en el catálogo. **El retiro:** el Super Administrador saca un curso del catálogo en un clic, con confirmación.
+
+**Tres decisiones tomadas al construir.** Los requisitos **solo se comprueban al activar** el compartir, nunca al desactivar — un curso que ya circulaba no puede quedar atrapado porque su autor le ocultó una lección después. **Retirar quita el sello en la misma operación**, porque lo retirado no puede seguir llevando el respaldo de la plataforma. Y la moderación vive en `lib/actions/moderate-course.ts`, aparte de las demás acciones de curso, porque son **las dos únicas del proyecto que escriben sobre el curso de otro tutor**: conviene que esa excepción se vea en la estructura de archivos y no solo en un comentario. El Super Administrador entra a la ficha del catálogo para moderar, pero **no puede adoptar** — no es docente de ningún espacio.
+
+**Deuda reconocida: faltan dos de las cuatro piezas de la historia.** El botón para que un Tutor **reporte** un curso, que no es por calidad sino por seguridad —la plataforma es para menores, y un curso inapropiado tiene que poder retirarse a cualquier hora— y el **contador de impacto** en el panel del Tutor ("tu curso lo usan 4 docentes y 112 estudiantes"), que era la pieza que más mueve a compartir y que sale gratis de los datos que US47 ya guarda. Ninguna de las dos está construida.
+
+**Verificación:** 21 pruebas nuevas (`lib/course-shareable.ts` 11, `lib/actions/moderate-course.ts` 10), más las de `toggle-course-shareable` rehechas a 9 al entrar los requisitos. Las de Server Actions fallan en el entorno de nube por el límite conocido del enum `Rol`; se volvieron a correr con el enum simulado y pasan.
+
+**Nada de esto se ha visto en un navegador.** US47, US48 y US49 necesitan **dos cuentas de Tutor** para probarse de punta a punta, y por eso se escribió el bloque F/G de `Checklist_Validacion_Manual.md` en vez de dejarlo como una nota suelta: diez pasos, incluida la prueba de 404 sobre un curso no compartido, que es la única cosa que impide que conocer un id baste para leer el curso de otro espacio.
+
+Actualización anterior — 2026-11-23 — **US47 construida (un tutor adopta el curso de otro como copia propia), las tres pruebas de seguridad del bloque D automatizadas, y una revisión general de enlaces que encontró uno caído.**
 
 ## US47 — tomar el curso de otro docente
 

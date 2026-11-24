@@ -184,7 +184,15 @@ npm run dev
 - [ ] **C.4** Agrega **un curso publicado más** a esa ruta. Como el estudiante ya estaba asociado,
       debe quedar inscrito en ese curso automáticamente (compruébalo desde su sesión).
 
-### Pruebas de seguridad (vale la pena hacerlas, son las que el código protege a propósito)
+### Pruebas de seguridad — **ya no hace falta hacerlas a mano (23/11/2026)**
+
+> Las tres quedaron fijadas en **15 pruebas automatizadas** que corren en cada push
+> (`app/estudiante/cursos/[courseId]/lecciones/[contenidoId]/page.test.ts`,
+> `app/estudiante/cursos/[courseId]/quizzes/[quizId]/page.test.ts`,
+> `app/estudiante/rutas/[rutaId]/page.test.ts`), **más un caso que esta lista no contemplaba**: una
+> lección `visible` dentro de una sección cerrada, que una comprobación ingenua dejaría pasar. Se
+> conservan abajo como registro de qué se protege; hacerlas a mano es opcional.
+
 
 - [ ] **D.1** Como Estudiante, copia la URL de una lección de una sección que el Tutor tenga en **No
       disponible** y entra directo: debe dar 404, no mostrar la lección.
@@ -200,3 +208,57 @@ npm run dev
 
 **Al terminar**, anota en `progress.md` qué pasó con cada punto y actualiza el `Estado` de US36-US41 y
 US43-US46 en `Backlog.md` (de "Pendiente de validación en navegador real" a validado, con la fecha).
+
+## Addendum (24/11/2026) — Compartir material entre docentes (US47-US49)
+
+> Tres historias construidas el 23 y el 24/11/2026, **ninguna probada en navegador**. Necesitan
+> **dos cuentas de Tutor** — una comparte y la otra adopta — y esa es la razón por la que quedaron
+> fuera del recorrido anterior; si solo existe una, la segunda se crea desde la cuenta de
+> Administrador (paso 1.3 de la Parte 1). El bloque G necesita además la cuenta de Super
+> Administrador.
+
+### Como Tutor A (el autor)
+
+- [ ] **F.1** Abre un curso **recién creado y casi vacío** e intenta compartirlo. **No debe dejarte**,
+      y el mensaje debe decir exactamente qué falta —"te faltan 2 lecciones más publicadas", "una
+      actividad o una evaluación", la portada, la descripción— no un "no se puede" seco (US49).
+- [ ] **F.2** Abre uno de los cursos de ejemplo, que sí tiene material, y compártelo. Debe aceptarlo
+      sin más preguntas.
+- [ ] **F.3** Oculta una lección de ese curso y pulsa **dejar de compartir**. Debe dejarte, aunque el
+      curso ya no cumpla los requisitos: se comprueban al activar, nunca al desactivar.
+
+### Como Tutor B (el que adopta)
+
+- [ ] **F.4** Entra a **Catálogo** (menú lateral). Debe aparecer el curso de F.2 con su autor, su
+      portada y cuántas lecciones, actividades y evaluaciones trae. **Tus propios cursos no deben
+      aparecer** (US48).
+- [ ] **F.5** Busca por una palabra que esté en el título o la descripción: debe filtrar, y "Limpiar"
+      debe devolver la lista completa.
+- [ ] **F.6** Abre la ficha y pulsa **adoptar**. Debe llevarte a **tu copia**, en estado **Borrador**,
+      con el crédito "Adaptado de un curso de &lt;autor&gt;" (US47).
+- [ ] **F.7** Revisa la copia: deben estar las secciones, lecciones, documentos, actividades y
+      evaluaciones. **No debe haber ni un estudiante, ni una entrega, ni una nota** del Tutor A, y las
+      actividades deben estar **sin fecha límite**.
+- [ ] **F.8** Cambia un título dentro de tu copia y comprueba, desde la sesión del Tutor A, que **su
+      curso original no cambió**.
+- [ ] **F.9** Vuelve al catálogo: ese curso debe salir como "Ya lo tomaste" y como "1 docente lo usa",
+      y la ficha debe ofrecerte **abrir tu copia** en vez de adoptarlo otra vez.
+
+### Prueba de seguridad (la que más importa de esta épica)
+
+- [ ] **F.10** Como Tutor B, copia el id de un curso del Tutor A que **no** esté compartido y entra a
+      `/tutor/catalogo/<ese-id>`: **debe dar 404**. Es la única pantalla del proyecto que lee un curso
+      de otro espacio, y lo único que la sostiene es esa comprobación.
+
+### Como Super Administrador
+
+- [ ] **G.1** Entra a la ficha del curso de F.2. Deben aparecer los controles de administración de la
+      plataforma (US49).
+- [ ] **G.2** Márcalo como **verificado**. En el catálogo debe salir con el sello y **de primero**; el
+      filtro "Solo verificados" debe mostrarlo y dejar el resto fuera.
+- [ ] **G.3** **Retíralo del catálogo.** Debe pedirte confirmación, desaparecer del catálogo y
+      **perder el sello en la misma operación**. Comprueba desde la sesión del Tutor A que su curso,
+      sus estudiantes y sus notas **siguen intactos**, y que puede volver a compartirlo.
+
+**Al terminar**, pasa el `Estado` de US47, US48 y US49 en `Backlog.md` de "Pendiente de validación en
+navegador real" a validado con la fecha, y anota en `progress.md` qué pasó con cada punto.
