@@ -4,13 +4,14 @@
 > estado de cada historia es [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md); este
 > archivo solo dice **dónde quedamos y qué sigue**, y se reescribe al cerrar cada sesión.
 
-Última sesión: **25 de noviembre de 2026.** Dos cosas. Primero `scripts/tutor-de-prueba.ts`, que
-monta de una sola vez el ensayo de la épica de compartir (segundo Tutor, curso compartido sin sello,
-curso sin compartir para el 404, y un estudiante con nota). Y después **US50**: un Tutor deja de ver
-a los estudiantes de otros colegios en "Inscribir estudiantes" — una fuga anotada desde el 16/09 que
-llevaba dos meses abierta porque el intento de entonces rompía la asignación de estudiantes nuevos.
-De paso se arregló eso también, y salió **US51** (código de inscripción del curso), propuesta y sin
-construir.
+Última sesión: **25 de noviembre de 2026.** Tres cosas. `scripts/tutor-de-prueba.ts`, que monta de
+una sola vez el ensayo de la épica de compartir. **US50**: un Tutor deja de ver a los estudiantes de
+otros colegios en "Inscribir estudiantes" — fuga anotada desde el 16/09 que llevaba dos meses
+abierta porque el intento de entonces rompía la asignación de estudiantes nuevos; de paso se arregló
+eso. Y **US52**, salida de revisar la plataforma del colegio (AVACOM, que es Chamilo con la marca
+cambiada) a pedido del docente: la **fecha de cierre** de una actividad, aparte de la fecha límite, y
+el **tipo de entrega** que el docente exige. Quedó propuesta **US51** (código de inscripción del
+curso) y tres ideas más anotadas de esa revisión.
 
 ---
 
@@ -23,10 +24,12 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 ## Estado del repositorio al cerrar
 
 - Último commit **subido**: `421b342` (documentación de US48 y US49). Encima quedan **sin confirmar**
-  los archivos de `scripts/tutor-de-prueba.ts` y de **US50** — ver los comandos que se le dejaron.
-- **Tres migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
-  `20261124040000_add_curso_verificado` y `20261125040000_add_espacio_origen_estudiante`. Siempre con
-  `npx prisma migrate deploy` + `npx prisma generate`, nunca `migrate dev`.
+  los archivos de `scripts/tutor-de-prueba.ts`, de **US50** y de **US52** — ver los comandos que se
+  le dejaron en el chat de ese día.
+- **Cuatro migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
+  `20261124040000_add_curso_verificado`, `20261125040000_add_espacio_origen_estudiante` y
+  `20261125050000_add_ventana_y_tipo_entrega`. Siempre con `npx prisma migrate deploy` +
+  `npx prisma generate`, nunca `migrate dev`.
 - **`bulk-import-students.test.ts` hay que correrlo en su máquina**: no corre en el clon de la nube
   porque `xlsx` está bloqueado ahí, y US50 le cambió la detección de duplicados.
 - **Dos scripts siguen sin seguimiento en git** (`scripts/listar-estudiantes.ts` y
@@ -63,12 +66,24 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
    menor sin correo — eso toca US35 (documento de identidad) y el registro público de Supabase Auth,
    que sigue activado como hallazgo sin corregir desde el 12/11. Con la suscripción por docente esta
    es la historia de más valor comercial que hay en el backlog: es lo que permite que un docente
-   empiece sin administrador, sin archivo del colegio y sin área de sistemas.
-4. **Seguir el rediseño donde quedó**, según `DESIGN.md`: unificar los seis radios en uno, y después
+   empiece sin administrador, sin archivo del colegio y sin área de sistemas. **Y resuelve una
+   segunda pregunta abierta** que el docente planteó el 25/11: hoy un espacio es una institución
+   con varios tutores adentro, así que dos profesores del mismo colegio comparten estudiantes sin
+   duplicar cuentas; si cada profesor fuera su propio espacio —tentador con la suscripción por
+   docente— el mismo alumno terminaría con dos cuentas y el avance partido, y desde US50 la
+   plataforma ya no lo advierte. El código del curso evita tener que elegir.
+4. **Las tres ideas que quedaron de revisar la plataforma del colegio** (25/11), en este orden de
+   conveniencia: **US42, la vista de estudiante** como interruptor permanente en la barra —ahí la
+   tienen así y es lo que un docente usa todo el tiempo; hay que reestimarla porque US43 cambió la
+   pantalla que debe reflejar—; **anuncios del docente**, porque las novedades de OP11 son
+   automáticas y no hay forma de decir "mañana traigan la protoboard"; y el **glosario del curso**,
+   que para Tecnología con chicos de 10 a 18 no es menor, porque el vocabulario es la materia. De
+   US52 quedaron fuera dos detalles pequeños: mostrar "cerrada" también en la pantalla de
+   calificación del Tutor, y poder editar las dos fechas de una actividad ya creada (hoy solo se
+   definen al crearla, como pasaba con el estado del curso antes de OP05).
+5. **Seguir el rediseño donde quedó**, según `DESIGN.md`: unificar los seis radios en uno, y después
    la capa "para niños". **No se hace con más colores en la interfaz** —era lo que había y lo que la
    hacía ver amateur— sino con imágenes, momentos de premio y forma/voz.
-5. **US42** (ver el curso como lo ve un estudiante) sigue propuesta sin construir; hay que
-   reestimarla porque US43 cambió la pantalla que debe reflejar.
 6. Replicar el patrón de ventana en `create-tutor-form.tsx` y `create-student-form.tsx`.
 7. Propuestas viejas sin construir: US32 (grupos), US33 (perfil del tutor), US35 (documento de
    identidad).
@@ -95,6 +110,10 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 - **La prueba que fija la consulta exacta de la página del estudiante avisa siempre.** Volvió a
   romperse el 22/11 al agregar las consultas de novedades — es la cuarta vez. **Revisarla en cada
   cambio de esa consulta.**
+- **El navegador propio de Claude y el del docente no comparten sesión.** Al revisar la plataforma
+  del colegio, la página pedía autenticación en el panel de Claude mientras él ya estaba dentro en
+  **Brave**. Son cookies distintas. Para mirar algo donde él ya tiene sesión, la vía es la extensión
+  sobre su propio navegador — y nunca escribirle una contraseña.
 - **Cuando un arreglo se revirtió una vez, el error puede estar en el dato y no en el arreglo.** La
   fuga del selector de estudiantes llevaba dos meses abierta porque en septiembre se concluyó que el
   filtro de espacio "no servía". Servía: lo que faltaba era que la cuenta guardara en qué espacio se

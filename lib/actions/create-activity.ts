@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Rol } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { cierreCoherente } from "@/lib/activity-submission";
 
 /**
  * El Tutor crea una actividad evaluable dentro de un curso suyo
@@ -28,6 +29,11 @@ const crearActividadSchema = z.object({
     .min(1, "El puntaje máximo debe ser al menos 1")
     .max(1000, "El puntaje máximo no puede pasar de 1000"),
   fechaLimite: z.string().optional(),
+  // US52 (25/11/2026): la fecha que de verdad cierra la entrega, y qué se
+  // exige entregar. Las dos opcionales, con el mismo comportamiento de
+  // siempre si no se usan — ver `lib/activity-submission.ts`.
+  fechaCierre: z.string().optional(),
+  tipoEntrega: z.enum(["AMBOS", "SOLO_TEXTO", "SOLO_ARCHIVO"]).optional(),
 });
 
 type ResultadoCrearActividad =
@@ -61,14 +67,25 @@ export async function crearActividad(
     instrucciones: formData.get("instrucciones"),
     puntajeMaximo: formData.get("puntajeMaximo") || 100,
     fechaLimite: formData.get("fechaLimite") || undefined,
+    fechaCierre: formData.get("fechaCierre") || undefined,
+    tipoEntrega: formData.get("tipoEntrega") || undefined,
   });
 
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  const { courseId, seccionId, titulo, descripcion, instrucciones, puntajeMaximo, fechaLimite } =
-    parsed.data;
+  const {
+    courseId,
+    seccionId,
+    titulo,
+    descripcion,
+    instrucciones,
+    puntajeMaximo,
+    fechaLimite,
+    fechaCierre,
+    tipoEntrega,
+  } = parsed.data;
 
   const curso = await prisma.courses.findUnique({ where: { id: courseId } });
 
@@ -97,6 +114,27 @@ export async function crearActividad(
     fecha = convertida;
   }
 
+  let cierre: Date | null = null;
+
+  if (fechaCierre) {
+    const convertida = new Date(fechaCierre);
+
+    if (Number.isNaN(convertida.getTime())) {
+      return { success: false, error: "La fecha de cierre no es válida." };
+    }
+
+    cierre = convertida;
+  }
+
+  // Un cierre anterior al vencimiento dejaría una actividad en la que
+  // entregar a tiempo ya es imposible. Se rechaza aquí, no después.
+  if (!cierreCoherente({ fechaLimite: fecha, fechaCierre: cierre })) {
+    return {
+      success: false,
+      error: "La fecha de cierre no puede ser anterior a la fecha límite.",
+    };
+  }
+
   try {
     const totalActividades = await prisma.actividades.count({ where: { courseId } });
 
@@ -109,6 +147,8 @@ export async function crearActividad(
         instrucciones,
         puntajeMaximo,
         fechaLimite: fecha,
+        fechaCierre: cierre,
+        tipoEntrega: tipoEntrega ?? "AMBOS",
         orden: totalActividades,
       },
     });

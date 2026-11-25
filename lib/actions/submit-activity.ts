@@ -10,6 +10,7 @@ import {
   eliminarDocumentoDeStorage,
   MAX_TAMANO_DOCUMENTO_BYTES,
 } from "@/lib/supabase/storage";
+import { entregaCerrada, faltaParaEntregar } from "@/lib/activity-submission";
 
 /**
  * El Estudiante presenta una actividad (19/11/2026). Puede responder
@@ -26,6 +27,10 @@ import {
  * - No se bloquea la entrega después de la fecha límite: se guarda la fecha
  *   y es el docente quien decide qué hacer con una entrega tardía. Bloquear
  *   dejaría al estudiante sin forma de presentar nada.
+ * - **US52 (25/11/2026):** lo que sí bloquea es la *fecha de cierre*, que es
+ *   otra cosa y es opcional. Y la entrega debe cumplir el tipo que el
+ *   docente exige (texto, archivo, o cualquiera de los dos). Las dos
+ *   comprobaciones viven en `lib/activity-submission.ts`.
  */
 const entregarSchema = z.object({
   actividadId: z.string().min(1, "Actividad inválida"),
@@ -96,6 +101,17 @@ export async function entregarActividad(
     return { success: false, error: "No estás inscrito en el curso de esta actividad." };
   }
 
+  // US52 (25/11/2026): la fecha de cierre, cuando el docente la puso, sí
+  // bloquea — y se comprueba **aquí**, en el servidor, no escondiendo el
+  // formulario: ocultar un botón no impide reenviar la petición, igual que
+  // con el límite de intentos de OP08. La fecha límite sigue sin bloquear.
+  if (entregaCerrada(actividad, new Date())) {
+    return {
+      success: false,
+      error: "Esta actividad ya cerró y no acepta más entregas.",
+    };
+  }
+
   const adjunto = formData.get("archivo");
   // Se guarda ya estrechado a `File | null` (y no como un booleano aparte)
   // para que TypeScript lo siga tratando como archivo más abajo.
@@ -113,8 +129,17 @@ export async function entregarActividad(
   // La validación mira cómo queda la entrega, no solo lo que llegó en este
   // envío: corregir el texto de una entrega que ya tenía archivo es válido,
   // y quedarse sin texto y sin archivo nunca lo es.
-  if (!texto && !quedaraConArchivo) {
-    return { success: false, error: "Escribe tu respuesta o adjunta un archivo." };
+  //
+  // US52: y además respeta lo que el docente exige. Si pidió solo archivo,
+  // un texto suelto no es una entrega; si pidió solo texto, tampoco lo es un
+  // archivo sin respuesta escrita. Mandar el otro de más no estorba.
+  const falta = faltaParaEntregar(actividad.tipoEntrega, {
+    tendraTexto: Boolean(texto),
+    tendraArchivo: quedaraConArchivo,
+  });
+
+  if (falta) {
+    return { success: false, error: falta };
   }
 
   if (archivo) {

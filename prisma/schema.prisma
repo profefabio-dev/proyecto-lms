@@ -60,6 +60,15 @@ enum EstadoRuta {
   PUBLICADA
 }
 
+// US52 (25/11/2026): qué exige el docente que se entregue en una actividad.
+// `AMBOS` es lo que la plataforma permitía antes, y sigue siendo el valor
+// por defecto.
+enum TipoEntrega {
+  AMBOS
+  SOLO_TEXTO
+  SOLO_ARCHIVO
+}
+
 model Users {
   id        String        @id @default(uuid())
   authId    String?       @unique
@@ -370,7 +379,16 @@ model Actividades {
   // se renderizan con `MarkdownContent`, no con HTML crudo.
   instrucciones String
   puntajeMaximo Int       @default(100)
+  // Vencimiento: pasada esta fecha la entrega se marca fuera de plazo, pero
+  // se sigue aceptando (decisión del 19/11/2026).
   fechaLimite   DateTime?
+  // US52 (25/11/2026): finalización. Esta sí cierra la entrega, y es
+  // opcional — vacía, la actividad se comporta como siempre. Ver
+  // `lib/activity-submission.ts` para por qué son dos fechas y no una.
+  fechaCierre   DateTime?
+  // Qué exige el docente que se entregue. `AMBOS` por defecto, que es lo
+  // que la plataforma permitía antes de esta historia.
+  tipoEntrega   TipoEntrega @default(AMBOS)
   visible       Boolean   @default(true)
   orden         Int       @default(0)
   createdAt     DateTime  @default(now())

@@ -91,6 +91,37 @@ export function CreateActivityForm({
             <div className="space-y-2">
               <Label htmlFor="fechaLimite">Fecha límite (opcional)</Label>
               <Input id="fechaLimite" name="fechaLimite" type="datetime-local" />
+              <p className="text-xs text-muted-foreground">
+                Lo que llegue después se marca <strong>fuera de plazo</strong>, pero se recibe.
+              </p>
+            </div>
+          </div>
+
+          {/* US52 (25/11/2026): las dos opciones que antes decidía el código
+              y no el docente. Van juntas y debajo de lo básico, porque la
+              mayoría de las actividades no las necesita — es el patrón de
+              "parámetros avanzados" que usa la plataforma del colegio. */}
+          <div className="grid gap-4 rounded-xl border border-dashed border-border bg-muted/20 p-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="fechaCierre">Cerrar la entrega (opcional)</Label>
+              <Input id="fechaCierre" name="fechaCierre" type="datetime-local" />
+              <p className="text-xs text-muted-foreground">
+                Desde esta fecha <strong>ya no se puede entregar</strong>. Si la dejas vacía, se
+                recibe siempre, por tarde que sea.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tipoEntrega">Cómo se entrega</Label>
+              <Select id="tipoEntrega" name="tipoEntrega" defaultValue="AMBOS">
+                <option value="AMBOS">Texto, archivo o las dos cosas</option>
+                <option value="SOLO_TEXTO">Solo escribiendo la respuesta</option>
+                <option value="SOLO_ARCHIVO">Solo adjuntando un archivo</option>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Útil cuando la consigna es una sola: “sube la foto del circuito” o “escribe tu
+                conclusión”.
+              </p>
             </div>
           </div>
 

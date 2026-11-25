@@ -2,7 +2,29 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-25 — **US50: un Tutor deja de ver a los estudiantes de otros colegios. Se cierra una fuga anotada desde el 16/09 y, de paso, el error que la había hecho imposible de corregir. Se propone US51 (código de inscripción del curso).**
+Última actualización: 2026-11-25 — **US50 (un Tutor deja de ver a los estudiantes de otros colegios) y US52 (la ventana de entrega y el tipo exigido, sacadas de revisar la plataforma del colegio). Se propone US51, el código de inscripción del curso.**
+
+## La revisión de la plataforma del colegio, y US52
+
+El docente pidió entrar a la plataforma de su colegio y sacar ideas, con una condición: *"la mía debe ser mucho mejor y optimizada"*. Es **AVACOM, que es Chamilo con la marca cambiada** —se ve en las rutas (`main/work/work.php`, `cidReq`, `gradebook`)— y la instalación viene recortada: sin foros, sin wiki, sin asistencia y sin la herramienta de evaluaciones visible. La portada del curso son 13 iconos en tres grupos.
+
+**Nota de método, porque costó dos intentos.** El navegador propio de Claude tiene sus propias cookies, así que la sesión del docente no estaba ahí y la página pedía autenticación; él estaba dentro en **Brave**. Se resolvió usando la extensión sobre su navegador, donde la sesión ya existía. **No se escribió ninguna contraseña**, y la revisión se quedó en estructura y funciones, sin abrir listados de estudiantes ni notas.
+
+**De esa revisión salen cinco ideas, y se construyeron las dos más baratas**, que además van juntas porque son el mismo formulario:
+
+**Dos fechas, no una.** Chamilo separa *vencimiento* de *finalización*. Aquí había una sola, y la decisión del 19/11 fue no bloquear nunca — que sigue siendo la correcta por defecto, porque bloquear deja al estudiante sin ninguna forma de presentar. Lo que faltaba era el caso de "el viernes cierro y califico". `fechaCierre` es **opcional**: vacía, la actividad se comporta exactamente como siempre. Y la guarda **vive en el servidor**: ocultar el botón no impide reenviar la petición, la misma lección del límite de intentos de OP08. Se rechaza además un cierre anterior al vencimiento, que dejaría un trabajo donde entregar a tiempo ya es imposible.
+
+**Tipo de entrega.** Chamilo deja elegir *ambos*, *solo respuesta* o *solo archivos*. Aquí siempre se permitían los dos, pero "sube la foto del circuito" y "escribe tu conclusión" son consignas distintas. `AMBOS` queda por defecto, así que ninguna actividad existente cambia de reglas. En el formulario del estudiante **el campo que no aplica no se muestra** —un campo deshabilitado invita a preguntarse por qué está ahí— y se le dice de entrada qué se espera. Exigir uno no prohíbe mandar el otro de más.
+
+**Un hueco que esto destapó y se cerró:** `entregarActividad` existía desde US37 (19/11) **sin ninguna prueba**. La épica de Evaluación se construyó sin cubrir esa acción, que es justamente donde vive la guarda de quién puede entregar. Ahora tiene 12 pruebas, incluidas las que ya existían sin red: sesión, rol, actividad oculta y no inscrito.
+
+**Las tres ideas que quedaron anotadas y no se construyeron:** la **vista de estudiante** como interruptor permanente en la barra —que es US42, propuesta desde el 20/11, y verla ahí confirma que no es un lujo sino lo que un docente usa todo el tiempo—, los **anuncios del docente** (las novedades de OP11 son automáticas; no hay forma de decir "mañana traigan la protoboard") y el **glosario del curso**, que para Tecnología con chicos de 10 a 18 no es menor, porque el vocabulario es la materia.
+
+**Y lo que se decidió NO copiar, que conviene dejar escrito** para que nadie lo reponga creyendo que falta: sus Informes miden *"Tiempo en el curso"* y *"Tiempo promedio en el curso"*. Eso mide pestaña abierta, no aprendizaje — es exactamente el error que se corrigió aquí en US19, cuando el progreso llegaba al 100 % solo por abrir la página. Tampoco la rejilla de iconos como portada del curso (13 destinos sin jerarquía, que el temario de US43 ya mejora), ni "Compartir documentos" separado de las tareas, que duplica el mismo gesto en dos sitios.
+
+**Un dato de esa plataforma que confirma US51:** tiene **registro público** ("¡Regístrate!") y Chamilo usa **clave de inscripción** para entrar a un curso. Es el modelo de US51, funcionando en producción en el colegio donde el docente da clase.
+
+**Verificación:** 29 pruebas nuevas (`activity-submission` 17, `submit-activity` 12), `tsc` y `eslint` limpios sobre todo lo tocado, y cero pruebas rotas de las que ya pasaban.
 
 ## El script que monta el ensayo de compartir
 

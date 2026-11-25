@@ -21,6 +21,7 @@ import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { LessonRow } from "@/components/lesson-row";
 import { calcularProgreso } from "@/lib/course-progress";
+import { entregaCerrada } from "@/lib/activity-submission";
 import {
   filtrarContenidosAccesibles,
   ordenarLecciones,
@@ -478,6 +479,11 @@ export default async function CursoEstudiantePage({
                       yaEntregada={entrega !== null}
                       textoPrevio={entrega?.texto}
                       nombreArchivoPrevio={entrega?.nombreArchivo}
+                      tipoEntrega={actividad.tipoEntrega}
+                      // US52: la fecha de cierre se evalúa en el servidor al
+                      // renderizar, igual que al recibir la entrega, para que
+                      // no dependa del reloj del estudiante.
+                      cerrada={entregaCerrada(actividad, new Date())}
                     />
                   </li>
                 );

@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Lock } from "lucide-react";
 import { entregarActividad } from "@/lib/actions/submit-activity";
+import { textoDeLoQueSeEspera, type TipoEntrega } from "@/lib/activity-submission";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,15 +18,24 @@ export function SubmitActivityForm({
   yaEntregada,
   textoPrevio,
   nombreArchivoPrevio,
+  // US52 (25/11/2026): qué exige el docente, y si la actividad ya cerró.
+  // `AMBOS` por defecto para que nada cambie donde no se use.
+  tipoEntrega = "AMBOS",
+  cerrada = false,
 }: {
   actividadId: string;
   titulo: string;
   yaEntregada: boolean;
   textoPrevio?: string | null;
   nombreArchivoPrevio?: string | null;
+  tipoEntrega?: TipoEntrega;
+  cerrada?: boolean;
 }) {
   const [estado, accion, enviando] = useActionState(entregarActividad, estadoInicial);
   const [abierto, setAbierto] = useState(false);
+
+  const pideTexto = tipoEntrega !== "SOLO_ARCHIVO";
+  const pideArchivo = tipoEntrega !== "SOLO_TEXTO";
 
   const [estadoYaVisto, setEstadoYaVisto] = useState(estado);
   if (estado !== estadoYaVisto) {
@@ -33,6 +43,20 @@ export function SubmitActivityForm({
     if (estado?.success) {
       setAbierto(false);
     }
+  }
+
+  // Cerrada: no se ofrece el botón. La guarda de verdad está en el servidor
+  // (`entregarActividad`), esto solo evita que el estudiante escriba una
+  // respuesta completa para que se la rechacen al enviarla.
+  if (cerrada) {
+    return (
+      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Lock className="size-4" aria-hidden="true" />
+        {yaEntregada
+          ? "Esta actividad ya cerró. Tu entrega quedó registrada."
+          : "Esta actividad ya cerró y no acepta más entregas."}
+      </p>
+    );
   }
 
   return (
@@ -60,46 +84,67 @@ export function SubmitActivityForm({
             </p>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="texto-entrega">Tu respuesta</Label>
-            <Textarea
-              id="texto-entrega"
-              name="texto"
-              rows={8}
-              defaultValue={textoPrevio ?? ""}
-              placeholder="Escribe aquí tu respuesta, o déjalo vacío si vas a adjuntar un archivo."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="archivo-entrega">Archivo (opcional)</Label>
-            <Input
-              id="archivo-entrega"
-              name="archivo"
-              type="file"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp"
-            />
-            <p className="text-xs text-muted-foreground">
-              PDF, Word o una foto (JPG, PNG, WEBP), máximo 10 MB.
-              {nombreArchivoPrevio
-                ? ` Ahora tienes adjunto "${nombreArchivoPrevio}"; si no eliges otro, se conserva.`
-                : ""}
+          {/* US52: se le dice de una vez qué se espera, en vez de dejarlo
+              descubrirlo al enviar. Y el campo que no aplica no se muestra:
+              un campo deshabilitado invita a preguntarse por qué está ahí. */}
+          {tipoEntrega !== "AMBOS" && (
+            <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-foreground">
+              {textoDeLoQueSeEspera(tipoEntrega)}
             </p>
+          )}
 
-            {/* Sin esta casilla, un archivo adjunto por error se quedaba
-                pegado a la entrega para siempre: se podía reemplazar por
-                otro, pero nunca volver a entregar solo texto. */}
-            {nombreArchivoPrevio && (
-              <label className="flex min-h-11 items-center gap-2 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  name="quitarArchivo"
-                  className="size-5 accent-primary"
-                />
-                Quitar el archivo adjunto y entregar solo el texto
-              </label>
-            )}
-          </div>
+          {pideTexto && (
+            <div className="space-y-2">
+              <Label htmlFor="texto-entrega">Tu respuesta</Label>
+              <Textarea
+                id="texto-entrega"
+                name="texto"
+                rows={8}
+                defaultValue={textoPrevio ?? ""}
+                placeholder={
+                  pideArchivo
+                    ? "Escribe aquí tu respuesta, o déjalo vacío si vas a adjuntar un archivo."
+                    : "Escribe aquí tu respuesta."
+                }
+              />
+            </div>
+          )}
+
+          {pideArchivo && (
+            <div className="space-y-2">
+              <Label htmlFor="archivo-entrega">
+                {pideTexto ? "Archivo (opcional)" : "Tu archivo"}
+              </Label>
+              <Input
+                id="archivo-entrega"
+                name="archivo"
+                type="file"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp"
+              />
+              <p className="text-xs text-muted-foreground">
+                PDF, Word o una foto (JPG, PNG, WEBP), máximo 10 MB.
+                {nombreArchivoPrevio
+                  ? ` Ahora tienes adjunto "${nombreArchivoPrevio}"; si no eliges otro, se conserva.`
+                  : ""}
+              </p>
+
+              {/* Sin esta casilla, un archivo adjunto por error se quedaba
+                  pegado a la entrega para siempre: se podía reemplazar por
+                  otro, pero nunca volver a entregar solo texto. No aplica
+                  cuando el archivo es obligatorio: quitarlo dejaría la
+                  entrega sin lo único que se pedía. */}
+              {nombreArchivoPrevio && pideTexto && (
+                <label className="flex min-h-11 items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    name="quitarArchivo"
+                    className="size-5 accent-primary"
+                  />
+                  Quitar el archivo adjunto y entregar solo el texto
+                </label>
+              )}
+            </div>
+          )}
 
           {estado && !estado.success && (
             <p
