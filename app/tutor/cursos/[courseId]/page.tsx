@@ -16,8 +16,10 @@ import {
   Users,
 } from "lucide-react";
 import { ShareCourseForm } from "@/components/share-course-form";
+import { Rol } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 import { AssignStudentsForm } from "@/components/assign-students-form";
 import { UnenrollStudentsForm } from "@/components/unenroll-students-form";
 import { CreateVideoContentForm } from "@/components/create-video-content-form";
@@ -128,9 +130,26 @@ export default async function CursoDetallePage({
   // apareciendo como candidato para asignar a un curso nuevo — solo se
   // excluye de este selector, su historial y su inscripción en cursos
   // donde ya estaba no se tocan.
+  // US50 (25/11/2026): el selector se limita a los estudiantes del espacio
+  // del Tutor. Hasta hoy listaba a TODOS los estudiantes activos de la
+  // plataforma, con nombre y correo, incluidos los de otros colegios — una
+  // fuga de datos de menores de edad entre espacios, anotada desde el
+  // 16/09/2026 y sin corregir porque el intento de ese día rompía la
+  // asignación de estudiantes nuevos. Ahora el filtro ya los contempla
+  // (inscripción en el espacio **o** cuenta creada en él), así que se puede
+  // aplicar sin romper nada.
+  //
+  // Un estudiante de otro colegio ya no aparece aquí. Que un mismo estudiante
+  // pueda estar en cursos de dos espacios sigue siendo cierto y soportado
+  // (US26) — lo que cambia es que traerlo deja de ser cosa del selector; ver
+  // la historia del código de inscripción en `Backlog.md`.
+  //
+  // Si el Tutor no tuviera espacio —no debería pasar, la migración de la
+  // épica se lo asignó a todos— el filtro no encuentra a nadie y el selector
+  // sale vacío. Falla cerrado, que es como debe fallar.
   const estudiantesDisponibles = await prisma.users.findMany({
     where: {
-      rol: "ESTUDIANTE",
+      ...filtroUsuarioVisibleEnEspacio(usuarioActual.espacioId ?? "", Rol.ESTUDIANTE),
       estado: "ACTIVO",
       id: idsInscritos.length > 0 ? { notIn: idsInscritos } : undefined,
     },

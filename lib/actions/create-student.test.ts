@@ -53,7 +53,7 @@ describe("crearEstudiante", () => {
     vi.mocked(createClient).mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } } }) },
     } as any);
-    vi.mocked(prisma.users.findUnique).mockResolvedValue({ rol: "TUTOR" } as any);
+    vi.mocked(prisma.users.findUnique).mockResolvedValue({ rol: "TUTOR", espacioId: "espacio-1" } as any);
 
     const resultado = await crearEstudiante(
       null,
@@ -67,7 +67,7 @@ describe("crearEstudiante", () => {
     vi.mocked(createClient).mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } } }) },
     } as any);
-    vi.mocked(prisma.users.findUnique).mockResolvedValue({ rol: "TUTOR" } as any);
+    vi.mocked(prisma.users.findUnique).mockResolvedValue({ rol: "TUTOR", espacioId: "espacio-1" } as any);
     vi.mocked(createSyncedUser).mockResolvedValue({} as any);
 
     const resultado = await crearEstudiante(
@@ -82,15 +82,38 @@ describe("crearEstudiante", () => {
         apellido: "Pérez",
         email: "ana@test.com",
         rol: "ESTUDIANTE",
+        // US50: la cuenta nace marcada con el espacio del Tutor que la crea,
+        // así que aparece en su lista desde el primer momento, sin esperar a
+        // que alguien la inscriba en un curso.
+        espacioOrigenId: "espacio-1",
       })
     );
+  });
+
+  it("no crea el estudiante si el tutor no tiene espacio", async () => {
+    vi.mocked(createClient).mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } } }) },
+    } as any);
+    vi.mocked(prisma.users.findUnique).mockResolvedValue({
+      rol: "TUTOR",
+      espacioId: null,
+    } as any);
+
+    const resultado = await crearEstudiante(
+      null,
+      buildFormData({ nombre: "Ana", apellido: "Pérez", email: "ana@test.com" })
+    );
+
+    expect(resultado.success).toBe(false);
+    // Mejor no crear una cuenta que nadie va a poder ver después.
+    expect(createSyncedUser).not.toHaveBeenCalled();
   });
 
   it("propaga el error si createSyncedUser falla", async () => {
     vi.mocked(createClient).mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } } }) },
     } as any);
-    vi.mocked(prisma.users.findUnique).mockResolvedValue({ rol: "TUTOR" } as any);
+    vi.mocked(prisma.users.findUnique).mockResolvedValue({ rol: "TUTOR", espacioId: "espacio-1" } as any);
     vi.mocked(createSyncedUser).mockRejectedValue(new Error("fallo"));
 
     const resultado = await crearEstudiante(

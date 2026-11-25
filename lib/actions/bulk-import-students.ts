@@ -10,6 +10,7 @@ import { generarPasswordTemporal } from "@/lib/auth/generar-password-temporal";
 import { generarEmailInterno } from "@/lib/auth/generar-email-interno";
 import { parsearArchivoEstudiantes, type GrupoExtraido } from "@/lib/parse-student-file";
 import { claveEstudiante } from "@/lib/clave-estudiante";
+import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 
 const EXTENSIONES_ACEPTADAS = ["xlsx", "xls", "pdf"];
 
@@ -95,10 +96,23 @@ export async function previsualizarCargaEstudiantes(
   // ya registrados y se cruza en memoria contra el archivo. Al cliente solo
   // viajan las claves que coinciden con una fila de su propio archivo —
   // nunca el listado completo de estudiantes de la plataforma.
+  //
+  // US50 (25/11/2026): la comparación se limita a los estudiantes del propio
+  // espacio. Antes cruzaba contra toda la plataforma, y eso tenía una
+  // consecuencia que no se había visto: un homónimo en otro colegio marcaba
+  // la fila como "ya existe", y con un curso elegido terminaba **matriculando
+  // al estudiante del otro colegio** en el curso de quien sube el archivo.
+  //
+  // El efecto secundario de acotarlo es correcto: dos niños con el mismo
+  // nombre en colegios distintos son dos personas distintas, y hasta hoy una
+  // de las dos no podía crearse nunca. Dentro de un mismo colegio la
+  // detección de duplicados sigue igual. Distinguir a la misma persona de un
+  // homónimo real necesita un identificador, no el nombre — eso es US35
+  // (documento de identidad), que sigue sin construirse.
   const clavesRegistradas = new Set(
     (
       await prisma.users.findMany({
-        where: { rol: Rol.ESTUDIANTE },
+        where: filtroUsuarioVisibleEnEspacio(usuarioActual.espacioId ?? "", Rol.ESTUDIANTE),
         select: { nombre: true, apellido: true },
       })
     ).map((estudiante) => claveEstudiante(estudiante.nombre, estudiante.apellido))
@@ -185,6 +199,16 @@ export async function confirmarCargaEstudiantes(
     };
   }
 
+  // US50 (25/11/2026): las cuentas quedan marcadas con el espacio de quien
+  // sube el archivo, para que pertenezcan a su colegio desde que se crean y
+  // no desde que alguien las inscribe en un curso. Importa especialmente
+  // aquí: un Administrador carga el listado sin inscribir a nadie (criterio
+  // 10), así que sin esto esos estudiantes no serían visibles para ningún
+  // Tutor de su propio colegio.
+  if (!usuarioActual.espacioId) {
+    return { success: false, error: "Tu cuenta no está asociada a ningún espacio." };
+  }
+
   let estudiantesCrudo: unknown;
   try {
     estudiantesCrudo = JSON.parse(String(formData.get("estudiantes") ?? "[]"));
@@ -251,9 +275,12 @@ export async function confirmarCargaEstudiantes(
     }
 
     // Criterio 8: duplicado por nombre+apellido, sin distinguir mayúsculas.
+    // US50: acotado al propio espacio, por el mismo motivo que la consulta de
+    // la vista previa — ver el comentario de `clavesRegistradas` arriba. Sin
+    // esto, un homónimo de otro colegio terminaba matriculado aquí.
     const yaExiste = await prisma.users.findFirst({
       where: {
-        rol: Rol.ESTUDIANTE,
+        ...filtroUsuarioVisibleEnEspacio(usuarioActual.espacioId ?? "", Rol.ESTUDIANTE),
         nombre: { equals: nombre, mode: "insensitive" },
         apellido: { equals: apellido, mode: "insensitive" },
       },
@@ -298,6 +325,8 @@ export async function confirmarCargaEstudiantes(
         email,
         password: passwordTemporal,
         rol: Rol.ESTUDIANTE,
+        // US50 (25/11/2026): el colegio donde se crea la cuenta.
+        espacioOrigenId: usuarioActual.espacioId,
         // 16/09/2026: se persiste el grado/grupo detectado en la hoja de
         // origen del Excel (antes se usaba solo para mostrarlo en la
         // vista previa y para inscripción, sin guardarse) — pedido del

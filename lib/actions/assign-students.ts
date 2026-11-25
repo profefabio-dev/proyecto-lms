@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Rol, EstadoUsuario } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 
 const asignarEstudiantesSchema = z.object({
   courseId: z.string().min(1, "Curso inválido"),
@@ -51,24 +52,34 @@ export async function asignarEstudiantes(
     return { success: false, error: "Este curso no existe o no te pertenece." };
   }
 
-  // Revertido el 16/09/2026: el filtro de espacio agregado hoy mismo por
-  // error impedía asignar cualquier estudiante que no tuviera ya una
-  // inscripción previa en el espacio del tutor — es decir, ningún
-  // estudiante recién creado (US06 o la carga masiva de US29) podía
-  // asignarse nunca a ningún curso. El diseño ya documentado de esta
-  // épica (`Backlog.md`, US26) permite explícitamente que un Tutor de
-  // cualquier espacio asigne a un estudiante existente, sin importar en
-  // qué espacio se creó — un Estudiante es una cuenta global compartida a
-  // propósito. Se revierte a la validación original: cualquier usuario
-  // con rol Estudiante es un candidato válido.
+  // US50 (25/11/2026): solo se pueden inscribir estudiantes del propio
+  // espacio. Es la misma comprobación que ahora hace la página al armar el
+  // selector, repetida aquí **porque esta es la que de verdad manda**: sin
+  // ella, un Tutor que conozca el id de un estudiante de otro colegio podría
+  // inscribirlo enviando la petición a mano, sin pasar por la interfaz.
+  //
+  // Esto se intentó el 16/09/2026 y hubo que revertirlo el mismo día: el
+  // filtro de entonces exigía una inscripción previa en el espacio, así que
+  // ningún estudiante recién creado (US06 o la carga masiva de US29) podía
+  // asignarse nunca a ningún curso. Lo que faltaba no era el filtro sino el
+  // dato: desde US50 la cuenta guarda en qué espacio se creó, y el filtro
+  // acepta las dos vías, así que el caso que lo rompió ya está cubierto.
+  //
+  // Lo que US26 permite —que un mismo Estudiante esté en cursos de dos
+  // espacios distintos, sin duplicar su cuenta— sigue siendo cierto y
+  // soportado; lo que ya no se puede es **descubrirlo** desde otro espacio.
+  // Traerlo a propósito es otra historia (el código de inscripción, ver
+  // `Backlog.md`), no un efecto secundario de que el selector lo listara.
+  //
   // 17/09/2026, pedido por el docente: un estudiante con matrícula
   // cancelada (desactivado por un Administrador, US20) no debe poder
-  // asignarse a un curso nuevo — mismo criterio que ya se aplica en la
-  // página al armar `estudiantesDisponibles`, repetido aquí del lado del
-  // servidor por si el ID llega directo en la petición sin pasar por la
-  // interfaz.
+  // asignarse a un curso nuevo.
   const estudiantesValidos = await prisma.users.findMany({
-    where: { id: { in: estudianteIds }, rol: Rol.ESTUDIANTE, estado: EstadoUsuario.ACTIVO },
+    where: {
+      ...filtroUsuarioVisibleEnEspacio(usuarioActual.espacioId ?? "", Rol.ESTUDIANTE),
+      id: { in: estudianteIds },
+      estado: EstadoUsuario.ACTIVO,
+    },
     select: { id: true },
   });
 

@@ -37,6 +37,16 @@ export async function crearEstudiante(
     return { success: false, error: "Solo un tutor puede crear estudiantes." };
   }
 
+  // US50 (25/11/2026): la cuenta queda marcada con el espacio del Tutor que
+  // la crea. Sin eso, el estudiante no pertenecía a ningún espacio hasta que
+  // alguien lo inscribiera en un curso, así que desaparecía de la lista del
+  // propio Tutor que lo acababa de crear. Un Tutor sin espacio no debería
+  // existir (la migración de la épica Multi-docente se lo asignó a todos),
+  // pero si apareciera, mejor no crear una cuenta que nadie va a poder ver.
+  if (!usuarioActual.espacioId) {
+    return { success: false, error: "Tu cuenta no está asociada a ningún espacio." };
+  }
+
   const parsed = crearEstudianteSchema.safeParse({
     nombre: formData.get("nombre"),
     apellido: formData.get("apellido"),
@@ -54,6 +64,7 @@ export async function crearEstudiante(
       ...parsed.data,
       password: passwordTemporal,
       rol: Rol.ESTUDIANTE,
+      espacioOrigenId: usuarioActual.espacioId,
     });
   } catch (error) {
     console.error("Error creando estudiante:", error);

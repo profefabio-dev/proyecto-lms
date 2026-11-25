@@ -88,8 +88,21 @@ model Users {
   // por sus inscripciones (`CourseUsers`) a cursos de Tutores de ese
   // espacio, no por este campo. Ver Diagrama_de_Arquitectura.md.
   espacioId String?
+  // US50 (25/11/2026): en qué espacio se creó esta cuenta. Solo para
+  // ESTUDIANTE, que es el único rol sin `espacioId` propio. No contradice la
+  // decisión del 02/09/2026 —el estudiante sigue siendo una cuenta única,
+  // compartida entre espacios, y puede inscribirse en cursos de cualquiera—:
+  // dice dónde nació la cuenta, no a quién pertenece. Hacía falta porque
+  // "pertenecer a un espacio" se deducía de las inscripciones, y un
+  // estudiante recién creado no tiene ninguna, así que desaparecía de la
+  // lista de su propio Tutor y obligaba al selector de "Inscribir
+  // estudiantes" a mostrar la plataforma entera. Ver `lib/espacio-scope.ts`.
+  espacioOrigenId String?
   createdAt DateTime      @default(now())
 
+  // `espacioOrigenId` no lleva relación a propósito (ver el comentario del
+  // campo): una segunda relación entre Users y Espacios obligaría a nombrar
+  // también esta, y nadie consulta los estudiantes desde el lado del espacio.
   espacio          Espacios?      @relation(fields: [espacioId], references: [id])
   cursosComoTutor  Courses[]      @relation("TutorCourses")
   inscripciones    CourseUsers[]

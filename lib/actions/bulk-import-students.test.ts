@@ -27,7 +27,13 @@ function mockSesion(rol: string | null) {
     auth: { getUser: vi.fn().mockResolvedValue({ data: { user: rol ? { id: "auth-1" } : null } }) },
   } as any);
   if (rol) {
-    vi.mocked(prisma.users.findUnique).mockResolvedValue({ id: "user-1", rol } as any);
+    // US50: quien sube el archivo debe tener espacio — las cuentas creadas
+    // quedan marcadas con él, y la detección de duplicados se acota a él.
+    vi.mocked(prisma.users.findUnique).mockResolvedValue({
+      id: "user-1",
+      rol,
+      espacioId: "espacio-1",
+    } as any);
   }
 }
 
@@ -129,8 +135,17 @@ describe("previsualizarCargaEstudiantes", () => {
       // de estudiantes de la plataforma.
       expect(resultado.existentes).toEqual(["ana|torres"]);
     }
+    // US50: la comparación se acota al espacio de quien sube el archivo.
+    // Antes cruzaba contra toda la plataforma, y un homónimo de otro colegio
+    // terminaba matriculado aquí si había un curso elegido.
     expect(prisma.users.findMany).toHaveBeenCalledWith({
-      where: { rol: "ESTUDIANTE" },
+      where: {
+        rol: "ESTUDIANTE",
+        OR: [
+          { inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } } },
+          { espacioOrigenId: "espacio-1" },
+        ],
+      },
       select: { nombre: true, apellido: true },
     });
   });

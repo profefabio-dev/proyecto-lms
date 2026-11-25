@@ -18,6 +18,16 @@ interface CreateSyncedUserInput {
    */
   espacioId?: string;
   /**
+   * US50 (25/11/2026): en qué espacio se crea la cuenta. Es el equivalente
+   * de `espacioId` para un ESTUDIANTE, que no tiene uno propio porque su
+   * cuenta es única y compartida entre espacios (decisión del 02/09/2026).
+   * Sin esto, un estudiante recién creado no pertenecía a ningún espacio
+   * hasta que alguien lo inscribía en un curso — y eso es lo que obligaba
+   * al selector de "Inscribir estudiantes" a mostrar la plataforma entera.
+   * Quien crea la cuenta debe pasar su propio espacio.
+   */
+  espacioOrigenId?: string;
+  /**
    * US29 (carga masiva), 16/09/2026: grado/grupo detectado en la hoja de
    * origen del Excel (ej. "6A"), para poder distinguir estudiantes por
    * grupo en "Asignar estudiantes" (ver `lib/group-color.ts`). Opcional:
@@ -28,7 +38,7 @@ interface CreateSyncedUserInput {
 }
 
 export async function createSyncedUser(input: CreateSyncedUserInput) {
-  const { email, password, nombre, apellido, rol, espacioId, grado } = input;
+  const { email, password, nombre, apellido, rol, espacioId, espacioOrigenId, grado } = input;
 
   // 1. Crear el usuario en Supabase Auth (ahí es donde se valida el login)
   const { data: authData, error: authError } =
@@ -54,6 +64,7 @@ export async function createSyncedUser(input: CreateSyncedUserInput) {
         apellido,
         rol,
         espacioId,
+        espacioOrigenId,
         grado,
       },
     });
