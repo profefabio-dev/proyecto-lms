@@ -34,6 +34,19 @@ function plazo(titulo: string, fecha: Date, diasRestantes: number): Novedad {
   };
 }
 
+function anuncio(titulo: string, fecha: Date): Novedad {
+  return {
+    tipo: "anuncio",
+    cursoId: "c1",
+    cursoTitulo: "Curso",
+    titulo,
+    href: "/estudiante/cursos/c1",
+    fecha,
+    cuerpo: "El cuerpo del anuncio.",
+    autor: "Fabio Aguirre",
+  };
+}
+
 describe("dentroDeLaVentana (22/11/2026)", () => {
   it("acepta algo de hace unos dias", () => {
     expect(dentroDeLaVentana(new Date("2026-11-20T10:00:00"), AHORA)).toBe(true);
@@ -114,5 +127,44 @@ describe("ordenarNovedades (22/11/2026)", () => {
     const entrada = [material("A", new Date("2026-11-15T10:00:00")), plazo("B", AHORA, 0)];
     ordenarNovedades(entrada);
     expect(entrada.map((n) => n.titulo)).toEqual(["A", "B"]);
+  });
+
+  // US53 (25/11/2026): el anuncio del docente es la única novedad que
+  // alguien escribió a propósito; el resto las deduce la plataforma.
+  it("pone el anuncio del docente arriba de un plazo que vence hoy", () => {
+    const vence = plazo("Entrega", AHORA, 0);
+    const resultado = ordenarNovedades([vence, anuncio("Traigan la protoboard", AHORA)]);
+
+    expect(resultado.map((n) => n.tipo)).toEqual(["anuncio", "plazo"]);
+  });
+
+  it("entre anuncios, el más reciente va arriba", () => {
+    const viejo = anuncio("De la semana pasada", new Date("2026-11-16T10:00:00"));
+    const nuevo = anuncio("De hoy", new Date("2026-11-22T08:00:00"));
+
+    expect(ordenarNovedades([viejo, nuevo]).map((n) => n.titulo)).toEqual([
+      "De hoy",
+      "De la semana pasada",
+    ]);
+  });
+
+  it("mantiene el orden completo con los cuatro tipos", () => {
+    const resultado = ordenarNovedades([
+      material("Lección nueva", new Date("2026-11-21T10:00:00")),
+      {
+        tipo: "nota",
+        cursoId: "c1",
+        cursoTitulo: "Curso",
+        titulo: "Taller",
+        href: "/estudiante/notas",
+        fecha: new Date("2026-11-22T09:00:00"),
+        porcentaje: 80,
+        retroalimentacion: null,
+      },
+      plazo("Entrega", new Date("2026-11-24T23:59:00"), 2),
+      anuncio("Aviso", new Date("2026-11-20T10:00:00")),
+    ]);
+
+    expect(resultado.map((n) => n.tipo)).toEqual(["anuncio", "plazo", "nota", "material"]);
   });
 });

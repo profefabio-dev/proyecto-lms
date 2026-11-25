@@ -18,6 +18,12 @@
  * no entregó, porque es lo único sobre lo que el estudiante puede actuar
  * hoy; después las notas; y por último el material nuevo.
  *
+ * **US53 (25/11/2026): los anuncios del docente van arriba de todo.** Son
+ * la única novedad que **alguien escribió a propósito** — el resto las
+ * deduce la plataforma de los datos. Si el docente se tomó el trabajo de
+ * decir "mañana traigan la protoboard", eso pesa más que un plazo que el
+ * estudiante ya puede ver en su curso.
+ *
  * Sin Prisma, igual que `lib/grades.ts` y `lib/route-progress.ts`: recibe
  * datos ya consultados y se prueba sola.
  */
@@ -26,6 +32,17 @@ export const DIAS_DE_VENTANA = 14;
 export const DIAS_DE_AVISO_DE_PLAZO = 7;
 
 export type Novedad =
+  | {
+      tipo: "anuncio";
+      cursoId: string;
+      cursoTitulo: string;
+      titulo: string;
+      href: string;
+      fecha: Date;
+      /** El anuncio en Markdown, para mostrarlo completo sin otra consulta. */
+      cuerpo: string;
+      autor: string;
+    }
   | {
       tipo: "plazo";
       cursoId: string;
@@ -88,11 +105,12 @@ export function textoDePlazo(diasRestantes: number): string {
 }
 
 /**
- * Las novedades ya ordenadas: plazos primero (el más próximo arriba),
- * después notas y material, lo más reciente primero dentro de cada grupo.
+ * Las novedades ya ordenadas: anuncios del docente primero, después los
+ * plazos (el más próximo arriba), y al final notas y material, lo más
+ * reciente primero dentro de cada grupo.
  */
 export function ordenarNovedades(novedades: Novedad[]): Novedad[] {
-  const peso = { plazo: 0, nota: 1, material: 2 };
+  const peso = { anuncio: 0, plazo: 1, nota: 2, material: 3 };
 
   return [...novedades].sort((a, b) => {
     if (peso[a.tipo] !== peso[b.tipo]) return peso[a.tipo] - peso[b.tipo];

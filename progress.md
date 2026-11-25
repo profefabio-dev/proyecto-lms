@@ -2,7 +2,21 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-25 — **US50 (un Tutor deja de ver a los estudiantes de otros colegios) y US52 (la ventana de entrega y el tipo exigido, sacadas de revisar la plataforma del colegio). Se propone US51, el código de inscripción del curso.**
+Última actualización: 2026-11-25 — **US50 (un Tutor deja de ver a los estudiantes de otros colegios), y US52 y US53 salidas de revisar la plataforma del colegio: la ventana de entrega con su tipo, y los anuncios del docente. Se propone US51, el código de inscripción del curso.**
+
+## US53 — los anuncios del docente
+
+La cuarta idea de la revisión, y la que tapaba el vacío más visible. El bloque de novedades de OP11 es **automático**: plazos, notas nuevas, material reciente, todo deducido de los datos. No había forma de decir *"mañana traigan la protoboard"*, y eso es la mitad de lo que un docente necesita comunicar.
+
+**La decisión que importa: el anuncio no es un canal nuevo, es una novedad más — y va primero.** Se podía haber hecho una pantalla de "mensajes" aparte; no habría servido, porque el estudiante tendría que acordarse de entrar. Entra en el bloque que ya mira, como un tipo nuevo en `lib/novedades.ts` y dentro de la misma ventana de dos semanas. Y se ordena **arriba de los plazos**, invirtiendo a propósito la regla original de OP11 —"primero lo que puede actuar hoy"—, porque es **la única novedad que una persona escribió a propósito**: el resto las deduce la plataforma. Si el docente se tomó el trabajo de decirlo, pesa más que un plazo que el estudiante ya ve en su curso.
+
+**Tres detalles que se decidieron al construir.** El **autor se guarda** en la tabla y no se deduce del curso: un curso adoptado (US47) puede cambiar de manos, y el anuncio sigue siendo de quien lo escribió. **No se notifica por fuera** —la plataforma no manda correos y la mayoría de los estudiantes no tiene una dirección real (US29)—, así que el anuncio vive donde el estudiante ya entra. Y **borrar pide una sola confirmación**, no la doble de eliminar una actividad: el segundo paso de OP08 existe porque ahí se pierden entregas y notas de estudiantes, y un anuncio no se lleva nada de nadie — cobrarle dos clics a cada borrado por si acaso es cobrarle de más.
+
+El componente de la lista **se comparte entre las dos vistas** —el Tutor la ve con el botón de borrar, el Estudiante sin él—, misma razón que `DocumentContentList` en US16: duplicarlo es garantizar que se separen con el primer cambio. En el feed el cuerpo va como texto recortado y no como Markdown, porque un enlace dentro del enlace de la novedad no sería HTML válido; el anuncio con su formato se ve en la portada del curso.
+
+**Y la prueba que fija la consulta exacta del curso del Estudiante volvió a avisar — es la quinta vez.** Sigue siendo la que hay que mirar en cada cambio de esa consulta.
+
+**Verificación:** 17 pruebas nuevas (`create-announcement` 7, `delete-announcement` 7, `novedades` 3), `tsc` y `eslint` limpios, y ninguna de las que ya pasaban se rompió.
 
 ## La revisión de la plataforma del colegio, y US52
 

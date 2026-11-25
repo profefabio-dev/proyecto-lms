@@ -104,7 +104,8 @@ export default async function EstudiantePage() {
     ])
   );
 
-  const [calificadas, actividadesAbiertas, leccionesNuevas, evaluacionesNuevas] = idsCursos.length
+  const [calificadas, actividadesAbiertas, leccionesNuevas, evaluacionesNuevas, anuncios] =
+    idsCursos.length
     ? await Promise.all([
         prisma.entregas.findMany({
           where: {
@@ -144,10 +145,44 @@ export default async function EstudiantePage() {
           where: { courseId: { in: idsCursos }, visible: true, createdAt: { gte: desde } },
           select: { id: true, titulo: true, courseId: true, createdAt: true },
         }),
+        // US53 (25/11/2026): los anuncios del docente, dentro de la misma
+        // ventana de dos semanas que el resto de las novedades.
+        prisma.anuncios.findMany({
+          where: { courseId: { in: idsCursos }, createdAt: { gte: desde } },
+          select: {
+            id: true,
+            titulo: true,
+            cuerpo: true,
+            courseId: true,
+            createdAt: true,
+            tutor: { select: { nombre: true, apellido: true } },
+          },
+        }),
       ])
-    : [[], [], [], []];
+    : [[], [], [], [], []];
 
   const novedades = ordenarNovedades([
+    // US53: primero los anuncios — ver `lib/novedades.ts` para por qué van
+    // arriba de todo.
+    ...anuncios.map(
+      (a: {
+        id: string;
+        titulo: string;
+        cuerpo: string;
+        courseId: string;
+        createdAt: Date;
+        tutor: { nombre: string; apellido: string };
+      }): Novedad => ({
+        tipo: "anuncio",
+        cursoId: a.courseId,
+        cursoTitulo: tituloPorCurso.get(a.courseId) ?? "",
+        titulo: a.titulo,
+        href: `/estudiante/cursos/${a.courseId}`,
+        fecha: a.createdAt,
+        cuerpo: a.cuerpo,
+        autor: `${a.tutor.nombre} ${a.tutor.apellido}`.trim(),
+      })
+    ),
     ...actividadesAbiertas
       .filter((a: { entregas: unknown[] }) => a.entregas.length === 0)
       .map(

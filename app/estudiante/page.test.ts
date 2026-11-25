@@ -21,7 +21,11 @@ vi.mock("@/lib/prisma", () => ({
     contentViews: {
       findMany: vi.fn(),
     },
-    // 22/11/2026: las cuatro consultas del bloque de novedades.
+    // 22/11/2026: las consultas del bloque de novedades (cuatro entonces,
+    // cinco desde US53, que agregó los anuncios del docente).
+    anuncios: {
+      findMany: vi.fn(),
+    },
     entregas: {
       findMany: vi.fn(),
     },
@@ -60,6 +64,7 @@ function mockNovedadesVacias() {
   (prisma.actividades.findMany as any).mockResolvedValue([]);
   (prisma.contents.findMany as any).mockResolvedValue([]);
   (prisma.quizzes.findMany as any).mockResolvedValue([]);
+  (prisma.anuncios.findMany as any).mockResolvedValue([]);
 }
 
 describe("EstudiantePage (US14 minimo / US15)", () => {

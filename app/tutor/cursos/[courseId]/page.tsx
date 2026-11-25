@@ -29,6 +29,8 @@ import { CreateLinkContentForm } from "@/components/create-link-content-form";
 import { CreateCodeContentForm } from "@/components/create-code-content-form";
 import { ContentBody } from "@/components/content-body";
 import { CreateActivityForm } from "@/components/create-activity-form";
+import { CreateAnnouncementForm } from "@/components/create-announcement-form";
+import { AnnouncementList } from "@/components/announcement-list";
 import { CreateQuizForm } from "@/components/create-quiz-form";
 import { DeleteEvaluacionForm } from "@/components/delete-evaluacion-form";
 import { ContentOrderControls } from "@/components/content-order-controls";
@@ -80,6 +82,11 @@ export default async function CursoDetallePage({
       },
       secciones: {
         orderBy: { orden: "asc" },
+      },
+      // US53 (25/11/2026): los anuncios de este curso, lo más nuevo primero.
+      anuncios: {
+        orderBy: { createdAt: "desc" },
+        include: { tutor: { select: { nombre: true, apellido: true } } },
       },
       actividades: {
         orderBy: { orden: "asc" },
@@ -274,6 +281,31 @@ export default async function CursoDetallePage({
               <span className="font-semibold text-foreground">{curso.origenAutor}</span>
             </p>
           )}
+        </div>
+
+        {/* ANUNCIOS — US53 (25/11/2026). Lo que el docente le dice a su
+            grupo con sus propias palabras: las novedades de OP11 son
+            automáticas y no cubrían esto. */}
+        <div className="space-y-3">
+          <AnnouncementList
+            anuncios={curso.anuncios.map(
+              (anuncio: {
+                id: string;
+                titulo: string;
+                cuerpo: string;
+                createdAt: Date;
+                tutor: { nombre: string; apellido: string };
+              }) => ({
+                id: anuncio.id,
+                titulo: anuncio.titulo,
+                cuerpo: anuncio.cuerpo,
+                createdAt: anuncio.createdAt,
+                autor: `${anuncio.tutor.nombre} ${anuncio.tutor.apellido}`.trim(),
+              })
+            )}
+            puedeBorrar
+          />
+          <CreateAnnouncementForm courseId={curso.id} />
         </div>
 
         {/* US47: compartir este curso con otros docentes. */}

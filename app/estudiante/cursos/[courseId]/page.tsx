@@ -17,6 +17,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { MarkdownContent } from "@/components/markdown-content";
 import { SubmitActivityForm } from "@/components/submit-activity-form";
+import { AnnouncementList } from "@/components/announcement-list";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { LessonRow } from "@/components/lesson-row";
@@ -88,6 +89,12 @@ export default async function CursoEstudiantePage({
       // por el Tutor) y la marca opcional de "semana actual".
       secciones: {
         orderBy: { orden: "asc" },
+      },
+      // US53 (25/11/2026): los anuncios del docente, lo más nuevo primero.
+      // Van en la portada del curso, además del panel del estudiante.
+      anuncios: {
+        orderBy: { createdAt: "desc" },
+        include: { tutor: { select: { nombre: true, apellido: true } } },
       },
       // Actividades evaluables (19/11/2026). Solo las visibles, mismo
       // criterio que ya se aplica al contenido, y de cada una se trae
@@ -258,6 +265,27 @@ export default async function CursoEstudiantePage({
             </div>
           </div>
         </div>
+
+        {/* ANUNCIOS DEL DOCENTE — US53 (25/11/2026). Arriba del todo, debajo
+            de la cabecera: es lo único de esta pantalla que una persona
+            escribió a propósito para este grupo. */}
+        <AnnouncementList
+          anuncios={curso.anuncios.map(
+            (anuncio: {
+              id: string;
+              titulo: string;
+              cuerpo: string;
+              createdAt: Date;
+              tutor: { nombre: string; apellido: string };
+            }) => ({
+              id: anuncio.id,
+              titulo: anuncio.titulo,
+              cuerpo: anuncio.cuerpo,
+              createdAt: anuncio.createdAt,
+              autor: `${anuncio.tutor.nombre} ${anuncio.tutor.apellido}`.trim(),
+            })
+          )}
+        />
 
         {/* CONTINUAR / COMENZAR — US43 */}
         {leccionParaContinuar && (

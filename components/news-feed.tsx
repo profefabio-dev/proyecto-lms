@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { AlarmClock, Award, BookOpen, FileQuestion, Bell } from "lucide-react";
+import { AlarmClock, Award, BookOpen, FileQuestion, Bell, Megaphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { textoDePlazo, type Novedad } from "@/lib/novedades";
 import { notaSobreCinco } from "@/lib/grades";
 import { cn } from "@/lib/utils";
 
 /**
- * Las novedades del Estudiante (22/11/2026): lo que venció o está por
- * vencer, las notas que llegaron y el material nuevo de sus cursos.
+ * Las novedades del Estudiante (22/11/2026): los anuncios del docente, lo
+ * que venció o está por vencer, las notas que llegaron y el material nuevo
+ * de sus cursos.
  *
  * Cada novedad es un enlace al lugar donde se actúa sobre ella —la
  * actividad que hay que entregar, la pantalla de notas, la lección nueva—
@@ -45,12 +46,23 @@ export function NewsFeed({ novedades }: { novedades: Novedad[] }) {
                   <Etiqueta novedad={novedad} />
                 </div>
 
-                <p className="truncate text-xs text-muted-foreground">{novedad.cursoTitulo}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {novedad.cursoTitulo}
+                  {novedad.tipo === "anuncio" && ` · ${novedad.autor}`}
+                </p>
 
                 {novedad.tipo === "nota" && novedad.retroalimentacion && (
                   <p className="line-clamp-2 text-sm text-muted-foreground">
                     “{novedad.retroalimentacion}”
                   </p>
+                )}
+
+                {/* US53: aquí el cuerpo va como texto recortado y no
+                    renderizado como Markdown — un enlace dentro de este
+                    enlace no sería HTML válido. El anuncio completo, con su
+                    formato, se ve en la portada del curso. */}
+                {novedad.tipo === "anuncio" && (
+                  <p className="line-clamp-2 text-sm text-muted-foreground">{novedad.cuerpo}</p>
                 )}
               </div>
             </Link>
@@ -65,19 +77,27 @@ function Icono({ novedad }: { novedad: Novedad }) {
   const urgente = novedad.tipo === "plazo" && novedad.diasRestantes <= 0;
 
   const Glifo =
-    novedad.tipo === "plazo"
-      ? AlarmClock
-      : novedad.tipo === "nota"
-        ? Award
-        : novedad.clase === "evaluacion"
-          ? FileQuestion
-          : BookOpen;
+    novedad.tipo === "anuncio"
+      ? Megaphone
+      : novedad.tipo === "plazo"
+        ? AlarmClock
+        : novedad.tipo === "nota"
+          ? Award
+          : novedad.clase === "evaluacion"
+            ? FileQuestion
+            : BookOpen;
 
   return (
     <span
       className={cn(
         "flex size-10 shrink-0 items-center justify-center rounded-xl",
-        urgente ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"
+        urgente
+          ? "bg-destructive/15 text-destructive"
+          : // El anuncio lleva el índigo de marca y no el rojo de alarma: es
+            // de una persona y merece notarse, pero no es una urgencia.
+            novedad.tipo === "anuncio"
+            ? "bg-primary/15 text-primary"
+            : "bg-muted text-muted-foreground"
       )}
       aria-hidden="true"
     >
@@ -87,6 +107,14 @@ function Icono({ novedad }: { novedad: Novedad }) {
 }
 
 function Etiqueta({ novedad }: { novedad: Novedad }) {
+  if (novedad.tipo === "anuncio") {
+    return (
+      <Badge variant="default" className="font-semibold">
+        Aviso del profesor
+      </Badge>
+    );
+  }
+
   if (novedad.tipo === "plazo") {
     return (
       <Badge

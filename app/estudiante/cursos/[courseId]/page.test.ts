@@ -99,6 +99,7 @@ describe("CursoEstudiantePage (US15)", () => {
       tutor: { nombre: "Ana", apellido: "Rios" },
       contenidos: [],
       secciones: [],
+      anuncios: [],
       actividades: [],
       quizzes: [],
     });
@@ -125,6 +126,7 @@ describe("CursoEstudiantePage (US15)", () => {
         { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false, seccionId: null },
       ],
       secciones: [],
+      anuncios: [],
       actividades: [],
       quizzes: [],
     });
@@ -140,6 +142,11 @@ describe("CursoEstudiantePage (US15)", () => {
         tutor: { select: { nombre: true, apellido: true } },
         contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } },
         secciones: { orderBy: { orden: "asc" } },
+        // US53 (25/11/2026): los anuncios del docente en la portada del curso.
+        anuncios: {
+          orderBy: { createdAt: "desc" },
+          include: { tutor: { select: { nombre: true, apellido: true } } },
+        },
         actividades: {
           where: { visible: true },
           orderBy: { orden: "asc" },
@@ -170,6 +177,7 @@ describe("CursoEstudiantePage (US15)", () => {
         { id: "c2", titulo: "Oculto", descripcion: null, tipo: "VIDEO", contenido: "https://youtu.be/dQw4w9WgXcQ", visible: false, seccionId: null },
       ],
       secciones: [],
+      anuncios: [],
       actividades: [],
       quizzes: [],
     });
@@ -194,6 +202,7 @@ describe("CursoEstudiantePage (US15)", () => {
       tutor: { nombre: "Ana", apellido: "Rios" },
       contenidos: [],
       secciones: [],
+      anuncios: [],
       actividades: [],
       quizzes: [],
     });
@@ -220,6 +229,7 @@ describe("CursoEstudiantePage (US15)", () => {
         { id: "sec-1", titulo: "Semana 1", orden: 0, estado: "DISPONIBLE", esActual: false },
         { id: "sec-2", titulo: "Semana 2", orden: 1, estado: "NO_DISPONIBLE", esActual: false },
       ],
+      anuncios: [],
       actividades: [],
       quizzes: [],
     });

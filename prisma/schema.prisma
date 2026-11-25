@@ -119,6 +119,7 @@ model Users {
   entregas         Entregas[]
   intentosQuiz     IntentosQuiz[]
   rutasComoTutor   Rutas[]        @relation("TutorRutas")
+  anunciosPublicados Anuncios[]   @relation("TutorAnuncios")
   rutasInscritas   RutaUsuarios[]
 
   @@map("users")
@@ -171,6 +172,7 @@ model Courses {
   actividades Actividades[]
   quizzes     Quizzes[]
   rutas       RutaCursos[]
+  anuncios    Anuncios[]
 
   @@map("courses")
 }
@@ -440,6 +442,28 @@ model CourseUsers {
 
   @@unique([courseId, userId])
   @@map("course_users")
+}
+
+// US53 (25/11/2026): un aviso que el docente escribe con sus propias
+// palabras. El bloque de novedades del Estudiante (OP11) es automático
+// —plazos, notas, material nuevo— y no había forma de decir "mañana traigan
+// la protoboard". `cuerpo` va en Markdown, igual que las instrucciones de
+// una actividad, y se renderiza con `MarkdownContent`, nunca como HTML.
+model Anuncios {
+  id        String   @id @default(uuid())
+  courseId  String
+  // Quién lo publicó, guardado y no deducido del curso: un curso adoptado
+  // (US47) puede cambiar de manos, y el anuncio sigue siendo de su autor.
+  tutorId   String
+  titulo    String
+  cuerpo    String
+  createdAt DateTime @default(now())
+
+  course Courses @relation(fields: [courseId], references: [id])
+  tutor  Users   @relation("TutorAnuncios", fields: [tutorId], references: [id])
+
+  @@index([courseId, createdAt])
+  @@map("anuncios")
 }
 
 model Contents {
