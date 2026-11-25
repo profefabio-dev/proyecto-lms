@@ -43,7 +43,9 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
      15 pruebas. Para B.7, quitar antes al estudiante de uno de los cursos de la ruta, porque la
      siembra ya lo inscribe en todos y si no la prueba no demuestra nada.
    - El addendum del 24/11 (**bloques F y G**, diez pasos) cubre US47, US48 y US49, ninguna vista en
-     navegador. **Necesita dos cuentas de Tutor** —una comparte, la otra adopta— y la de Super
+     navegador. **El montaje ya está hecho:** `npx tsx scripts/tutor-de-prueba.ts --crear` deja el
+     segundo Tutor, el curso compartido sin sello, el curso sin compartir para el 404 y un
+     estudiante con nota, e imprime las URLs de cada paso (`--borrar --confirmar` lo deshace). **Necesita dos cuentas de Tutor** —una comparte, la otra adopta— y la de Super
      Administrador para el bloque G. El paso que más importa es **F.10**: el 404 sobre un curso no
      compartido, lo único que impide que conocer un id baste para leer el curso de otro espacio.
    - **Diez historias construidas siguen marcadas "pendiente de validación en navegador real"** en

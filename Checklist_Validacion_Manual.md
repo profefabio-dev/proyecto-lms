@@ -213,9 +213,20 @@ US43-US46 en `Backlog.md` (de "Pendiente de validación en navegador real" a val
 
 > Tres historias construidas el 23 y el 24/11/2026, **ninguna probada en navegador**. Necesitan
 > **dos cuentas de Tutor** — una comparte y la otra adopta — y esa es la razón por la que quedaron
-> fuera del recorrido anterior; si solo existe una, la segunda se crea desde la cuenta de
-> Administrador (paso 1.3 de la Parte 1). El bloque G necesita además la cuenta de Super
-> Administrador.
+> fuera del recorrido anterior. El bloque G necesita además la cuenta de Super Administrador.
+>
+> **Antes de empezar, monta el ensayo de una sola vez (25/11/2026):**
+>
+> ```
+> npx tsx scripts/tutor-de-prueba.ts --crear
+> ```
+>
+> Deja listo el segundo Tutor con su contraseña, un curso completo **ya compartido y sin el sello**
+> de verificado (ponerlo es G.2), un segundo curso publicado **sin compartir** para el 404 de F.10, y
+> un estudiante con una lección vista, una entrega calificada y un intento de evaluación — sin ese
+> rastro, F.7 no probaría nada. Al terminar imprime las URLs exactas de cada paso. No toca tus
+> cursos, tus estudiantes ni tus notas, y `--borrar --confirmar` deshace solo lo que creó,
+> **conservando las copias que hayas adoptado**.
 
 ### Como Tutor A (el autor)
 
