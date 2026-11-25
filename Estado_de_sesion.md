@@ -4,12 +4,13 @@
 > estado de cada historia es [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md); este
 > archivo solo dice **dónde quedamos y qué sigue**, y se reescribe al cerrar cada sesión.
 
-Última sesión: **24 de noviembre de 2026.** Se cerró la épica de **compartir material entre
-docentes**: US47 (un tutor adopta el curso de otro como copia propia), **US48** (el catálogo) y
-**US49** (el piso de calidad para compartir, el sello de verificado y el retiro del catálogo). Antes
-de eso se automatizaron las tres pruebas de seguridad del bloque D y se hizo una revisión general de
-enlaces que encontró uno caído. El docente hizo los commits; **no alcanzó a probar nada en
-navegador.**
+Última sesión: **25 de noviembre de 2026.** Dos cosas. Primero `scripts/tutor-de-prueba.ts`, que
+monta de una sola vez el ensayo de la épica de compartir (segundo Tutor, curso compartido sin sello,
+curso sin compartir para el 404, y un estudiante con nota). Y después **US50**: un Tutor deja de ver
+a los estudiantes de otros colegios en "Inscribir estudiantes" — una fuga anotada desde el 16/09 que
+llevaba dos meses abierta porque el intento de entonces rompía la asignación de estudiantes nuevos.
+De paso se arregló eso también, y salió **US51** (código de inscripción del curso), propuesta y sin
+construir.
 
 ---
 
@@ -21,15 +22,16 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 
 ## Estado del repositorio al cerrar
 
-- Último commit: `1015ef2` ("Ignora los PDF generados de la entrega"). **`main` está al día con
-  `origin/main`** — el docente ya subió todo lo del 23 y 24/11.
-- **Dos migraciones nuevas sin confirmar que estén aplicadas:**
-  `20261123040000_add_curso_compartible` y `20261124040000_add_curso_verificado`. Siempre con
+- Último commit **subido**: `421b342` (documentación de US48 y US49). Encima quedan **sin confirmar**
+  los archivos de `scripts/tutor-de-prueba.ts` y de **US50** — ver los comandos que se le dejaron.
+- **Tres migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
+  `20261124040000_add_curso_verificado` y `20261125040000_add_espacio_origen_estudiante`. Siempre con
   `npx prisma migrate deploy` + `npx prisma generate`, nunca `migrate dev`.
-- **Dos scripts quedaron sin seguimiento en git** (`scripts/listar-estudiantes.ts` y
-  `scripts/borrar-carga-excel.ts`, de septiembre). **No llevan nombres embebidos** —consultan la base
-  de datos—, así que subirlos es seguro; pero **no están en `.gitignore`**, así que conviene decidir:
-  commit explícito o ignorarlos. Lo que no se puede es dejarlos ahí y usar `git add -A` alguna vez.
+- **`bulk-import-students.test.ts` hay que correrlo en su máquina**: no corre en el clon de la nube
+  porque `xlsx` está bloqueado ahí, y US50 le cambió la detección de duplicados.
+- **Dos scripts siguen sin seguimiento en git** (`scripts/listar-estudiantes.ts` y
+  `scripts/borrar-carga-excel.ts`, de septiembre). No llevan nombres embebidos, así que subirlos es
+  seguro, pero no están en `.gitignore`: hay que decidir commit explícito o ignorarlos.
 - **`estudiantes.txt`, `.codex/` y `scripts/borrar-listado-1.ts` están en `.gitignore`.** El último
   lleva embebidos los nombres completos de 229 estudiantes menores de edad y el repositorio es
   público: **nunca debe subirse.**
@@ -54,15 +56,23 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
    un Tutor **reporte** un curso (es por seguridad, no por calidad — la plataforma es para menores) y
    el **contador de impacto** en el panel del Tutor ("tu curso lo usan 4 docentes y 112
    estudiantes"), que sale gratis de los datos que US47 ya guarda y es lo que más mueve a compartir.
-3. **Seguir el rediseño donde quedó**, según `DESIGN.md`: unificar los seis radios en uno, y después
+3. **US51 — el código de inscripción del curso.** Propuesta el 25/11, sin estimar. Antes de
+   construirla hay que **resolver un nudo con el docente**: el código sirve si el estudiante ya tiene
+   cuenta, y hoy los estudiantes no se registran solos y la mayoría no tiene correo propio (US29 les
+   genera uno interno). Si el código habilitara el registro, hay que decidir con qué se registra un
+   menor sin correo — eso toca US35 (documento de identidad) y el registro público de Supabase Auth,
+   que sigue activado como hallazgo sin corregir desde el 12/11. Con la suscripción por docente esta
+   es la historia de más valor comercial que hay en el backlog: es lo que permite que un docente
+   empiece sin administrador, sin archivo del colegio y sin área de sistemas.
+4. **Seguir el rediseño donde quedó**, según `DESIGN.md`: unificar los seis radios en uno, y después
    la capa "para niños". **No se hace con más colores en la interfaz** —era lo que había y lo que la
    hacía ver amateur— sino con imágenes, momentos de premio y forma/voz.
-4. **US42** (ver el curso como lo ve un estudiante) sigue propuesta sin construir; hay que
+5. **US42** (ver el curso como lo ve un estudiante) sigue propuesta sin construir; hay que
    reestimarla porque US43 cambió la pantalla que debe reflejar.
-5. Replicar el patrón de ventana en `create-tutor-form.tsx` y `create-student-form.tsx`.
-6. Propuestas viejas sin construir: US32 (grupos), US33 (perfil del tutor), US35 (documento de
+6. Replicar el patrón de ventana en `create-tutor-form.tsx` y `create-student-form.tsx`.
+7. Propuestas viejas sin construir: US32 (grupos), US33 (perfil del tutor), US35 (documento de
    identidad).
-7. **La biblioteca de contenido de la plataforma.** No es código: es el material propio o curado que
+8. **La biblioteca de contenido de la plataforma.** No es código: es el material propio o curado que
    sostiene la suscripción (ver el modelo de negocio en `Descripcion_del_Proyecto.md` y la lógica de
    los dos niveles en US49). Es lo que más tiempo va a tomar y nada de lo construido lo reemplaza.
 
@@ -85,6 +95,14 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 - **La prueba que fija la consulta exacta de la página del estudiante avisa siempre.** Volvió a
   romperse el 22/11 al agregar las consultas de novedades — es la cuarta vez. **Revisarla en cada
   cambio de esa consulta.**
+- **Cuando un arreglo se revirtió una vez, el error puede estar en el dato y no en el arreglo.** La
+  fuga del selector de estudiantes llevaba dos meses abierta porque en septiembre se concluyó que el
+  filtro de espacio "no servía". Servía: lo que faltaba era que la cuenta guardara en qué espacio se
+  creó. Antes de descartar una corrección revertida, vale la pena preguntarse qué dato le faltaba.
+- **Para una decisión de producto con precedente, comprobar qué hacen los demás antes de proponer.**
+  La forma de acotar el selector salió de mirar Canvas, Moodle y Classroom, no de intuición — y el
+  dato que más pesó (que allá "todos los usuarios" son los de una sola institución, porque cada
+  colegio tiene su instancia) cambió la respuesta.
 - **El estado de una historia se cambia en el commit que la construye, no después.** US48 y US49
   quedaron construidas el 23 y el 24/11 y el backlog siguió diciendo "sin construir" hasta que se
   revisó a propósito. Es lo único que se desincronizó en todo el proyecto, y pasó por documentar al
