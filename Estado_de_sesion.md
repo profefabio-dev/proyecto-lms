@@ -11,8 +11,17 @@ abierta porque el intento de entonces rompía la asignación de estudiantes nuev
 eso. Y **US52**, salida de revisar la plataforma del colegio (AVACOM, que es Chamilo con la marca
 cambiada) a pedido del docente: **US52**, la **fecha de cierre** de una actividad aparte de la fecha
 límite y el **tipo de entrega** que exige, y **US53**, los **anuncios del docente**, que entran al
-bloque de novedades del estudiante y van arriba de todo. Quedó propuesta **US51** (código de
-inscripción del curso) y dos ideas más anotadas de esa revisión.
+bloque de novedades del estudiante y van arriba de todo, y **US42**, ver el curso como lo ve un
+estudiante — propuesta desde el 20/11. Quedó propuesta **US51** (código de inscripción del curso) y
+el glosario del curso anotado.
+
+**Y un comando nuevo, a pedido del docente:** `npm run verificar` hace de corrido `migrate deploy`,
+`generate`, `tsc`, `eslint` y `vitest`. Dijo que las comprobaciones quitan tiempo y prefiere
+agruparlas; se acordó eso para el recorrido en navegador, pero **aplicar migraciones no es una
+comprobación** —sin ellas el código subido no funciona— y la suite es un comando de veinte
+segundos. Conviene recordarle además que **el workflow de GitHub Actions ya corre lint, build y
+test con el cliente de Prisma real en cada push**: esa verificación está montada desde agosto y no
+se está usando porque los commits se quedan en local.
 
 ---
 
@@ -25,7 +34,8 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 ## Estado del repositorio al cerrar
 
 - Último commit **subido**: `421b342` (documentación de US48 y US49). Encima quedan **sin confirmar**
-  los archivos de **US52** y **US53** — ver los comandos que se le dejaron en el chat de ese día.
+  los archivos de **US53**, **US42** y `package.json` — ver los comandos que se le dejaron en el
+  chat de ese día. (US52 ya está en el commit local `bc75430`.)
   (`tutor-de-prueba.ts` y US50 ya están en commits locales, `19761ad` y `e66ea88`.)
 - **Cinco migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
   `20261124040000_add_curso_verificado`, `20261125040000_add_espacio_origen_estudiante`,
@@ -73,15 +83,15 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
    duplicar cuentas; si cada profesor fuera su propio espacio —tentador con la suscripción por
    docente— el mismo alumno terminaría con dos cuentas y el avance partido, y desde US50 la
    plataforma ya no lo advierte. El código del curso evita tener que elegir.
-4. **Las dos ideas que quedan de revisar la plataforma del colegio** (25/11; los anuncios ya se
-   construyeron como US53): **US42, la vista de estudiante** como interruptor permanente en la barra
-   —ahí la tienen así y es lo que un docente usa todo el tiempo; hay que reestimarla porque US43
-   cambió la pantalla que debe reflejar— y el **glosario del curso**, que para Tecnología con chicos
-   de 10 a 18 no es menor, porque el vocabulario es la materia. Más cuatro detalles pequeños que
-   quedaron fuera: de **US52**, mostrar "cerrada" también en la pantalla de calificación del Tutor y
-   poder editar las dos fechas de una actividad ya creada (hoy solo se definen al crearla, como
-   pasaba con el estado del curso antes de OP05); de **US53**, editar un anuncio ya publicado (hoy
-   se borra y se escribe de nuevo) y poder fijar uno arriba del resto.
+4. **Lo que queda de revisar la plataforma del colegio** (25/11; de las cinco ideas se
+   construyeron US52, US53 y US42): el **glosario del curso**, que para Tecnología con chicos de 10
+   a 18 no es menor, porque el vocabulario es la materia. Más cuatro detalles pequeños que quedaron
+   fuera: de **US52**, mostrar "cerrada" también en la pantalla de calificación del Tutor y poder
+   editar las dos fechas de una actividad ya creada (hoy solo se definen al crearla, como pasaba con
+   el estado del curso antes de OP05); de **US53**, editar un anuncio ya publicado (hoy se borra y
+   se escribe de nuevo) y poder fijar uno arriba del resto. Y de **US42**, valdría la pena mover el
+   enlace "Ver como estudiante" a la barra superior, como lo tienen ellos, en vez de dejarlo entre
+   los accesos de la cabecera del curso.
 5. **Seguir el rediseño donde quedó**, según `DESIGN.md`: unificar los seis radios en uno, y después
    la capa "para niños". **No se hace con más colores en la interfaz** —era lo que había y lo que la
    hacía ver amateur— sino con imágenes, momentos de premio y forma/voz.

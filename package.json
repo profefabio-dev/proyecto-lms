@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrar": "prisma migrate deploy && prisma generate",
+    "tipos": "tsc --noEmit",
+    "verificar": "npm run migrar && npm run tipos && npm run lint && npm run test"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

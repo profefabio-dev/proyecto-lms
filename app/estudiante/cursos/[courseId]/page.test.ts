@@ -68,14 +68,57 @@ describe("CursoEstudiantePage (US15)", () => {
     expect(redirect).toHaveBeenCalledWith("/login");
   });
 
-  it("redirige a /login si el usuario autenticado no es Estudiante", async () => {
+  it("redirige a /login a un Administrador", async () => {
+    // US42 cambió esta guarda: ahora entran Estudiante y Tutor, y el Tutor
+    // solo si es el dueño. Los demás roles siguen fuera.
     mockSesion("auth-1");
-    (prisma.users.findUnique as any).mockResolvedValue({ rol: "TUTOR" });
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "adm-1", rol: "ADMINISTRADOR" });
 
     await expect(CursoEstudiantePage(buildParams("curso-1"))).rejects.toThrow(
       "NEXT_REDIRECT"
     );
     expect(redirect).toHaveBeenCalledWith("/login");
+  });
+
+  it("US42: un Tutor que NO es dueño del curso recibe 404", async () => {
+    mockSesion("auth-1");
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "otro-tutor", rol: "TUTOR" });
+    (prisma.courses.findUnique as any).mockResolvedValue({
+      id: "curso-1",
+      titulo: "Curso",
+      descripcion: "desc",
+      tutorId: "tutor-1",
+      tutor: { nombre: "Ana", apellido: "Rios" },
+      contenidos: [],
+      secciones: [],
+      anuncios: [],
+      actividades: [],
+      quizzes: [],
+    });
+    (prisma.courseUsers.findFirst as any).mockResolvedValue(null);
+
+    await expect(CursoEstudiantePage(buildParams("curso-1"))).rejects.toThrow("NEXT_NOT_FOUND");
+  });
+
+  it("US42: el Tutor dueño entra en vista previa, sin inscripción", async () => {
+    mockSesion("auth-1");
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "tutor-1", rol: "TUTOR" });
+    (prisma.courses.findUnique as any).mockResolvedValue({
+      id: "curso-1",
+      titulo: "Curso",
+      descripcion: "desc",
+      tutorId: "tutor-1",
+      tutor: { nombre: "Ana", apellido: "Rios" },
+      contenidos: [],
+      secciones: [],
+      anuncios: [],
+      actividades: [],
+      quizzes: [],
+    });
+    (prisma.courseUsers.findFirst as any).mockResolvedValue(null);
+
+    // No lanza: ni redirect ni 404.
+    await expect(CursoEstudiantePage(buildParams("curso-1"))).resolves.toBeTruthy();
   });
 
   it("devuelve 404 si el curso no existe", async () => {

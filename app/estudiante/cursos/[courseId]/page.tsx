@@ -23,6 +23,8 @@ import { EmptyState } from "@/components/empty-state";
 import { LessonRow } from "@/components/lesson-row";
 import { calcularProgreso } from "@/lib/course-progress";
 import { entregaCerrada } from "@/lib/activity-submission";
+import { accesoAlCurso, esVistaPrevia } from "@/lib/course-preview";
+import { PreviewBanner } from "@/components/preview-banner";
 import {
   filtrarContenidosAccesibles,
   ordenarLecciones,
@@ -69,7 +71,15 @@ export default async function CursoEstudiantePage({
 
   const usuarioActual = await prisma.users.findUnique({ where: { authId: user.id } });
 
-  if (!usuarioActual || usuarioActual.rol !== "ESTUDIANTE") {
+  if (!usuarioActual) {
+    redirect("/login");
+  }
+
+  // US42 (25/11/2026): esta pantalla acepta dos casos — el estudiante
+  // inscrito, y el **Tutor dueño del curso** en vista previa de solo
+  // lectura. Quién entra se decide en `lib/course-preview.ts`, aparte y
+  // probado; aquí solo se consultan los datos que esa decisión necesita.
+  if (usuarioActual.rol !== "ESTUDIANTE" && usuarioActual.rol !== "TUTOR") {
     redirect("/login");
   }
 
@@ -137,9 +147,22 @@ export default async function CursoEstudiantePage({
     where: { courseId: curso.id, userId: usuarioActual.id },
   });
 
-  if (!inscripcion) {
+  const acceso = accesoAlCurso({
+    rol: usuarioActual.rol,
+    usuarioId: usuarioActual.id,
+    tutorIdDelCurso: curso.tutorId,
+    tieneInscripcion: inscripcion !== null,
+  });
+
+  if (acceso.modo === "denegado") {
     notFound();
   }
+
+  // US42: en vista previa todo lo que depende del propio avance sale vacío
+  // por sí solo —el Tutor no tiene lecciones vistas ni entregas—, así que
+  // la pantalla muestra 0 % y todo pendiente sin ninguna rama aparte. Era
+  // la decisión que la historia dejaba abierta.
+  const vistaPrevia = esVistaPrevia(acceso);
 
   // US30 + US43: el criterio de "qué puede ver el Estudiante" vive en
   // `lib/course-lessons.ts`, compartido con el reproductor y con la acción
@@ -192,6 +215,8 @@ export default async function CursoEstudiantePage({
       breadcrumbs={[{ label: "Mis cursos", href: "/estudiante" }, { label: curso.titulo }]}
     >
       <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
+        {vistaPrevia && <PreviewBanner courseId={curso.id} />}
+
         {/* CABECERA DEL CURSO */}
         <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           <div className="space-y-4">
@@ -508,6 +533,11 @@ export default async function CursoEstudiantePage({
                       textoPrevio={entrega?.texto}
                       nombreArchivoPrevio={entrega?.nombreArchivo}
                       tipoEntrega={actividad.tipoEntrega}
+                      // US42: en vista previa no se entrega. Las acciones
+                      // del servidor ya rechazan a un Tutor, pero dejar el
+                      // botón activo invitaría a un error y ensuciaría los
+                      // datos de un curso en marcha.
+                      vistaPrevia={vistaPrevia}
                       // US52: la fecha de cierre se evalúa en el servidor al
                       // renderizar, igual que al recibir la entrega, para que
                       // no dependa del reloj del estudiante.

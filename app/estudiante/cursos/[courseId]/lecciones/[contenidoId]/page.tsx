@@ -12,6 +12,8 @@ import {
 import { crearUrlDescarga } from "@/lib/supabase/storage";
 import { AppShell } from "@/components/app-shell";
 import { calcularProgreso } from "@/lib/course-progress";
+import { accesoAlCurso, esVistaPrevia } from "@/lib/course-preview";
+import { PreviewBanner } from "@/components/preview-banner";
 import {
   filtrarContenidosAccesibles,
   ordenarLecciones,
@@ -55,7 +57,13 @@ export default async function LeccionEstudiantePage({
 
   const usuarioActual = await prisma.users.findUnique({ where: { authId: user.id } });
 
-  if (!usuarioActual || usuarioActual.rol !== "ESTUDIANTE") {
+  if (!usuarioActual) {
+    redirect("/login");
+  }
+
+  // US42 (25/11/2026): además del estudiante inscrito entra el Tutor dueño
+  // del curso, en vista previa de solo lectura. Ver `lib/course-preview.ts`.
+  if (usuarioActual.rol !== "ESTUDIANTE" && usuarioActual.rol !== "TUTOR") {
     redirect("/login");
   }
 
@@ -75,9 +83,18 @@ export default async function LeccionEstudiantePage({
     where: { courseId: curso.id, userId: usuarioActual.id },
   });
 
-  if (!inscripcion) {
+  const acceso = accesoAlCurso({
+    rol: usuarioActual.rol,
+    usuarioId: usuarioActual.id,
+    tutorIdDelCurso: curso.tutorId,
+    tieneInscripcion: inscripcion !== null,
+  });
+
+  if (acceso.modo === "denegado") {
     notFound();
   }
+
+  const vistaPrevia = esVistaPrevia(acceso);
 
   // Los parámetros de tipo van explícitos a propósito: así la secuencia de
   // lecciones conserva el tipo completo del contenido de Prisma
@@ -183,6 +200,8 @@ export default async function LeccionEstudiantePage({
       ]}
     >
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        {vistaPrevia && <PreviewBanner courseId={curso.id} />}
+
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           {/* LECCIÓN ACTUAL */}
           <article className="order-2 space-y-6 lg:order-1">
@@ -274,6 +293,8 @@ export default async function LeccionEstudiantePage({
                 contentId={actual.id}
                 visto={yaVista}
                 esUltima={siguiente === null}
+                // US42: en vista previa no se marca nada como visto.
+                vistaPrevia={vistaPrevia}
               />
             </div>
 

@@ -28,10 +28,15 @@ export function CompleteLessonButton({
   contentId,
   visto,
   esUltima,
+  // US42 (25/11/2026): el Tutor revisando su curso como lo ve un
+  // estudiante. El botón se muestra deshabilitado y no se oculta: es parte
+  // de lo que vino a revisar.
+  vistaPrevia = false,
 }: {
   contentId: string;
   visto: boolean;
   esUltima: boolean;
+  vistaPrevia?: boolean;
 }) {
   const [estado, formAction, enviando] = useActionState(accion, null);
 
@@ -42,6 +47,15 @@ export function CompleteLessonButton({
     : esUltima
       ? "Completar y terminar el curso"
       : "Completar y continuar";
+
+  if (vistaPrevia) {
+    return (
+      <Button type="button" size="lg" disabled className="w-full gap-2 font-bold sm:w-auto">
+        {texto}
+        {!esUltima && <ArrowRight className="size-5" aria-hidden="true" />}
+      </Button>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-2">

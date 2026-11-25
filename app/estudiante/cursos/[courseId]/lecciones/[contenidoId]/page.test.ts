@@ -66,6 +66,8 @@ function cursoConSeccionCerrada() {
   return {
     id: "curso-1",
     titulo: "Curso 1",
+    // US42: la pantalla ahora compara el dueño del curso con el usuario.
+    tutorId: "tutor-1",
     secciones: [
       { id: "s1", titulo: "Semana 1", orden: 0, estado: "DISPONIBLE", esActual: true },
       { id: "s2", titulo: "Semana 2", orden: 1, estado: "NO_DISPONIBLE", esActual: false },
@@ -155,11 +157,51 @@ describe("LeccionEstudiantePage — seguridad (bloque D.1)", () => {
     await expect(LeccionEstudiantePage({ params: params("abierta") })).resolves.toBeDefined();
   });
 
-  it("manda al login a quien no es Estudiante", async () => {
-    (prisma.users.findUnique as any).mockResolvedValue({ id: "t-1", rol: "TUTOR" });
+  it("manda al login a un Administrador", async () => {
+    // US42 (25/11/2026) cambió esta guarda: ahora entran Estudiante y
+    // Tutor, y el Tutor solo si es el dueño del curso. Los demás roles
+    // siguen fuera.
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "a-1", rol: "ADMINISTRADOR" });
 
     await expect(LeccionEstudiantePage({ params: params("abierta") })).rejects.toThrow(
       "NEXT_REDIRECT"
+    );
+  });
+
+  it("US42: un Tutor que NO es dueño del curso recibe 404", async () => {
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "otro-tutor", rol: "TUTOR" });
+    (prisma.courses.findUnique as any).mockResolvedValue(cursoConSeccionCerrada());
+    (prisma.courseUsers.findFirst as any).mockResolvedValue(null);
+
+    await expect(LeccionEstudiantePage({ params: params("abierta") })).rejects.toThrow(
+      "NEXT_NOT_FOUND"
+    );
+  });
+
+  it("US42: el Tutor dueño abre la lección en vista previa, sin inscripción", async () => {
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "tutor-1", rol: "TUTOR" });
+    (prisma.courses.findUnique as any).mockResolvedValue(cursoConSeccionCerrada());
+    (prisma.courseUsers.findFirst as any).mockResolvedValue(null);
+    (prisma.contentViews.findMany as any).mockResolvedValue([]);
+
+    await expect(LeccionEstudiantePage({ params: params("abierta") })).resolves.toBeTruthy();
+  });
+
+  it("US42: la vista previa NO salta las guardas de contenido", async () => {
+    // Lo que importa de esta historia: el Tutor ve lo que ve un estudiante,
+    // no más. Una lección de una sección cerrada sigue dando 404 también
+    // para él — si no, la vista previa mentiría justo en lo que vino a
+    // comprobar.
+    (prisma.users.findUnique as any).mockResolvedValue({ id: "tutor-1", rol: "TUTOR" });
+    (prisma.courses.findUnique as any).mockResolvedValue(cursoConSeccionCerrada());
+    (prisma.courseUsers.findFirst as any).mockResolvedValue(null);
+    (prisma.contentViews.findMany as any).mockResolvedValue([]);
+
+    await expect(LeccionEstudiantePage({ params: params("cerrada") })).rejects.toThrow(
+      "NEXT_NOT_FOUND"
+    );
+    await expect(LeccionEstudiantePage({ params: params("oculta") })).rejects.toThrow(
+      "NEXT_NOT_FOUND"
     );
   });
 });

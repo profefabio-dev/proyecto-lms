@@ -22,6 +22,9 @@ export function SubmitActivityForm({
   // `AMBOS` por defecto para que nada cambie donde no se use.
   tipoEntrega = "AMBOS",
   cerrada = false,
+  // US42 (25/11/2026): el Tutor mirando su propio curso como lo ve un
+  // estudiante. De solo lectura.
+  vistaPrevia = false,
 }: {
   actividadId: string;
   titulo: string;
@@ -30,6 +33,7 @@ export function SubmitActivityForm({
   nombreArchivoPrevio?: string | null;
   tipoEntrega?: TipoEntrega;
   cerrada?: boolean;
+  vistaPrevia?: boolean;
 }) {
   const [estado, accion, enviando] = useActionState(entregarActividad, estadoInicial);
   const [abierto, setAbierto] = useState(false);
@@ -43,6 +47,18 @@ export function SubmitActivityForm({
     if (estado?.success) {
       setAbierto(false);
     }
+  }
+
+  // US42: en vista previa el botón se muestra deshabilitado, no se oculta —
+  // el Tutor tiene que ver que ahí hay un botón de entregar, que es parte
+  // de lo que vino a revisar.
+  if (vistaPrevia) {
+    return (
+      <Button type="button" variant="outline" disabled>
+        <Send className="size-4" aria-hidden="true" />
+        Entregar
+      </Button>
+    );
   }
 
   // Cerrada: no se ofrece el botón. La guarda de verdad está en el servidor

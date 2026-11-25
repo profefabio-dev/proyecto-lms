@@ -14,6 +14,7 @@ import {
   TrendingUp,
   UserPlus,
   Users,
+  Eye,
 } from "lucide-react";
 import { ShareCourseForm } from "@/components/share-course-form";
 import { Rol } from "@prisma/client";
@@ -269,6 +270,18 @@ export default async function CursoDetallePage({
               <Plus className="size-4" aria-hidden="true" />
               Publicar material
             </a>
+            {/* US42 (25/11/2026): ver el curso como lo ve un estudiante, sin
+                salir de la sesión ni crear una cuenta de prueba. Va aquí,
+                entre los accesos que el docente ya usa — en la plataforma
+                del colegio este interruptor vive permanente en la barra,
+                porque es algo que se usa todo el tiempo. */}
+            <Link
+              href={`/estudiante/cursos/${curso.id}`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 gap-2")}
+            >
+              <Eye className="size-4" aria-hidden="true" />
+              Ver como estudiante
+            </Link>
           </div>
 
           {/* US47 (23/11/2026): el crédito al autor cuando este curso es

@@ -2,7 +2,23 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-25 — **US50 (un Tutor deja de ver a los estudiantes de otros colegios), y US52 y US53 salidas de revisar la plataforma del colegio: la ventana de entrega con su tipo, y los anuncios del docente. Se propone US51, el código de inscripción del curso.**
+Última actualización: 2026-11-25 — **Cuatro historias: US50 (un Tutor deja de ver a los estudiantes de otros colegios) y, salidas de revisar la plataforma del colegio, US52 (la ventana de entrega y su tipo), US53 (los anuncios del docente) y US42 (ver el curso como lo ve un estudiante). Se propone US51, el código de inscripción del curso.**
+
+## US42 — ver el curso como lo ve un estudiante
+
+Propuesta desde el 20/11 y construida hoy, después de confirmar en la plataforma del colegio que ahí ese interruptor vive **permanente en la barra superior**. No es un lujo: el docente publica a ciegas, y la única forma de ver el resultado real era cerrar sesión y entrar con una cuenta de estudiante inscrita.
+
+**La decisión cambió respecto de lo propuesto, y para mejor.** La historia hablaba de una **ruta aparte** bajo `/tutor` que reutilizara el renderizado del Estudiante. Reutilizarlo de verdad obligaba a extraer a componentes compartidos **la página del temario y la del reproductor de lecciones** —US43 cambió esa pantalla después de que se propusiera la historia— y cualquier copia se habría separado de la original con el primer cambio. Se hizo lo contrario: **una sola pantalla y un segundo caso de acceso.** La regla de quién entra vive en `lib/course-preview.ts`, aparte y probada: estudiante inscrito, Tutor **dueño** del curso, o denegado.
+
+Lo que eso da gratis no es poco: **el reproductor de lecciones funciona sin tocarlo**, y la pregunta que la historia dejaba abierta —qué mostrar en el avance y en el estado de las actividades, si el Tutor no tiene vistas ni entregas propias— **se resuelve sola**: las consultas ya filtran por `usuarioActual.id`, así que ve 0 % y todo pendiente, que es exactamente lo que ve un estudiante que acaba de entrar. La franja lo dice, para que no se lo pregunte en los primeros cinco segundos.
+
+**Ampliar un control de acceso es la parte delicada, así que ahí están las pruebas.** Un Tutor que **no** es el dueño recibe 404, igual que un estudiante no inscrito; un Administrador y un Super Administrador siguen fuera. Y la que más importa: **la vista previa no salta ninguna guarda de contenido** — una lección de una sección cerrada sigue dando 404 también para el Tutor. Si no fuera así, la vista previa mentiría justo en lo que vino a comprobar.
+
+Los controles de entregar y de completar se muestran **deshabilitados y no ocultos**: son parte de lo que el docente vino a revisar.
+
+**Verificación:** 13 pruebas nuevas (`course-preview` 8, y 5 de guarda en las dos pantallas), `tsc` y `eslint` limpios, cero pruebas rotas.
+
+**De paso, un comando nuevo.** A pedido del docente —"siempre quitan tiempo y no se puede estar probando cada cosa"— se agregó `npm run verificar`, que hace de corrido `migrate deploy`, `generate`, `tsc`, `eslint` y `vitest`. La idea no es probar más, es que no haya que acordarse de cuatro comandos: uno antes de cada commit. Queda dicho también que el workflow de GitHub Actions ya corre `lint`, `build` y `test` con el cliente de Prisma real en cada push — esa verificación está montada desde el 31/08 y no se está cobrando porque los commits se quedan en local.
 
 ## US53 — los anuncios del docente
 
