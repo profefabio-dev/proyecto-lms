@@ -127,9 +127,37 @@ describir lo que la plataforma hace hoy —los avisos del docente tienen su prop
 **dejando escrito el razonamiento del orden** por si algún día vuelve la lista única. `news-feed.tsx`
 está versionado, así que su borrado lo hace el docente con `git rm`.
 
+**3. Y una tercera, del mismo día: el buscador del campus acepta el código de clase.** El docente
+probó US51 y reportó que *"al buscar un curso con el código por el rol de estudiante debería
+encontrarse y si es el caso decir que ya se encuentra inscrito o inscribirse en ese curso"*. Tenía
+razón y el motivo no era un olvido de interfaz: el código solo se podía escribir en el modal
+"Unirme con código" del panel, y el buscador del campus (US17) **mira solo los cursos donde el
+estudiante ya está inscrito** — justo lo que un curso al que se llega con un código no es. Pegar el
+código ahí devolvía "sin coincidencias", que es la peor respuesta posible porque parece que el código
+está mal. Ahora, cuando lo escrito tiene **forma** de código (ocho caracteres alfanuméricos, con
+guion o sin él) el buscador hace **además** una consulta por código entre los cursos publicados y
+muestra una tarjeta arriba: título, descripción, profesor y el botón de inscribirse — o "Ya estás
+inscrito — entrar" si ya lo estaba, que es lo que el docente pedía explícitamente. La comprobación
+de la forma se hace antes de consultar (`esFormaDeCodigo`), así que una búsqueda normal como
+"robótica" no paga ninguna consulta de más. **Tres decisiones al construirlo:** no inscribir
+automáticamente —un buscador que matricula por teclear algo sería irreversible sin confirmar—;
+decir *"ningún curso activo tiene el código ABCD-1234"* en vez del "sin coincidencias" genérico; y
+**no abrir ninguna puerta nueva**: solo cursos publicados, solo tres datos de la ficha, y hace falta
+tener el código, así que no se puede *descubrir* un curso ajeno (US50) como antes tampoco. La regla
+del código quedó en tres ayudantes de `lib/course-code.ts` que comparten la acción y la pantalla. De
+paso, el botón del modal **ya no se habilita con cuatro caracteres** —el servidor exige ocho, así que
+antes dejaba enviar algo que iba a fallar— y se quitaron dos importaciones sin usar de la pantalla
+del buscador.
+
+**Y el clon atrapó el tropiezo de siempre por cuarta vez, antes del CI:** al pasar el resultado de
+`prisma.courses.findMany` a la función genérica `cursosQueCoinciden`, TypeScript resolvió `T` como
+`{ id: string }` y se perdieron `titulo` y `tutor`. Son los mismos síntomas del `Map` sin tipar: en
+la máquina del docente, con el cliente de Prisma generado, habría compilado; en el clon no. Se
+escribieron los tipos explícitos en las dos consultas nuevas, como dice `AGENTS.md`.
+
 **Estado después de las dos:** `tsc` sin errores nuevos, `eslint` con **0 errores y 23 avisos** (uno
 menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
-tocadas en verde — `course-code` 10, `novedades` 4 y `join-course-by-code` 15.
+tocadas en verde — `course-code` 17, `novedades` 4, `join-course-by-code` 15 y `buscar/page` 9.
 
 ## US42 — ver el curso como lo ve un estudiante
 

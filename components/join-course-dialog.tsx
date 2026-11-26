@@ -4,6 +4,7 @@ import { useState, useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, Plus, ArrowRight, CheckCircle2, X } from "lucide-react";
 import { unirseACursoConCodigo, type ResultadoUnirseCurso } from "@/lib/actions/join-course-by-code";
+import { esFormaDeCodigo } from "@/lib/course-code";
 import { Button } from "@/components/ui/button";
 
 export function JoinCourseDialog() {
@@ -115,10 +116,13 @@ export function JoinCourseDialog() {
                     >
                       Cancelar
                     </Button>
+                    {/* 26/11/2026: el servidor exige el código completo, así que el
+                        botón se habilita con el código completo y no con cuatro
+                        caracteres — antes se podía enviar algo que iba a fallar. */}
                     <Button
                       type="submit"
                       size="sm"
-                      disabled={enviando || codigoInput.length < 4}
+                      disabled={enviando || !esFormaDeCodigo(codigoInput)}
                       className="rounded-xl font-bold gap-1.5"
                     >
                       {enviando ? "Verificando..." : "Inscribirme"}

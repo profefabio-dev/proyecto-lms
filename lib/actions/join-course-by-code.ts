@@ -5,7 +5,12 @@ import { z } from "zod";
 import { Rol, EstadoUsuario, EstadoCurso } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { LARGO_CODIGO_CURSO, codigoDelCurso, normalizarCodigoCurso } from "@/lib/course-code";
+import {
+  LARGO_CODIGO_CURSO,
+  cursosQueCoinciden,
+  filtroPorCodigoCurso,
+  normalizarCodigoCurso,
+} from "@/lib/course-code";
 
 const unirseSchema = z.object({
   codigo: z
@@ -100,10 +105,21 @@ export async function unirseACursoConCodigo(
   // código— en vez de traer todos los cursos publicados. `insensitive`
   // porque el id se guarda en minúsculas y el estudiante suele escribir el
   // código en mayúsculas; la comprobación exacta se hace igual abajo.
-  const cursosCandidatos = await prisma.courses.findMany({
+  // El tipo va escrito y no inferido: en el clon de verificación el cliente
+  // de Prisma no está generado, `findMany` devuelve `any`, y al pasarlo a una
+  // función genérica TypeScript resuelve `T` como `{ id: string }` y se
+  // pierden `titulo` y `tutor`. Es el tropiezo que `AGENTS.md` anota como
+  // repetido — acá lo atrapó el clon antes del CI.
+  type CursoCandidato = {
+    id: string;
+    titulo: string;
+    tutor: { espacioId: string | null };
+  };
+
+  const cursosCandidatos: CursoCandidato[] = await prisma.courses.findMany({
     where: {
       estado: EstadoCurso.PUBLICADO,
-      id: { startsWith: codigoLimpio, mode: "insensitive" },
+      id: filtroPorCodigoCurso(codigoLimpio),
     },
     select: {
       id: true,
@@ -112,7 +128,7 @@ export async function unirseACursoConCodigo(
     },
   });
 
-  const coincidencias = cursosCandidatos.filter((c) => codigoDelCurso(c.id) === codigoLimpio);
+  const coincidencias = cursosQueCoinciden(cursosCandidatos, codigoLimpio);
 
   if (coincidencias.length === 0) {
     return {

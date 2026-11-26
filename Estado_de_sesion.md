@@ -23,6 +23,9 @@ de revisarlo:
   caracteres completo, coincidencia única en vez de "el primero que aparezca", filtro en la base de
   datos en vez de en memoria, error registrado y **15 pruebas** donde no había ninguna. **Sigue sin
   poder revocarse** —se deriva del id del curso— y eso queda anotado para antes de cobrar.
+- **Y el buscador del campus acepta el código de clase**, a pedido del docente probándolo: pegar el
+  código ahí no encontraba nada, porque ese buscador mira solo los cursos donde ya está inscrito.
+  Ahora muestra el curso con su profesor y el botón de inscribirse, o "ya estás inscrito — entrar".
 - **El bloque de novedades se cerró**, también por decisión del docente: `news-feed.tsx` y las cinco
   piezas de `lib/novedades.ts` que solo él usaba se borraron, y la decisión de orden de US53 se
   reescribió para describir lo que la plataforma hace hoy (los avisos tienen su propio bloque en la
@@ -74,7 +77,9 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
   trozos. El mensaje debe decir las dos cosas — lo que llegó y lo que hubo que arreglarle. Entran las
   dos correcciones, las tres pruebas actualizadas, el
   endurecimiento de US51 (`join-course-by-code.ts` y `.test.ts` nuevo, `course-code.ts` y su prueba),
-  la limpieza de `lib/novedades.ts` con su prueba y `app/estudiante/page.tsx`, los cuatro documentos
+  el buscador por código (`app/estudiante/buscar/page.tsx` y su prueba, `components/join-by-code-result.tsx`
+  nuevo, `components/join-course-dialog.tsx`), la limpieza de `lib/novedades.ts` con su prueba y
+  `app/estudiante/page.tsx`, los cuatro documentos
   (`Backlog.md`, `progress.md`, `DESIGN.md`, `Estado_de_sesion.md`) y el `AGENTS.md` nuevo.
 - **Un borrado pendiente que solo puede hacer el docente:** `git rm components/news-feed.tsx`. El
   archivo está versionado y el puente no borra archivos; el código ya no lo importa nadie, así que

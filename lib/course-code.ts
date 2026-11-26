@@ -44,3 +44,40 @@ export function normalizarCodigoCurso(codigo: string): string {
 export function codigoDelCurso(courseId: string): string {
   return normalizarCodigoCurso(courseId).slice(0, LARGO_CODIGO_CURSO);
 }
+
+/**
+ * Si lo que escribió alguien tiene **la forma** de un código de clase: ocho
+ * caracteres alfanuméricos, con guion o sin él, en mayúsculas o minúsculas.
+ * No dice que el curso exista, solo que vale la pena buscarlo por código —
+ * es lo que usa el buscador del campus para distinguir "ABCD-1234" de
+ * "robótica" sin hacerle una consulta de más a la base de datos.
+ */
+export function esFormaDeCodigo(texto: string): boolean {
+  return normalizarCodigoCurso(texto).length === LARGO_CODIGO_CURSO;
+}
+
+/**
+ * El fragmento de consulta que encuentra un curso por su código: filtra por
+ * el **comienzo del id**, que es su clave primaria y de donde sale el
+ * código. `insensitive` porque el id se guarda en minúsculas y el código se
+ * suele escribir en mayúsculas.
+ *
+ * La coincidencia exacta se confirma después con `cursosQueCoinciden` — este
+ * filtro es solo para que la base de datos no devuelva toda la tabla.
+ */
+export function filtroPorCodigoCurso(codigoLimpio: string) {
+  return { startsWith: codigoLimpio, mode: "insensitive" as const };
+}
+
+/**
+ * Los cursos cuyo código es **exactamente** el buscado. Devuelve la lista y
+ * no el primero a propósito: quien llama decide qué hacer con cero y con más
+ * de uno, y dos cursos distintos no pueden terminar siendo "el mismo" por un
+ * `.find()` silencioso (ver la cabecera de `join-course-by-code.ts`).
+ */
+export function cursosQueCoinciden<T extends { id: string }>(
+  cursos: T[],
+  codigoLimpio: string
+): T[] {
+  return cursos.filter((c) => codigoDelCurso(c.id) === codigoLimpio);
+}

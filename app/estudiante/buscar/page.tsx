@@ -11,10 +11,17 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { construirFiltroBusqueda } from "@/lib/search";
+import {
+  esFormaDeCodigo,
+  filtroPorCodigoCurso,
+  formatearCodigoCurso,
+  cursosQueCoinciden,
+  normalizarCodigoCurso,
+} from "@/lib/course-code";
 import { AppShell } from "@/components/app-shell";
+import { JoinByCodeResult } from "@/components/join-by-code-result";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const SUGERENCIAS = ["Algoritmo", "React", "Lógica", "Robótica", "Base de datos", "Código"];
 
@@ -42,6 +49,47 @@ export default async function BuscarPage({
 
   const termino = (q ?? "").trim();
 
+  // US51 (26/11/2026): si lo que escribió tiene la forma de un código de
+  // clase, se busca **además** por código. Hace falta porque la búsqueda de
+  // abajo (US17) mira solo los cursos donde ya está inscrito, y a un curso
+  // al que se llega con un código uno todavía no pertenece: pegar el código
+  // acá no encontraba nada. Solo cursos PUBLICADOS, y solo se muestran
+  // título, descripción y profesor — el contenido sigue exigiendo estar
+  // inscrito. No se puede descubrir un curso sin su código (US50).
+  const codigoBuscado = esFormaDeCodigo(termino) ? normalizarCodigoCurso(termino) : null;
+
+  // El tipo va escrito y no inferido: `prisma.courses` pierde el tipo en el
+  // clon de verificación (el cliente no está generado) y un `any` acá
+  // terminaría en JSX, que es el tropiezo que ya se corrigió tres veces —
+  // ver `AGENTS.md`.
+  type CursoDelCodigo = {
+    id: string;
+    titulo: string;
+    descripcion: string;
+    tutor: { nombre: string; apellido: string };
+    inscritos: { id: string }[];
+  };
+
+  let cursoDelCodigo: CursoDelCodigo | null = null;
+
+  if (codigoBuscado !== null) {
+    const candidatos: CursoDelCodigo[] = await prisma.courses.findMany({
+      where: { estado: "PUBLICADO", id: filtroPorCodigoCurso(codigoBuscado) },
+      select: {
+        id: true,
+        titulo: true,
+        descripcion: true,
+        tutor: { select: { nombre: true, apellido: true } },
+        inscritos: { where: { userId: usuarioActual.id }, select: { id: true } },
+      },
+    });
+
+    // Igual que la acción: coincidencia exacta y única. Si dos cursos
+    // coincidieran, no se muestra ninguno en vez de mostrar el que sea.
+    const exactos = cursosQueCoinciden(candidatos, codigoBuscado);
+    cursoDelCodigo = exactos.length === 1 ? exactos[0] : null;
+  }
+
   // US17: la búsqueda solo mira los cursos donde el estudiante está inscrito
   // y los contenidos visibles dentro de esos cursos
   const [cursos, contenidos] =
@@ -66,7 +114,8 @@ export default async function BuscarPage({
           }),
         ]);
 
-  const sinResultados = termino.length > 0 && cursos.length === 0 && contenidos.length === 0;
+  const sinResultados =
+    termino.length > 0 && cursos.length === 0 && contenidos.length === 0 && !cursoDelCodigo;
 
   return (
     <AppShell usuario={usuarioActual} breadcrumbs={[{ label: "Búsqueda" }]}>
@@ -83,7 +132,8 @@ export default async function BuscarPage({
               </h1>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Encuentra rápidamente lecciones, módulos y cursos en los que estás inscrito.
+              Encuentra lecciones, módulos y cursos en los que estás inscrito — o pega el código de
+              clase que te dio tu profesor para entrar a uno nuevo.
             </p>
           </div>
 
@@ -94,7 +144,7 @@ export default async function BuscarPage({
                 type="search"
                 name="q"
                 defaultValue={termino}
-                placeholder="Escribe el nombre de una lección, tema o curso..."
+                placeholder="Un tema, un curso... o un código como ABCD-1234"
                 className="w-full h-11 rounded-xl border border-border/80 bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                 aria-label="Buscar en mis cursos"
               />
@@ -120,6 +170,33 @@ export default async function BuscarPage({
             ))}
           </div>
         </div>
+
+        {/* CURSO ENCONTRADO POR SU CÓDIGO DE CLASE (US51) */}
+        {cursoDelCodigo && (
+          <JoinByCodeResult
+            curso={{
+              id: cursoDelCodigo.id,
+              titulo: cursoDelCodigo.titulo,
+              descripcion: cursoDelCodigo.descripcion,
+              autor: `${cursoDelCodigo.tutor.nombre} ${cursoDelCodigo.tutor.apellido}`,
+            }}
+            codigo={formatearCodigoCurso(cursoDelCodigo.id)}
+            yaInscrito={cursoDelCodigo.inscritos.length > 0}
+          />
+        )}
+
+        {/* CÓDIGO CON FORMA VÁLIDA PERO SIN CURSO */}
+        {codigoBuscado !== null && !cursoDelCodigo && (
+          <div className="rounded-2xl border border-border/80 bg-card p-6 text-center space-y-2">
+            <p className="text-sm font-semibold text-foreground">
+              Ningún curso activo tiene el código {formatearCodigoCurso(termino)}
+            </p>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Revísalo con tu profesor: puede estar mal copiado, o el curso puede no estar publicado
+              todavía.
+            </p>
+          </div>
+        )}
 
         {/* MENSAJE INICIAL */}
         {termino.length === 0 && (
