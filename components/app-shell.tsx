@@ -82,11 +82,20 @@ const ETIQUETA_ROL: Record<RolConocido, string> = {
 export function AppShell({
   usuario,
   breadcrumbs,
+  accion,
   children,
 }: {
   usuario: Usuario;
   /** Ruta de navegación mostrada en el header (opcional, no rompe páginas que no la pasen). */
   breadcrumbs?: BreadcrumbItem[];
+  /**
+   * Acción de la pantalla, a la derecha de la barra superior (26/11/2026).
+   * La usa "Ver como estudiante" (US42): en la plataforma del colegio ese
+   * interruptor vive permanente arriba, y acá estaba entre los accesos de
+   * la cabecera del curso, donde se perdía. Es opcional, así que ninguna
+   * pantalla que no la pase cambia.
+   */
+  accion?: React.ReactNode;
   children: React.ReactNode;
 }) {
   // Paquete 2 de interfaz (2026-11-12): antes había un solo estado
@@ -159,6 +168,8 @@ export function AppShell({
               <Breadcrumbs items={breadcrumbs} />
             </div>
           )}
+
+          {accion && <div className="ml-auto shrink-0">{accion}</div>}
         </div>
 
         {children}

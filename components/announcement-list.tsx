@@ -1,10 +1,13 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Megaphone, Trash2 } from "lucide-react";
+import { Megaphone, Pencil, Trash2, X } from "lucide-react";
 import { eliminarAnuncio } from "@/lib/actions/delete-announcement";
+import { editarAnuncio } from "@/lib/actions/edit-announcement";
 import { MarkdownContent } from "@/components/markdown-content";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 export type AnuncioVisible = {
   id: string;
@@ -25,10 +28,16 @@ export type AnuncioVisible = {
  */
 export function AnnouncementList({
   anuncios,
-  puedeBorrar = false,
+  puedeGestionar = false,
 }: {
   anuncios: AnuncioVisible[];
-  puedeBorrar?: boolean;
+  /**
+   * El tutor del curso: ve los botones de editar y borrar. El estudiante no
+   * recibe esta propiedad, y de todos modos las dos acciones comprueban en
+   * el servidor que el curso sea suyo — ocultar un botón no es una
+   * restricción.
+   */
+  puedeGestionar?: boolean;
 }) {
   if (anuncios.length === 0) {
     return null;
@@ -43,30 +52,130 @@ export function AnnouncementList({
 
       <ul className="space-y-3">
         {anuncios.map((anuncio) => (
-          <li
-            key={anuncio.id}
-            className="space-y-2 rounded-2xl border border-primary/25 bg-primary/5 p-4"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div className="min-w-0 space-y-0.5">
-                <p className="font-semibold text-foreground">{anuncio.titulo}</p>
-                <p className="text-xs text-muted-foreground">
-                  {anuncio.autor} ·{" "}
-                  {anuncio.createdAt.toLocaleDateString("es-CO", {
-                    day: "numeric",
-                    month: "long",
-                  })}
-                </p>
-              </div>
-
-              {puedeBorrar && <BotonBorrar anuncioId={anuncio.id} />}
-            </div>
-
-            <MarkdownContent contenido={anuncio.cuerpo} />
-          </li>
+          <Anuncio key={anuncio.id} anuncio={anuncio} puedeGestionar={puedeGestionar} />
         ))}
       </ul>
     </section>
+  );
+}
+
+/**
+ * Un anuncio. En modo lectura muestra el cuerpo; en modo edición, el mismo
+ * formulario con el que se escribió — igual que `EditContentForm` de OP06,
+ * y detrás de un botón como manda OP07.
+ */
+function Anuncio({
+  anuncio,
+  puedeGestionar,
+}: {
+  anuncio: AnuncioVisible;
+  puedeGestionar: boolean;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [estado, accion, enviando] = useActionState(editarAnuncio, null);
+
+  // El formulario **no se cierra solo** al guardar. Cerrarlo desde un efecto
+  // (`if (estado.success) setEditando(false)`) es `setState` dentro de un
+  // efecto, que `eslint` rechaza y que ya rompió el lint tres veces en este
+  // proyecto — ver `AGENTS.md`. Se confirma en su sitio y el docente cierra,
+  // igual que el formulario de preguntas de OP08, que también se queda
+  // abierto a propósito con una franja que dice qué pasó.
+
+  return (
+    <li className="space-y-2 rounded-2xl border border-primary/25 bg-primary/5 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0 space-y-0.5">
+          <p className="font-semibold text-foreground">{anuncio.titulo}</p>
+          <p className="text-xs text-muted-foreground">
+            {anuncio.autor} ·{" "}
+            {anuncio.createdAt.toLocaleDateString("es-CO", {
+              day: "numeric",
+              month: "long",
+            })}
+          </p>
+        </div>
+
+        {puedeGestionar && !editando && (
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEditando(true)}
+              aria-label="Editar este anuncio"
+            >
+              <Pencil className="size-4" aria-hidden="true" />
+            </Button>
+            <BotonBorrar anuncioId={anuncio.id} />
+          </div>
+        )}
+
+        {editando && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setEditando(false)}
+            aria-label="Dejar de editar"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </Button>
+        )}
+      </div>
+
+      {editando ? (
+        <form action={accion} className="space-y-3">
+          <input type="hidden" name="anuncioId" value={anuncio.id} />
+          <Input
+            name="titulo"
+            defaultValue={anuncio.titulo}
+            required
+            aria-label="Título del anuncio"
+          />
+          <Textarea
+            name="cuerpo"
+            defaultValue={anuncio.cuerpo}
+            rows={4}
+            required
+            aria-label="Cuerpo del anuncio"
+          />
+          <p className="text-xs text-muted-foreground">
+            Corregirlo no cambia su fecha ni lo vuelve a anunciar como nuevo.
+          </p>
+
+          {estado && !estado.success && (
+            <p role="alert" className="text-xs font-medium text-destructive">
+              {estado.error}
+            </p>
+          )}
+
+          {estado?.success && (
+            <p className="text-xs font-medium text-emerald-500">
+              Guardado. Tus estudiantes ya ven la corrección.
+            </p>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" size="sm" disabled={enviando} className="font-semibold">
+              {enviando ? "Guardando..." : "Guardar cambios"}
+            </Button>
+            {estado?.success && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setEditando(false)}
+                className="font-semibold"
+              >
+                Listo
+              </Button>
+            )}
+          </div>
+        </form>
+      ) : (
+        <MarkdownContent contenido={anuncio.cuerpo} />
+      )}
+    </li>
   );
 }
 

@@ -109,3 +109,26 @@ export function textoDeLoQueSeEspera(tipo: TipoEntrega): string {
       return "Puedes escribir tu respuesta, adjuntar un archivo, o las dos cosas.";
   }
 }
+
+/**
+ * La fecha como la espera un campo `datetime-local`: `YYYY-MM-DDTHH:mm` en
+ * **hora local**, o cadena vacía si no hay fecha.
+ *
+ * No sirve `toISOString().slice(0, 16)`, que es la clásica: devuelve UTC, y
+ * en Colombia (UTC-5) el campo aparecería con cinco horas de más — un plazo
+ * de las 11 de la noche se vería como las 4 de la mañana del día siguiente.
+ * Se agrega para poder editar las dos fechas de una actividad ya creada
+ * (26/11/2026) mostrando lo que el docente escribió, no otra hora.
+ */
+export function valorParaCampoDeFecha(fecha: Date | null): string {
+  if (!fecha) {
+    return "";
+  }
+
+  const dos = (n: number) => String(n).padStart(2, "0");
+
+  return (
+    `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}` +
+    `T${dos(fecha.getHours())}:${dos(fecha.getMinutes())}`
+  );
+}

@@ -194,6 +194,20 @@ export default async function CursoDetallePage({
     <AppShell
       usuario={usuarioActual}
       breadcrumbs={[{ label: "Mis cursos", href: "/tutor/cursos" }, { label: curso.titulo }]}
+      accion={
+        /* US42 (26/11/2026): acá arriba, no entre los accesos de la cabecera
+           del curso, donde se perdía. Es lo que el docente usa para revisar
+           cómo va quedando, y en la plataforma del colegio ese interruptor
+           vive permanente en la barra superior. */
+        <Link
+          href={`/estudiante/cursos/${curso.id}`}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 gap-2")}
+        >
+          <Eye className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Ver como estudiante</span>
+          <span className="sm:hidden">Vista estudiante</span>
+        </Link>
+      }
     >
       <main className="mx-auto max-w-5xl space-y-10 px-4 sm:px-6 py-8">
         {/* CABECERA DEL CURSO */}
@@ -276,13 +290,6 @@ export default async function CursoDetallePage({
                 entre los accesos que el docente ya usa — en la plataforma
                 del colegio este interruptor vive permanente en la barra,
                 porque es algo que se usa todo el tiempo. */}
-            <Link
-              href={`/estudiante/cursos/${curso.id}`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "min-h-11 gap-2")}
-            >
-              <Eye className="size-4" aria-hidden="true" />
-              Ver como estudiante
-            </Link>
           </div>
 
           {/* US47 (23/11/2026): el crédito al autor cuando este curso es
@@ -320,7 +327,7 @@ export default async function CursoDetallePage({
                 autor: `${anuncio.tutor.nombre} ${anuncio.tutor.apellido}`.trim(),
               })
             )}
-            puedeBorrar
+            puedeGestionar
           />
           <CreateAnnouncementForm courseId={curso.id} />
         </div>

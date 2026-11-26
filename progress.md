@@ -2,7 +2,7 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-26 — **Revisión del rediseño que trajo Antigravity el 25/11, y las dos decisiones que salieron de ella.** Se corrigieron **dos errores que bloqueaban el CI** (los dos, tercera repetición de un tropiezo ya documentado) y se actualizaron **tres pruebas**; **US51 se endureció** (código completo, coincidencia única, filtro en la base de datos, +15 pruebas de la acción, que no tenía ninguna); y se **cerró el bloque de novedades**: `news-feed.tsx` y `ordenarNovedades` se borraron y la decisión de orden de US53 se reescribió para describir lo que la plataforma hace hoy. Las reglas cortas del proyecto quedaron escritas en **`AGENTS.md`**, que no existía. El 25/11 habían entrado **US50**, **US52**, **US53**, **US42** y `scripts/tutor-de-prueba.ts`, y Antigravity rehizo la interfaz del Estudiante, la portada pública, el login, el temario, el reproductor de lecciones, el quiz y el panel del Docente, con **US51** dentro.
+Última actualización: 2026-11-26 — **Revisión del rediseño de Antigravity, las decisiones que salieron de ella, y los cuatro pendientes chicos.** Dos errores que bloqueaban el CI corregidos y tres pruebas actualizadas; **US51 endurecida** (+15 pruebas donde no había ninguna) y el **buscador del campus acepta el código de clase**; **bloque de novedades cerrado** (`news-feed.tsx` borrado y la decisión de US53 reescrita); y cuatro pendientes anotados desde el 25/11: **las dos fechas de una actividad se pueden editar** y su estado se ve en la pantalla de calificación (US52), **un anuncio se puede corregir** sin borrarlo y escribirlo de nuevo (US53), y **"Ver como estudiante" vive en la barra superior** (US42). Las reglas cortas del proyecto quedaron en **`AGENTS.md`**, que no existía.
 
 ## Rediseño UI/UX — Modernización integral para jóvenes (Platzi + Canvas LMS)
 
@@ -158,6 +158,59 @@ escribieron los tipos explícitos en las dos consultas nuevas, como dice `AGENTS
 **Estado después de las dos:** `tsc` sin errores nuevos, `eslint` con **0 errores y 23 avisos** (uno
 menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
 tocadas en verde — `course-code` 17, `novedades` 4, `join-course-by-code` 15 y `buscar/page` 9.
+
+### Los cuatro pendientes chicos (26/11/2026)
+
+Elegidos por el docente de cuatro opciones, por ser los que se topa a diario. Ninguno necesitó
+migración.
+
+**1 y 2. La ventana de entrega, en la pantalla donde el Tutor califica.** US52 agregó la fecha de
+cierre, pero el estado de la ventana se veía **solo del lado del estudiante** y las dos fechas solo
+se podían definir **al crear** la actividad. Lo segundo es exactamente lo que OP05 corrigió para el
+estado de un curso, donde publicar obligaba a volver a escribir título, descripción e imagen como si
+fuera un curso nuevo; y un plazo es lo que más se mueve en un curso real ("no alcanzaron, lo corro al
+lunes"). Ahora la cabecera de la actividad muestra *abierta* / *fuera de plazo (sigue aceptando)* /
+*cerrada: ya no acepta entregas* y las dos fechas como insignias, y debajo de los contadores hay un
+formulario —**cerrado por defecto**, OP07: ahí el Tutor viene a calificar— que cambia solo esas dos
+fechas. `editarVentanaDeActividad` **escribe únicamente `fechaLimite` y `fechaCierre`** (hay una
+prueba que lo fija), repite la comprobación de `cierreCoherente` de US52 y exige que el curso sea del
+tutor autenticado. **Un campo vacío borra la fecha**, que es la única forma de volver atrás después
+de ponerla por error; se dice en pantalla, porque un campo vacío que borra un dato no es evidente.
+**El detalle que costó una función y cuatro pruebas:** el valor de un `datetime-local` no se arma con
+`toISOString().slice(0, 16)` —la receta habitual—, porque eso devuelve UTC y en Colombia (UTC-5) un
+plazo de las 11 de la noche aparecería como las 4 de la mañana del día siguiente;
+`valorParaCampoDeFecha` lo arma en hora local y una prueba comprueba el viaje de vuelta con
+`new Date`.
+
+**3. Corregir un anuncio ya publicado.** Antes la única forma de arreglar una errata era borrarlo y
+escribirlo de nuevo, y eso **lo movía al principio de la lista y lo volvía a mostrar como novedad**:
+el estudiante lo veía dos veces y el segundo aviso parecía nuevo sin serlo. Mismo problema que OP06
+corrigió para los contenidos. `editarAnuncio` **no toca `createdAt`** (corregir una palabra no vuelve
+nuevo el anuncio, y esa fecha es la que el estudiante usa para saber de cuándo es) **ni el
+`tutorId`** (es de quien lo escribió: un curso adoptado puede cambiar de manos y el tutor actual
+puede corregir una errata sin quedarse con la autoría); las dos cosas están fijadas en una prueba. La
+edición es en línea, en el mismo componente compartido entre las dos vistas, y la propiedad pasó de
+`puedeBorrar` a `puedeGestionar`, que es lo que ahora gobierna.
+
+**Y acá apareció el tropiezo de siempre, esta vez escrito en esta sesión:** cerrar el formulario al
+guardar con un `useEffect` que llama a `setEditando(false)` es `setState` dentro de un efecto — lo que
+`AGENTS.md` anota como repetido tres veces, y lo que un día antes se había corregido en el reproductor
+de lecciones de Antigravity. `eslint` lo marcó antes de que llegara al CI. **No se silenció con una
+excepción de lint**: el formulario ya no se cierra solo, confirma en su sitio ("Guardado. Tus
+estudiantes ya ven la corrección") y el docente cierra con un botón, igual que el formulario de
+preguntas de OP08, que también se queda abierto a propósito.
+
+**4. "Ver como estudiante" se mudó a la barra superior.** Vivía entre los accesos de la cabecera del
+curso, donde se perdía entre los demás botones; en la plataforma del colegio ese interruptor es
+permanente arriba. `AppShell` acepta ahora una propiedad **`accion` opcional** —una sola pantalla la
+pasa, y ninguna de las demás cambia— que se alinea a la derecha de la barra. En celular el texto se
+acorta a "Vista estudiante" para no empujar las migas de pan.
+
+**Verificación:** `tsc` sin errores nuevos, `eslint` **0 errores** y 21 avisos, y las pruebas nuevas
+en verde — 11 de `edit-activity-window`, 8 de `edit-announcement` y 4 de `valorParaCampoDeFecha`. La
+suite completa queda en **307 pruebas que pasan**; las que fallan en el clon de la nube son, una por
+una, el ruido conocido del cliente de Prisma sin generar (se comprobó el motivo de cada archivo que
+falla, no solo el total).
 
 ## US42 — ver el curso como lo ve un estudiante
 

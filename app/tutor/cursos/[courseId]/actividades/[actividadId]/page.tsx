@@ -1,6 +1,14 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, ClipboardList, Download, Inbox, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarClock,
+  ClipboardList,
+  Download,
+  Inbox,
+  Lock,
+  Users,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
@@ -11,6 +19,8 @@ import { MarkdownContent } from "@/components/markdown-content";
 import { GradeSubmissionForm } from "@/components/grade-submission-form";
 import { Badge } from "@/components/ui/badge";
 import { crearUrlDescarga } from "@/lib/supabase/storage";
+import { estadoDeLaEntrega } from "@/lib/activity-submission";
+import { EditActivityWindowForm } from "@/components/edit-activity-window-form";
 
 // Pantalla de revisión de una actividad (19/11/2026): el tutor ve quién
 // entregó, qué entregó, y califica ahí mismo. También lista a los
@@ -82,6 +92,21 @@ export default async function RevisarActividadPage({
     timeStyle: "short",
   });
 
+  // US52 (26/11/2026): el estado de la ventana de entrega se veía solo del
+  // lado del estudiante. El tutor califica sin saber si la actividad sigue
+  // aceptando trabajos, que es justo lo que decide si tiene sentido esperar
+  // a alguien o ya puede cerrar la nota.
+  const estadoVentana = estadoDeLaEntrega(
+    { fechaLimite: actividad.fechaLimite, fechaCierre: actividad.fechaCierre },
+    new Date()
+  );
+
+  const textoVentana = {
+    abierta: "Abierta",
+    fuera_de_plazo: "Fuera de plazo (sigue aceptando)",
+    cerrada: "Cerrada: ya no acepta entregas",
+  }[estadoVentana];
+
   return (
     <AppShell
       usuario={usuarioActual}
@@ -122,9 +147,27 @@ export default async function RevisarActividadPage({
               {actividad.fechaLimite && (
                 <Badge variant="outline" className="text-xs font-semibold">
                   <CalendarClock className="mr-1 size-3 text-primary" aria-hidden="true" />
-                  Hasta {formatoFecha.format(actividad.fechaLimite)}
+                  Vence {formatoFecha.format(actividad.fechaLimite)}
                 </Badge>
               )}
+              {actividad.fechaCierre && (
+                <Badge variant="outline" className="text-xs font-semibold">
+                  <Lock className="mr-1 size-3 text-primary" aria-hidden="true" />
+                  Cierra {formatoFecha.format(actividad.fechaCierre)}
+                </Badge>
+              )}
+              <Badge
+                variant={
+                  estadoVentana === "cerrada"
+                    ? "destructive"
+                    : estadoVentana === "fuera_de_plazo"
+                      ? "warning"
+                      : "success"
+                }
+                className="text-xs font-semibold"
+              >
+                {textoVentana}
+              </Badge>
             </div>
           </div>
         </div>
@@ -143,6 +186,12 @@ export default async function RevisarActividadPage({
             {calificadas} calificadas
           </Badge>
         </div>
+
+        <EditActivityWindowForm
+          actividadId={actividad.id}
+          fechaLimite={actividad.fechaLimite}
+          fechaCierre={actividad.fechaCierre}
+        />
 
         <section className="space-y-4">
           <h2 className="font-heading text-xl font-bold text-foreground">Entregas</h2>

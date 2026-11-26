@@ -8,6 +8,7 @@ import {
   cierreCoherente,
   faltaParaEntregar,
   textoDeLoQueSeEspera,
+  valorParaCampoDeFecha,
 } from "./activity-submission";
 
 const ahora = new Date("2026-11-25T10:00:00Z");
@@ -116,5 +117,28 @@ describe("textoDeLoQueSeEspera", () => {
     expect(textoDeLoQueSeEspera("SOLO_TEXTO")).toContain("Escribe");
     expect(textoDeLoQueSeEspera("SOLO_ARCHIVO")).toContain("Adjunta");
     expect(textoDeLoQueSeEspera("AMBOS")).toContain("las dos cosas");
+  });
+});
+
+describe("valorParaCampoDeFecha (26/11/2026)", () => {
+  it("devuelve cadena vacía si no hay fecha", () => {
+    expect(valorParaCampoDeFecha(null)).toBe("");
+  });
+
+  it("usa la hora local y no UTC", () => {
+    // La trampa que esta función evita: `toISOString()` corre la hora y un
+    // plazo de las 11 de la noche se vería a otra hora en el campo.
+    const fecha = new Date(2026, 11, 4, 23, 0);
+    expect(valorParaCampoDeFecha(fecha)).toBe("2026-12-04T23:00");
+  });
+
+  it("rellena con ceros el mes, el día y la hora", () => {
+    expect(valorParaCampoDeFecha(new Date(2026, 0, 5, 7, 5))).toBe("2026-01-05T07:05");
+  });
+
+  it("lo que devuelve lo entiende `new Date` de vuelta", () => {
+    // Es el viaje real: del campo del formulario a la acción del servidor.
+    const fecha = new Date(2026, 11, 4, 23, 30);
+    expect(new Date(valorParaCampoDeFecha(fecha)).getTime()).toBe(fecha.getTime());
   });
 });

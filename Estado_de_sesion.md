@@ -31,6 +31,11 @@ de revisarlo:
   reescribió para describir lo que la plataforma hace hoy (los avisos tienen su propio bloque en la
   agenda del estudiante). **`news-feed.tsx` está versionado: el borrado lo tiene que hacer el docente
   con `git rm components/news-feed.tsx`.**
+- **Y los cuatro pendientes chicos que eligió el docente**, ninguno con migración: el estado de la
+  ventana de entrega en la pantalla de calificación y **las dos fechas de una actividad editables
+  después de crearla** (US52); **corregir un anuncio** sin borrarlo y escribirlo de nuevo (US53); y
+  **"Ver como estudiante" en la barra superior** (US42), con una propiedad `accion` opcional en
+  `AppShell`.
 - La parte de diseño —los degradados y los emoji nuevos, que contradicen dos de las cinco reglas, y
   los tres pendientes que el rediseño borró del archivo— quedó escrita en **`DESIGN.md`**.
 
@@ -127,15 +132,12 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
    eso **no se puede revocar**: si se filtra, la única salida es rehacer el curso. Lo que falta es una
    columna `codigo` propia —aleatoria, única, indexada— y un botón de "restablecer código" para el
    Tutor, como en Google Classroom y Moodle. Necesita migración; está escrito en la fila de US51.
-4. **Lo que queda de revisar la plataforma del colegio** (25/11; de las cinco ideas se
-   construyeron US52, US53 y US42): el **glosario del curso**, que para Tecnología con chicos de 10
-   a 18 no es menor, porque el vocabulario es la materia. Más cuatro detalles pequeños que quedaron
-   fuera: de **US52**, mostrar "cerrada" también en la pantalla de calificación del Tutor y poder
-   editar las dos fechas de una actividad ya creada (hoy solo se definen al crearla, como pasaba con
-   el estado del curso antes de OP05); de **US53**, editar un anuncio ya publicado (hoy se borra y
-   se escribe de nuevo) y poder fijar uno arriba del resto. Y de **US42**, valdría la pena mover el
-   enlace "Ver como estudiante" a la barra superior, como lo tienen ellos, en vez de dejarlo entre
-   los accesos de la cabecera del curso.
+4. **El glosario del curso**, lo único que queda de revisar la plataforma del colegio (25/11; de las
+   cinco ideas ya se construyeron US52, US53 y US42, y los cuatro detalles chicos el 26/11). Para
+   Tecnología con chicos de 10 a 18 no es menor: el vocabulario es la materia. Necesita tabla propia
+   y migración. **Lo que sigue fuera de esas historias, ya chico:** editar el **tipo de entrega** de
+   una actividad ya creada (tiene el mismo problema que tenían las fechas) y **fijar** un anuncio
+   arriba del resto (necesita una columna nueva).
 5. **Seguir el rediseño donde quedó**, según `DESIGN.md`, que volvió a tener su lista de pendientes
    —el rediseño del 25/11 la había borrado sin hacerla—: decidir si la regla de "ningún degradado"
    se acota a las pantallas internas (la portada pública y el login ahora los tienen, y ahí puede
