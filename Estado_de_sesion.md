@@ -4,7 +4,34 @@
 > estado de cada historia es [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md); este
 > archivo solo dice **dónde quedamos y qué sigue**, y se reescribe al cerrar cada sesión.
 
-Última sesión: **25 de noviembre de 2026.** Tres cosas. `scripts/tutor-de-prueba.ts`, que monta de
+Última sesión: **26 de noviembre de 2026.** Una sola cosa, a pedido del docente: **documentar lo que
+llegó de Antigravity y después buscar errores.** Antigravity rehizo el 25/11 la interfaz del
+Estudiante, la portada pública, el login, el temario, el reproductor de lecciones, el quiz y el panel
+del Docente, y construyó **US51** (el código de clase del curso) dentro de esa pasada. Lo que salió
+de revisarlo:
+
+- **Dos errores que bloqueaban el CI, corregidos** y ya escritos en la carpeta de trabajo: un `Map`
+  sin tipar cuyo valor llegaba a JSX (`app/tutor/page.tsx`) y un `setState` dentro de un efecto
+  (`components/lesson-player-shell.tsx`). **Los dos son la tercera vez que aparecen** en el proyecto.
+- **Tres pruebas actualizadas, y con razón** (`app/tutor/page.test.ts`, `app/estudiante/page.test.ts`,
+  `app/estudiante/buscar/page.test.ts`): el rediseño cambió la forma de esas consultas, no su
+  intención. **Sin estas tres la suite falla en su máquina.**
+- **Ningún retroceso:** `tsc` sin errores nuevos, `eslint` sin errores (24 avisos, todos de
+  importaciones que quedaron sin usar en las pantallas reescritas) y la suite igual que antes del
+  rediseño, con seis pruebas más que pasan.
+- **US51 se endureció el mismo día**, con la opción que eligió el docente de tres: código de ocho
+  caracteres completo, coincidencia única en vez de "el primero que aparezca", filtro en la base de
+  datos en vez de en memoria, error registrado y **15 pruebas** donde no había ninguna. **Sigue sin
+  poder revocarse** —se deriva del id del curso— y eso queda anotado para antes de cobrar.
+- **El bloque de novedades se cerró**, también por decisión del docente: `news-feed.tsx` y las cinco
+  piezas de `lib/novedades.ts` que solo él usaba se borraron, y la decisión de orden de US53 se
+  reescribió para describir lo que la plataforma hace hoy (los avisos tienen su propio bloque en la
+  agenda del estudiante). **`news-feed.tsx` está versionado: el borrado lo tiene que hacer el docente
+  con `git rm components/news-feed.tsx`.**
+- La parte de diseño —los degradados y los emoji nuevos, que contradicen dos de las cinco reglas, y
+  los tres pendientes que el rediseño borró del archivo— quedó escrita en **`DESIGN.md`**.
+
+Sesión anterior: **25 de noviembre de 2026.** Tres cosas. `scripts/tutor-de-prueba.ts`, que monta de
 una sola vez el ensayo de la épica de compartir. **US50**: un Tutor deja de ver a los estudiantes de
 otros colegios en "Inscribir estudiantes" — fuga anotada desde el 16/09 que llevaba dos meses
 abierta porque el intento de entonces rompía la asignación de estudiantes nuevos; de paso se arregló
@@ -33,10 +60,25 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 
 ## Estado del repositorio al cerrar
 
-- Último commit **subido**: `421b342` (documentación de US48 y US49). Encima quedan **sin confirmar**
-  los archivos de **US53**, **US42** y `package.json` — ver los comandos que se le dejaron en el
-  chat de ese día. (US52 ya está en el commit local `bc75430`.)
-  (`tutor-de-prueba.ts` y US50 ya están en commits locales, `19761ad` y `e66ea88`.)
+- **Seis commits locales sin subir**, todos del 25/11: `2c8e663` (script del ensayo), `e66ea88`
+  (US50), `19761ad` (documentación de US50/US51 y el script), `bc75430` (US52), `c87234e` (US53) y
+  `8ce3780` (US42 y `npm run verificar`). El último **subido** sigue siendo `421b342`.
+- **Encima de eso quedan sin confirmar el rediseño de Antigravity y la revisión del 26/11**: catorce
+  archivos modificados y diez nuevos (`components/course-class-code-card.tsx`,
+  `course-sections-accordion.tsx`, `join-course-dialog.tsx`, `landing-courses-catalog.tsx`,
+  `lesson-player-shell.tsx`, `student-courses-list.tsx`, `student-sidebar-todo.tsx`,
+  `lib/actions/join-course-by-code.ts`, `lib/course-code.ts` y `lib/course-code.test.ts`), más las
+  tres pruebas actualizadas y los tres documentos (`Backlog.md`, `progress.md`, `DESIGN.md`).
+  **Va en un solo commit**, aunque sea grande: las dos correcciones y el endurecimiento de US51 están
+  *dentro* de los mismos archivos que trajo el rediseño, así que separarlos obligaría a confirmar por
+  trozos. El mensaje debe decir las dos cosas — lo que llegó y lo que hubo que arreglarle. Entran las
+  dos correcciones, las tres pruebas actualizadas, el
+  endurecimiento de US51 (`join-course-by-code.ts` y `.test.ts` nuevo, `course-code.ts` y su prueba),
+  la limpieza de `lib/novedades.ts` con su prueba y `app/estudiante/page.tsx`, los cuatro documentos
+  (`Backlog.md`, `progress.md`, `DESIGN.md`, `Estado_de_sesion.md`) y el `AGENTS.md` nuevo.
+- **Un borrado pendiente que solo puede hacer el docente:** `git rm components/news-feed.tsx`. El
+  archivo está versionado y el puente no borra archivos; el código ya no lo importa nadie, así que
+  mientras siga ahí es solo código muerto, no un error.
 - **Cinco migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
   `20261124040000_add_curso_verificado`, `20261125040000_add_espacio_origen_estudiante`,
   `20261125050000_add_ventana_y_tipo_entrega` y `20261125060000_add_anuncios` — **cinco**. Siempre
@@ -64,25 +106,22 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
      estudiante con nota, e imprime las URLs de cada paso (`--borrar --confirmar` lo deshace). **Necesita dos cuentas de Tutor** —una comparte, la otra adopta— y la de Super
      Administrador para el bloque G. El paso que más importa es **F.10**: el 404 sobre un curso no
      compartido, lo único que impide que conocer un id baste para leer el curso de otro espacio.
-   - **Diez historias construidas siguen marcadas "pendiente de validación en navegador real"** en
-     `Backlog.md`. Al cerrar el recorrido hay que pasarlas a validadas con la fecha.
+   - **11 filas del `Backlog.md` siguen marcadas "pendiente de validación en navegador real"**.
+     Al cerrar el recorrido hay que pasarlas a validadas con la fecha.
+   - **El rediseño del 25/11 amplió el recorrido:** el temario, el reproductor de lecciones, el
+     quiz y los dos paneles son pantallas reescritas de arriba abajo, así que hay que mirarlas
+     aunque sus historias ya estuvieran validadas. Y **US51 agrega dos pasos nuevos**: el Tutor
+     copia el código de su curso, el estudiante entra con él, y se comprueba que un código de un
+     curso en borrador no sirva.
 2. **Las dos piezas que faltan de US49**, reconocidas como deuda en `progress.md`: el botón para que
    un Tutor **reporte** un curso (es por seguridad, no por calidad — la plataforma es para menores) y
    el **contador de impacto** en el panel del Tutor ("tu curso lo usan 4 docentes y 112
    estudiantes"), que sale gratis de los datos que US47 ya guarda y es lo que más mueve a compartir.
-3. **US51 — el código de inscripción del curso.** Propuesta el 25/11, sin estimar. Antes de
-   construirla hay que **resolver un nudo con el docente**: el código sirve si el estudiante ya tiene
-   cuenta, y hoy los estudiantes no se registran solos y la mayoría no tiene correo propio (US29 les
-   genera uno interno). Si el código habilitara el registro, hay que decidir con qué se registra un
-   menor sin correo — eso toca US35 (documento de identidad) y el registro público de Supabase Auth,
-   que sigue activado como hallazgo sin corregir desde el 12/11. Con la suscripción por docente esta
-   es la historia de más valor comercial que hay en el backlog: es lo que permite que un docente
-   empiece sin administrador, sin archivo del colegio y sin área de sistemas. **Y resuelve una
-   segunda pregunta abierta** que el docente planteó el 25/11: hoy un espacio es una institución
-   con varios tutores adentro, así que dos profesores del mismo colegio comparten estudiantes sin
-   duplicar cuentas; si cada profesor fuera su propio espacio —tentador con la suscripción por
-   docente— el mismo alumno terminaría con dos cuentas y el avance partido, y desde US50 la
-   plataforma ya no lo advierte. El código del curso evita tener que elegir.
+3. **Cerrar la columna `codigo` de US51 antes de abrir la plataforma a otros docentes.** El
+   endurecimiento del 26/11 quitó lo urgente, pero el código sigue derivándose del id del curso y por
+   eso **no se puede revocar**: si se filtra, la única salida es rehacer el curso. Lo que falta es una
+   columna `codigo` propia —aleatoria, única, indexada— y un botón de "restablecer código" para el
+   Tutor, como en Google Classroom y Moodle. Necesita migración; está escrito en la fila de US51.
 4. **Lo que queda de revisar la plataforma del colegio** (25/11; de las cinco ideas se
    construyeron US52, US53 y US42): el **glosario del curso**, que para Tecnología con chicos de 10
    a 18 no es menor, porque el vocabulario es la materia. Más cuatro detalles pequeños que quedaron
@@ -92,9 +131,14 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
    se escribe de nuevo) y poder fijar uno arriba del resto. Y de **US42**, valdría la pena mover el
    enlace "Ver como estudiante" a la barra superior, como lo tienen ellos, en vez de dejarlo entre
    los accesos de la cabecera del curso.
-5. **Seguir el rediseño donde quedó**, según `DESIGN.md`: unificar los seis radios en uno, y después
-   la capa "para niños". **No se hace con más colores en la interfaz** —era lo que había y lo que la
-   hacía ver amateur— sino con imágenes, momentos de premio y forma/voz.
+5. **Seguir el rediseño donde quedó**, según `DESIGN.md`, que volvió a tener su lista de pendientes
+   —el rediseño del 25/11 la había borrado sin hacerla—: decidir si la regla de "ningún degradado"
+   se acota a las pantallas internas (la portada pública y el login ahora los tienen, y ahí puede
+   estar bien) y lo mismo con los emoji nuevos de la portada; **unificar los seis radios en 12px**;
+   terminar el retiro de los `duo-*`, que bajaron de 86 a **45** usos sin que nadie los barriera,
+   porque el rediseño reescribió pantallas enteras; y después la capa "para niños", que **no se hace
+   con más colores en la interfaz** —era lo que había y lo que la hacía ver amateur— sino con
+   imágenes, momentos de premio y forma/voz.
 6. Replicar el patrón de ventana en `create-tutor-form.tsx` y `create-student-form.tsx`.
 7. Propuestas viejas sin construir: US32 (grupos), US33 (perfil del tutor), US35 (documento de
    identidad).
@@ -149,6 +193,31 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
   find module 'xlsx'`, todos por no poder generar el cliente de Prisma (`binaries.prisma.sh`
   bloqueado). Por lo mismo, **las pruebas que dependen de esos enums solo corren en la máquina del
   docente** — en el clon fallan ~188 de 394, y eso es lo esperado.
+- **Un error que se repite tres veces no es descuido: es que falta un lugar donde leerlo.** Los dos
+  que bloquearon el CI el 25/11 —el `Map` sin tipar y el `setState` dentro de un efecto— estaban
+  documentados en `progress.md`, que tiene mil líneas, y en ningún sitio que alguien lea antes de
+  escribir código. Por eso el 26/11 se escribieron las reglas cortas en **`AGENTS.md`** (16 reglas:
+  los dos tropiezos, `migrate deploy`, RLS en tabla nueva, lo que nunca se confirma, el alcance por
+  espacio, `DESIGN.md` como decisión, y la sincronización de los documentos). `CLAUDE.md` lo importa,
+  así que lo leen las dos herramientas. **Mantenerlo corto:** si crece, deja de leerse y vuelve a ser
+  `progress.md`.
+- **Al documentar el trabajo de otro, conservar su texto y poner la revisión aparte.** La sección del
+  rediseño quedó tal cual la escribió Antigravity, firmada con su nombre, y la revisión del 26/11 va
+  en una sección propia. Así se distingue lo que se construyó de lo que se encontró al revisarlo, y
+  no hay que discutir quién escribió qué.
+- **Revisar un rediseño no es leer el diff, es comparar contra la medición anterior.** Lo que dijo
+  "no hay retrocesos" fue tener la medición de antes (las mismas 242 pruebas que ya fallaban en el
+  clon, por el cliente de Prisma sin generar) y no el tamaño del cambio. Sin esa base, 242 fallos
+  parecen un desastre.
+- **Un rediseño grande deja código muerto y conviene buscarlo en el momento.** `news-feed.tsx` dejó
+  de importarse y nadie lo habría notado; con él quedó sin efecto una decisión de diseño escrita el
+  día anterior (el orden de las novedades de US53). Después de reescribir pantallas, buscar qué dejó
+  de usarse **y qué documento quedó describiendo algo que ya no pasa.**
+- **Que un documento diga que algo está "hecho" no significa que esté bien hecho.** La fila de US51
+  decía "decisión de arquitectura limpia sin migración"; lo que había era un código derivado del
+  UUID que **no se puede revocar**, emparejado por prefijo de cuatro caracteres sobre un recorrido de
+  todos los cursos publicados, sin una sola prueba de la acción. Al documentar algo construido por
+  otro, mirar el código antes de copiar su resumen.
 
 ## Convenciones de trabajo (acumuladas, siguen vigentes)
 

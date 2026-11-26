@@ -152,6 +152,7 @@ export default async function ResponderQuizPage({
         ) : (
           <TakeQuizForm
             quizId={quiz.id}
+            courseId={courseId}
             preguntas={quiz.preguntas}
             yaIntentado={intentos.length > 0}
           />

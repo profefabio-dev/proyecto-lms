@@ -21,6 +21,7 @@ import { AnnouncementList } from "@/components/announcement-list";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { LessonRow } from "@/components/lesson-row";
+import { CourseSectionsAccordion, type SeccionItem } from "@/components/course-sections-accordion";
 import { calcularProgreso } from "@/lib/course-progress";
 import { entregaCerrada } from "@/lib/activity-submission";
 import { accesoAlCurso, esVistaPrevia } from "@/lib/course-preview";
@@ -209,6 +210,24 @@ export default async function CursoEstudiantePage({
 
   const leccionesSueltas = lecciones.filter((leccion) => leccion.seccionId === null);
 
+  const seccionesParaAcordeon: SeccionItem[] = curso.secciones.map((seccion) => ({
+    id: seccion.id,
+    titulo: seccion.titulo,
+    estado: seccion.estado,
+    esActual: seccion.esActual,
+    lecciones: lecciones
+      .filter((leccion) => leccion.seccionId === seccion.id)
+      .map((leccion) => ({
+        id: leccion.id,
+        seccionId: leccion.seccionId,
+        titulo: leccion.titulo,
+        descripcion: leccion.descripcion,
+        tipo: leccion.tipo,
+        visto: idsVistos.has(leccion.id),
+        numero: numeroPorContenido.get(leccion.id) ?? 0,
+      })),
+  }));
+
   return (
     <AppShell
       usuario={usuarioActual}
@@ -368,70 +387,13 @@ export default async function CursoEstudiantePage({
               </p>
             </div>
 
-            {/* MÓDULOS / SEMANAS */}
-            {curso.secciones.map((seccion) => {
-              const leccionesDeSeccion = lecciones.filter(
-                (leccion) => leccion.seccionId === seccion.id
-              );
-              const vistasEnSeccion = leccionesDeSeccion.filter((leccion) =>
-                idsVistos.has(leccion.id)
-              ).length;
-
-              return (
-                <div
-                  key={seccion.id}
-                  className="space-y-4 rounded-3xl border border-border/80 bg-card/60 p-5 shadow-xs sm:p-6"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <Calendar className="size-4" />
-                      </span>
-                      <span className="font-heading text-xl font-bold text-foreground">
-                        {seccion.titulo}
-                      </span>
-                      {seccion.esActual && <Badge variant="success">Semana actual</Badge>}
-                      {seccion.estado === "NO_DISPONIBLE" && (
-                        <Badge variant="secondary" className="gap-1">
-                          <Lock className="size-3" /> No disponible
-                        </Badge>
-                      )}
-                    </div>
-
-                    {seccion.estado !== "NO_DISPONIBLE" && leccionesDeSeccion.length > 0 && (
-                      <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-                        {vistasEnSeccion} de {leccionesDeSeccion.length} completadas
-                      </span>
-                    )}
-                  </div>
-
-                  {seccion.estado === "NO_DISPONIBLE" ? (
-                    <p className="rounded-2xl border border-border/60 bg-muted/30 p-5 text-sm text-muted-foreground">
-                      Esta sección todavía no está disponible — tu docente la habilitará según el
-                      avance de la clase.
-                    </p>
-                  ) : leccionesDeSeccion.length === 0 ? (
-                    <p className="rounded-2xl border border-border/60 bg-muted/30 p-5 text-sm text-muted-foreground">
-                      Esta sección todavía no tiene lecciones publicadas.
-                    </p>
-                  ) : (
-                    <ul className="space-y-2">
-                      {leccionesDeSeccion.map((leccion) => (
-                        <LessonRow
-                          key={leccion.id}
-                          href={`/estudiante/cursos/${curso.id}/lecciones/${leccion.id}`}
-                          numero={numeroPorContenido.get(leccion.id) ?? 0}
-                          titulo={leccion.titulo}
-                          descripcion={leccion.descripcion}
-                          tipo={leccion.tipo}
-                          visto={idsVistos.has(leccion.id)}
-                        />
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              );
-            })}
+            {/* MÓDULOS / SEMANAS ACORDEÓN (Estilo Canvas) */}
+            {seccionesParaAcordeon.length > 0 && (
+              <CourseSectionsAccordion
+                courseId={curso.id}
+                secciones={seccionesParaAcordeon}
+              />
+            )}
 
             {/* CONTENIDO SIN SECCIÓN */}
             {leccionesSueltas.length > 0 && (

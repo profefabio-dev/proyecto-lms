@@ -2,7 +2,134 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-25 — **Cuatro historias: US50 (un Tutor deja de ver a los estudiantes de otros colegios) y, salidas de revisar la plataforma del colegio, US52 (la ventana de entrega y su tipo), US53 (los anuncios del docente) y US42 (ver el curso como lo ve un estudiante). Se propone US51, el código de inscripción del curso.**
+Última actualización: 2026-11-26 — **Revisión del rediseño que trajo Antigravity el 25/11, y las dos decisiones que salieron de ella.** Se corrigieron **dos errores que bloqueaban el CI** (los dos, tercera repetición de un tropiezo ya documentado) y se actualizaron **tres pruebas**; **US51 se endureció** (código completo, coincidencia única, filtro en la base de datos, +15 pruebas de la acción, que no tenía ninguna); y se **cerró el bloque de novedades**: `news-feed.tsx` y `ordenarNovedades` se borraron y la decisión de orden de US53 se reescribió para describir lo que la plataforma hace hoy. Las reglas cortas del proyecto quedaron escritas en **`AGENTS.md`**, que no existía. El 25/11 habían entrado **US50**, **US52**, **US53**, **US42** y `scripts/tutor-de-prueba.ts`, y Antigravity rehizo la interfaz del Estudiante, la portada pública, el login, el temario, el reproductor de lecciones, el quiz y el panel del Docente, con **US51** dentro.
+
+## Rediseño UI/UX — Modernización integral para jóvenes (Platzi + Canvas LMS)
+
+Lo construyó **Antigravity** el 25/11/2026, a pedido del docente, para dotar a la plataforma de una experiencia ágil, moderna, limpia e intuitiva adaptada a jóvenes (10 a 18 años). **El texto de esta sección es suyo y se conserva tal cual lo escribió**; la revisión de lo que trajo —lo que estaba roto, lo que quedó debiendo y lo que contradice `DESIGN.md`— está en la sección siguiente.
+
+1. **Dashboard del Estudiante (`/estudiante`):**
+   - **Estructura en 2 Columnas:** Columna principal (70%) dedicada al aprendizaje activo; columna lateral derecha (30%) con la agenda académica del estudiante.
+   - **Tarjeta destacada "Continuar donde lo dejaste" (Platzi):** Muestra la lección exacta pendiente (con número, título, ícono de Video/Lectura/Código y botón de reanudar directo), acompañada de barra de progreso con gradiente.
+   - **Columna Lateral "Por Hacer / Tu Agenda" (Canvas To-Do):** Widget "Por Hacer" con plazos urgentes calculados en días (*"Vence hoy"*, *"Vence mañana"*, *"Vence en X días"*); widget de "Avisos del Docente" con comunicados recientes; y widget de "Notas Recientes" con retroalimentación textual y calificaciones sobre 5.0.
+   - **Catálogo de Cursos con Pestañas y Buscador:** Pestañas para filtrar por *Todos*, *En curso* y *Completados*, más caja de búsqueda en vivo (`components/student-courses-list.tsx`).
+
+2. **Landing Page Pública (`/`):**
+   - **Hero Moderno:** Mensaje orientado a proyectos prácticos STEAM, píldoras de tecnologías (`React`, `Robótica`, `Algoritmos`, `SQL`) y buscador interactivo.
+   - **Tarjeta Interactiva:** Simulación del panel estudiantil con progreso curricular, racha de 5 días e insignias.
+   - **Trayectoria Formativa:** 3 pasos visuales (*Lógica ➔ Código ➔ Robótica*).
+   - **Catálogo Interactivo (`LandingCoursesCatalog`):** Chips de categorías en píldoras, buscador instantáneo por tema y tarjetas con gradientes modernos.
+
+3. **Temario del Curso (`/estudiante/cursos/[courseId]`):**
+   - **Módulos / Semanas en Acordeones Plegables (`CourseSectionsAccordion`):** La semana actual viene desplegada por defecto para no perder tiempo buscando; botones de *"Expandir todos"* y *"Colapsar todos"*; badge de lecciones completadas por módulo.
+
+4. **Reproductor de Lecciones (`/estudiante/cursos/[courseId]/lecciones/[contenidoId]`):**
+   - **Modo Enfoque / Modo Cine (`LessonPlayerShell`):** Botón para ocultar/mostrar el temario lateral en un clic, permitiendo ver videos o documentos a pantalla completa sin distracciones.
+   - **Barra Inferior Flotante Sticky:** Barra fija inferior con efecto glassmorphic (`backdrop-blur`) para marcar como completada y avanzar en cualquier momento del scroll, con título de la lección y porcentaje.
+   - **Celebración 100%:** Ráfaga de confeti animado (`canvas-confetti`) y banner de felicitación al completar el curso.
+
+5. **Rutas STEAM como Camino Visual (`/estudiante/rutas` y `[rutaId]`):**
+   - **Línea Temporal / Skill Tree Interactivo:** Los pasos del camino se conectan mediante una línea vertical continua con nodos numerados, badges de estado (*"En Curso"*, *"Completado"* con chulo verde), descripción y botón directo a la lección correspondiente.
+   - **Tarjetas de Ruta:** Vista en grid con resumen de cursos, barra de avance y botón de inscripción rápida.
+
+6. **Buscador en el Campus (`/estudiante/buscar`) y Login Modernizado (`/login`):**
+   - **Buscador:** Píldoras de búsqueda rápida por temas frecuentes (`Algoritmo`, `React`, `Robótica`, etc.) y resultados organizados en tarjetas de cursos y lecciones.
+   - **Login:** Diseño split-screen sincronizado con la paleta Midnight y acentos tecnológicos índigo/esmeralda.
+
+7. **US51 — Código de Inscripción al Curso (Código de clase):**
+   - **Formato y Algoritmo (`lib/course-code.ts`):** Generación determinística `XXXX-XXXX` a partir del UUID del curso. No requiere migraciones ni alterar esquemas; soporta cualquier curso creado en el pasado o futuro. Incluye 6 pruebas unitarias (`lib/course-code.test.ts`).
+   - **Acción del Servidor (`lib/actions/join-course-by-code.ts`):** Valida autenticación, rol de estudiante, estado ACTIVO, correspondencia con curso visible y evita inscripciones duplicadas de forma segura.
+   - **Modal para el Estudiante (`components/join-course-dialog.tsx`):** Accesible desde el catálogo de cursos del estudiante con botón *"Unirme con código"*, entrada con auto-mayúsculas y feedback visual de error o éxito.
+   - **Tarjeta para el Docente (`components/course-class-code-card.tsx`):** Integrada en `/tutor/cursos/[courseId]` con copiado al portapapeles en un clic y explicación pedagógica para proyectar en pizarra o compartir por WhatsApp.
+   - **Deuda anotada el 26/11/2026:** el código **se deriva del UUID del curso**, así que no se puede revocar ni rotar; se acepta por **prefijo de cuatro caracteres** y `.find()` elige un curso cualquiera entre los que coincidan en vez de avisar que es ambiguo; la consulta **recorre todos los cursos publicados** y filtra en memoria; y `unirseACursoConCodigo` **no tiene ninguna prueba** (las seis cubren el formateo, no la acción). Las tres salidas posibles están escritas en la fila de US51 del `Backlog.md`.
+8. **Modernización del Dashboard del Docente (`app/tutor/page.tsx`):**
+   - **Cola "Por Calificar" (Canvas-Style To-Grade List):** Destaca entregas pendientes de revisión de los estudiantes con tiempo transcurrido en días, enlace directo al formulario de calificación y badge de estado.
+   - **Tarjetas de Cursos Activos:** Rejilla visual con métricas clave (estudiantes matriculados, actividades, lecciones), badge de estado (*Publicado* vs *Borrador*) y acceso directo en un clic a "Ver como estudiante" (US42).
+   - **Barra de Acciones Rápidas:** Botones para *"Crear nuevo curso"*, *"Explorar catálogo compartido"* y *"Gestionar estudiantes"*.
+
+9. **Módulo de Quizzes y Evaluaciones Interactivas (`components/take-quiz-form.tsx`):**
+   - **Insignias de Letras (A, B, C, D):** Opciones presentadas con pills estilizadas de alto contraste que responden al hover y se iluminan en índigo al ser seleccionadas.
+   - **Barra de Progreso en Tiempo Real:** Monitor fijo adherente (`sticky`) que cuenta preguntas respondidas en vivo (*"X de Y respondidas"*), con barra de progreso fluida y porcentaje.
+   - **Pantalla de Resultados y Celebración:** Disparo de confeti animado (`canvas-confetti`) al aprobar ($\ge 60\%$), cálculo de nota en escala 1.0 a 5.0, tarjetas de métricas de aciertos y botones de acción rápida (*"Nuevo intento"* y *"Volver al curso"*).
+
+## Revisión del rediseño de Antigravity — 26/11/2026
+
+El docente pidió documentar lo que llegó de Antigravity y después buscar errores. Se hizo en ese
+orden, con el repositorio clonado en la nube: tipos, lint y la suite completa, comparando contra la
+medición de antes del rediseño para distinguir lo que el rediseño rompió de lo que ya estaba así.
+
+**Dos errores que bloqueaban el CI, los dos corregidos. Y los dos son la tercera vez que aparecen.**
+
+1. **`app/tutor/page.tsx` — un `Map` sin tipar cuyo valor llega a JSX.** `new Map(cursos.map(c => [c.id, c.titulo]))`
+   sin anotación infiere `Map<any, unknown>`, y `unknown` no es un `ReactNode`: `tsc` lo rechaza. Se
+   tipó el `Map` y el parámetro (`Map<string, string>`). Ya había pasado el 12/11 y el 20/11, siempre
+   en un `Map` construido para evitar una consulta por fila.
+2. **`components/lesson-player-shell.tsx` — `setState` dentro de un efecto.** Un `useState(celebrado)`
+   que el propio efecto ponía en `true` para disparar el confeti una sola vez; eso provoca un segundo
+   render en cadena y `eslint` lo marca. Se quitó el estado: el efecto depende del progreso y de la
+   lección, y con eso basta. Ya había pasado el 18/11 y el 21/11.
+
+**Tres pruebas hubo que actualizar, y las tres con razón** — el rediseño cambió la forma de las
+consultas, no su intención: `app/estudiante/buscar/page.test.ts` (de `course: true` a un `select`
+de `id` y `titulo`), `app/estudiante/page.test.ts` (el `select` ganó `titulo`, `tipo` y `orden`, que
+es lo que necesita la tarjeta de "continuar donde lo dejaste") y `app/tutor/page.test.ts` (hacía
+falta simular `entregas` y la nueva forma de `courses.findMany`, con `_count` y `orderBy`, que es lo
+que alimenta la cola de "por calificar").
+
+**Estado final medido:** `tsc` sin ningún error nuevo, `eslint` sin errores y **24 avisos**, todos de
+importaciones que quedaron sin usar en las pantallas reescritas. La suite da **296 pruebas que pasan
+y 242 que fallan sobre 538**, exactamente las mismas que fallaban antes del rediseño más seis que
+ahora pasan: **ningún retroceso**. Conviene no leer ese 242 como alarma — es el ruido conocido del
+clon de la nube, donde el cliente de Prisma no está generado (`Rol`, `EstadoUsuario` y `TipoContenido`
+no existen como valores) y `xlsx` está bloqueado. En la máquina del docente, con `npm run verificar`,
+esa suite corre completa; es la comprobación que sigue pendiente.
+
+**Lo que quedó sin usar, y hay que decidir qué hacer con él.** El panel del Estudiante ya no importa
+`NewsFeed`: su columna derecha usa el widget nuevo `components/student-sidebar-todo.tsx`, que arma
+los plazos, los avisos y las notas por su cuenta. Como consecuencia, **`components/news-feed.tsx` es
+código muerto** —no lo importa nadie— y con él quedan huérfanos `ordenarNovedades` y el tipo
+`Novedad` de `lib/novedades.ts`, que solo ese componente usaba. Eso **deja sin efecto la decisión de
+US53**: "el anuncio es una novedad más, y va primero" ya no se cumple en ninguna pantalla, porque no
+hay una sola lista ordenada donde el anuncio compita con un plazo. Hoy los anuncios salen en su
+propio widget. Las dos salidas son legítimas y conviene elegir una a propósito en vez de dejarlo
+así: volver a armar el bloque de novedades (OP11) con el componente que ya está probado, o dar por
+cerrado ese bloque, borrar `news-feed.tsx` con su parte de `lib/novedades.ts`, y reescribir la
+decisión de US53 para que diga lo que la plataforma hace de verdad.
+
+**Lo que NO se verificó:** nada en navegador. Sigue pendiente todo el recorrido manual, que ahora
+además cubre pantallas reescritas de arriba abajo — el temario, el reproductor, el quiz y los dos
+paneles. La parte de diseño de esta revisión (los degradados y los emoji nuevos, que contradicen dos
+de las cinco reglas, y los tres pendientes que el rediseño borró del archivo) está en `DESIGN.md`.
+
+### Las dos decisiones que salieron de la revisión (26/11/2026)
+
+**1. US51 endurecida, sin migración.** De las tres salidas que se le plantearon al docente eligió la
+del medio. Lo que cambió en `lib/actions/join-course-by-code.ts`: se exigen los **ocho caracteres**
+del código —antes bastaban cuatro, que son 65 536 combinaciones al azar—; si un código coincidiera
+con más de un curso **se rechaza** en vez de inscribir en uno cualquiera; la búsqueda la hace **la
+base de datos filtrando por el comienzo del id** (su clave primaria) en vez de traer todos los cursos
+publicados a memoria; el `catch` vacío ahora registra el error; y la comparación se extrajo a
+`codigoDelCurso()` en `lib/course-code.ts`, para que viva en un sitio y esté probada. **La acción pasó
+de 0 a 15 pruebas** y el módulo del código de 6 a 10. Al escribirlas apareció un error en la propia
+prueba: el ayudante de sesión usaba `usuario.espacioOrigenId ?? "espacio-1"`, y el `??` convertía en
+`"espacio-1"` justo el `null` que el caso quería probar — la prueba del espacio de origen pasaba por
+la razón equivocada. **Lo que no se resolvió y queda escrito: el código sigue sin poder revocarse**,
+porque sigue derivándose del id del curso. Eso necesita la opción que no se eligió, una columna
+`codigo` propia y rotable, y es lo que hay que tener antes de cobrar por la plataforma.
+
+**2. El bloque de novedades, cerrado.** El docente eligió borrar el código muerto en vez de volver a
+armar la lista única. Se borró `components/news-feed.tsx` y, de `lib/novedades.ts`, el tipo `Novedad`,
+`ordenarNovedades`, `proximosDias`, `dentroDeLaVentana` y `DIAS_DE_AVISO_DE_PLAZO` — todo lo que solo
+ese componente usaba. Quedan las tres piezas que la agenda nueva sí usa (`DIAS_DE_VENTANA`,
+`diasHasta`, `textoDePlazo`) y sus pruebas; el archivo bajó de ocho exportaciones a tres y su cabecera
+explica qué se retiró y por qué. **La decisión de orden de US53 se reescribió en el `Backlog.md`** para
+describir lo que la plataforma hace hoy —los avisos del docente tienen su propio bloque en la agenda—
+**dejando escrito el razonamiento del orden** por si algún día vuelve la lista única. `news-feed.tsx`
+está versionado, así que su borrado lo hace el docente con `git rm`.
+
+**Estado después de las dos:** `tsc` sin errores nuevos, `eslint` con **0 errores y 23 avisos** (uno
+menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
+tocadas en verde — `course-code` 10, `novedades` 4 y `join-course-by-code` 15.
 
 ## US42 — ver el curso como lo ve un estudiante
 

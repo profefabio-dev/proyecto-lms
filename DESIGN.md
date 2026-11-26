@@ -76,16 +76,74 @@ se propaga a toda la plataforma sin tocar un solo componente.
   avatares. Los demás radios se van retirando.
 - **Altura mínima de un control táctil:** 44px, como ya exige la variante `touch:` desde el 12/11.
 
+## Implementado (25/11/2026) — Rediseño integral: Platzi + Canvas LMS
+
+> Esta sección la escribió Antigravity el 25/11/2026, junto con el rediseño que describe. Se
+> conserva tal cual quedó; lo que viene después de ella es la revisión del 26/11: qué se midió, qué
+> se arregló y qué contradice las reglas de arriba.
+
+A pedido del docente, se realizó una modernización completa de la interfaz con foco en estudiantes jóvenes (10 a 18 años), tomando los mejores patrones de **Platzi** (agilidad, enfoque en seguir aprendiendo y dinamismo) y **Canvas LMS** (estructura clara, agenda de tareas pendientes y navegación predecible):
+
+1. **Dashboard de Estudiante (`/estudiante`):**
+   - **Layout en 2 Columnas:** Columna principal (70%) dedicada al contenido y cursos activos; columna lateral derecha (30%) con la agenda académica del estudiante.
+   - **Tarjeta "Continuar donde lo dejaste" (Platzi):** Ya no muestra un curso abstracto; identifica la lección específica pendiente con su número, título, ícono de formato (Video ▶️, Lectura 📄, Código 💻), porcentaje y botón de acción directa.
+   - **Columna Lateral "Por Hacer / Tu Agenda" (Canvas To-Do):** Widget de entregas pendientes ordenadas por urgencia (*"Vence hoy"*, *"Vence mañana"*, *"Vence en X días"*), avisos recientes del docente con extracto, y notas recientes con retroalimentación textual.
+   - **Catálogo de Mis Cursos:** Pestañas de filtrado (*Todos*, *En curso*, *Completados*) y buscador reactivo en vivo.
+
+2. **Landing Page Pública (`/`):**
+   - **Hero Moderno:** Orientado a proyectos prácticos STEAM, con píldoras de tecnologías (`⚡ React & Web`, `🤖 Robótica`, `💡 Algoritmos`, `🗄️ SQL`).
+   - **Tarjeta Interactiva:** Simulación del panel estudiantil con progreso curricular, racha de 5 días e insignias.
+   - **Trayectoria Formativa:** 3 pasos visuales (*Lógica ➔ Código ➔ Robótica*).
+   - **Catálogo Interactivo (`LandingCoursesCatalog`):** Chips de categorías por píldoras, buscador instantáneo por tema y tarjetas con gradientes modernos.
+
+3. **Temario del Curso (`/estudiante/cursos/[courseId]`):**
+   - **Módulos / Semanas en Acordeones Plegables (Canvas Modules):** La semana actual viene desplegada por defecto; botones de *"Expandir todos"* y *"Colapsar todos"*; badge de lecciones completadas por módulo.
+
+4. **Reproductor de Lecciones (`/estudiante/cursos/[courseId]/lecciones/[contenidoId]`):**
+   - **Modo Enfoque / Modo Cine (Platzi):** Botón para ocultar/mostrar el temario lateral en un clic, centrando el video o texto a pantalla completa.
+   - **Barra Inferior Flotante Sticky (Dock de Navegación):** Barra fija inferior con efecto glassmorphic (`backdrop-blur`) para marcar como completada y avanzar en cualquier momento del scroll.
+   - **Celebración 100%:** Ráfaga de confeti animado (`canvas-confetti`) y banner de felicitación al completar el curso.
+
+## Medido el 26/11/2026, después del rediseño
+
+Al agregar la sección de arriba **se borró la lista de pendientes que este archivo traía**: los seis
+radios por unificar, el barrido de los `duo-*` y la capa "para niños". Ninguno de los tres se hizo,
+así que vuelven abajo, con la medición de hoy al lado de la del 21/11:
+
+| Qué | 21/11/2026 | 26/11/2026 |
+|---|---|---|
+| Usos de los cuatro colores `duo-*` | 86 | **45** |
+| Archivos con degradado | 13 | **7** |
+| Radios distintos en uso | 6 | **6** (115 `2xl`, 83 `xl`, 60 `md`, 45 `full`, 32 `lg`, 23 `3xl`) |
+
+**Los `duo-*` bajaron casi a la mitad sin que nadie hiciera el barrido**: el rediseño reescribió
+pantallas enteras y se los llevó de paso. Los radios siguen igual que el 21/11.
+
+Y hay dos cosas que **contradicen las reglas de este archivo**. Conviene resolverlas a conciencia en
+vez de dejar que convivan, porque convivir es exactamente el problema que originó OP09:
+
+- **La regla 4 dice "ningún degradado en la interfaz"** y el rediseño agrega degradados en siete
+  archivos: la portada pública, el login, el panel del Estudiante, el quiz, las tarjetas de curso y
+  el catálogo de la portada — que la propia descripción de arriba llama *"tarjetas con gradientes
+  modernos"*.
+- **La regla 1 reserva el color para el acento y el logro**, y la portada nueva usa **emoji de
+  color** como clasificador de tema (React, Robótica, Algoritmos, SQL). Son nueve emoji en cinco
+  archivos, en un proyecto que hasta ahora usaba iconos de `lucide-react` en todas las pantallas.
+  Clasificar por emoji cumple la misma función que cumplían los colores `duo-*` que OP09 retiró.
+
+**No se corrigió ninguna de las dos, porque no son un error de código sino una decisión de diseño
+que le toca al docente.** Y hay un argumento razonable a favor de los degradados: la portada pública
+y el login **quedaron fuera de OP09 a propósito** —son escaparate, no interfaz de trabajo— y ahí un
+degradado vende. Si eso es lo que se quiere, la salida correcta es **acotar la regla 4 a las
+pantallas internas y escribirlo acá**, no dejar que el archivo diga una cosa y la pantalla otra. Lo
+que sí queda abierto de verdad es el panel del Estudiante y el quiz, que son pantallas de trabajo
+diario.
+
 ## Pendiente (en orden)
 
-1. **Barrer los 86 usos de `duo-*`**, caso por caso: los de clasificación se van, los de celebración
-   se quedan.
-2. **Unificar los seis radios** en 12px.
-3. **La capa "para niños", que es la siguiente pasada.** El docente lo pidió explícitamente y vale
-   dejar escrito cómo NO se hace: no con más colores en la interfaz, que es justo lo que había. Se
-   hace con **imágenes** (las portadas de curso y las ilustraciones de módulo llevan el color y la
-   personalidad), con **momentos** (el confeti al completar y la racha, como premio y no como adorno
-   permanente), y con **forma y voz** (esquinas algo más redondas, controles grandes, una tipografía
-   de títulos con carácter, y textos escritos como se le habla a alguien de séptimo).
-4. **La página pública (`app/page.tsx`) y el login** quedaron fuera de esta pasada a propósito: son
-   piezas de presentación, no de uso diario, y ahí un degradado sí tiene sentido. Se revisan aparte.
+1. **Acotar o confirmar la regla 4** a la vista de los degradados nuevos, y decidir lo mismo sobre
+   los emoji de la portada. Es una decisión del docente, no una corrección.
+2. **Unificar los seis radios en 12px**, dejando `rounded-full` solo para píldoras y avatares.
+3. **Terminar el retiro de los `duo-*`** en los 45 usos que quedan.
+4. **La capa "para niños"** que el docente pidió — que **no** se hace con más colores en la interfaz
+   (eso era justo lo que había antes de OP09), sino con imágenes, momentos de premio y forma/voz.

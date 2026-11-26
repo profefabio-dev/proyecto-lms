@@ -124,7 +124,17 @@ describe("EstudiantePage (US14 minimo / US15)", () => {
             contenidos: {
               where: { visible: true },
               orderBy: { orden: "asc" },
-              select: { id: true, visible: true, seccionId: true },
+              // 26/11/2026: el panel pasó a mostrar la lección pendiente con
+            // su número, título e ícono por tipo ("Continuar donde lo
+            // dejaste"), así que la consulta trae tres campos más.
+            select: {
+              id: true,
+              titulo: true,
+              tipo: true,
+              orden: true,
+              visible: true,
+              seccionId: true,
+            },
             },
             secciones: { orderBy: { orden: "asc" }, select: { id: true, estado: true } },
             tutor: { select: { nombre: true, apellido: true } },

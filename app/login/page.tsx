@@ -42,45 +42,45 @@ export default async function LoginPage({
         <div className="relative z-10 max-w-xl space-y-6 my-auto py-12">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span>Espacio de Formación y Aprendizaje</span>
+            <span>Campus Virtual & Aprendizaje STEAM</span>
           </div>
 
           <h1 className="font-heading text-4xl xl:text-5xl font-extrabold tracking-tight text-foreground leading-tight">
-            Aprende con{" "}
-            <span className="bg-gradient-to-r from-primary via-duo-blue to-duo-green bg-clip-text text-transparent">
-              rutas claras, práctica y seguimiento continuo
+            Aprende tecnología creando{" "}
+            <span className="bg-gradient-to-r from-primary via-indigo-400 to-sky-400 bg-clip-text text-transparent">
+              proyectos reales
             </span>
             .
           </h1>
 
           <p className="text-base text-muted-foreground leading-relaxed">
             Bienvenido al aula virtual. Un espacio diseñado para acompañar tu proceso formativo con
-            lecciones estructuradas, retos interactivos y seguimiento de tus avances.
+            lecciones interactivas, retos de código, robótica y seguimiento continuo de tus avances.
           </p>
 
           {/* Tarjetas de características */}
           <div className="grid grid-cols-2 gap-3 pt-4">
-            <div className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
-              <div className="flex items-center gap-2 text-duo-gold mb-1">
-                <Flame className="h-4 w-4 fill-duo-gold" />
+            <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+              <div className="flex items-center gap-2 text-amber-500 mb-1">
+                <Flame className="h-4 w-4 fill-amber-500" />
                 <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                   Gamificación
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Mantén tus rachas diarias y visualiza tu progreso tema por tema.
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Mantén tus rachas de estudio y celebra cada meta alcanzada con insignias.
               </p>
             </div>
 
-            <div className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
-              <div className="flex items-center gap-2 text-success mb-1">
+            <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+              <div className="flex items-center gap-2 text-emerald-500 mb-1">
                 <CheckCircle2 className="h-4 w-4" />
                 <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                   Avance Guiado
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Confirma cada lección completada para mantener tu registro al día.
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Confirma cada lección y actividad completada para mantener tu registro al día.
               </p>
             </div>
           </div>

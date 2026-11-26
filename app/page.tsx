@@ -11,26 +11,29 @@ import {
   Award,
   Laptop,
   Layers,
-  ChevronRight,
   Users,
   Compass,
   FileCheck2,
+  Rocket,
+  Search,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { LandingCoursesCatalog, type LandingCurso } from "@/components/landing-courses-catalog";
 import { cn } from "@/lib/utils";
 
 // Cursos de muestra si la base de datos aún no tiene cursos publicados
-const CURSOS_DESTACADOS_DEFAULT = [
+const CURSOS_DESTACADOS_DEFAULT: LandingCurso[] = [
   {
     id: "demo-1",
     titulo: "Pensamiento Computacional y Algoritmos",
     descripcion:
-      "Desarrolla la lógica mediante resolución de problemas, diagramas de flujo y estructuras básicas de código.",
-    tag: "Fundamentos",
+      "Desarrolla la lógica mediante resolución de problemas prácticos, diagramas de flujo y estructuras básicas de código.",
+    tag: "Lógica & Código",
+    categoria: "algoritmos",
     nivel: "Iniciación",
     modulos: "8 Módulos",
     gradient: "from-blue-600 to-indigo-600",
@@ -41,6 +44,7 @@ const CURSOS_DESTACADOS_DEFAULT = [
     descripcion:
       "Aprende a construir aplicaciones web completas, diseño responsivo y componentes interactivos.",
     tag: "Desarrollo Web",
+    categoria: "web",
     nivel: "Intermedio",
     modulos: "12 Módulos",
     gradient: "from-indigo-600 to-violet-600",
@@ -49,8 +53,9 @@ const CURSOS_DESTACADOS_DEFAULT = [
     id: "demo-3",
     titulo: "Bases de Datos y Gestión de la Información",
     descripcion:
-      "Diseña esquemas relacionales, consultas estructuradas y conexión segura con aplicaciones modernas.",
-    tag: "Datos & Backend",
+      "Diseña esquemas relacionales, consultas estructuradas SQL y conexión segura con aplicaciones modernas.",
+    tag: "Bases de Datos",
+    categoria: "datos",
     nivel: "Intermedio",
     modulos: "6 Módulos",
     gradient: "from-violet-600 to-purple-600",
@@ -60,23 +65,17 @@ const CURSOS_DESTACADOS_DEFAULT = [
     titulo: "Robótica Educativa, IoT y Automatización",
     descripcion:
       "Proyectos prácticos integrando sensores, actuadores y microcontroladores para solucionar retos reales.",
-    tag: "Tecnología & Hardware",
+    tag: "Robótica & IoT",
+    categoria: "robotica",
     nivel: "Práctico",
     modulos: "10 Módulos",
-    gradient: "from-sky-600 to-blue-700",
+    gradient: "from-emerald-600 to-teal-700",
   },
 ];
 
 export default async function Home() {
-  // Verificamos si el usuario ya cuenta con sesión activa
   let usuarioAutenticado = null;
-  let cursosPublicados: Array<{
-    id: string;
-    titulo: string;
-    descripcion: string;
-    tutorNombre?: string;
-    totalContenidos?: number;
-  }> = [];
+  let cursosParaMostrar: LandingCurso[] = CURSOS_DESTACADOS_DEFAULT;
 
   try {
     const supabase = await createClient();
@@ -94,30 +93,34 @@ export default async function Home() {
         tutor: { select: { nombre: true, apellido: true } },
         contenidos: { where: { visible: true }, select: { id: true } },
       },
-      take: 4,
+      take: 8,
       orderBy: { createdAt: "desc" },
     });
 
     if (cursosDb && cursosDb.length > 0) {
-      cursosPublicados = cursosDb.map((c) => ({
-        id: c.id,
-        titulo: c.titulo,
-        descripcion: c.descripcion,
-        tutorNombre: `${c.tutor.nombre} ${c.tutor.apellido}`,
-        totalContenidos: c.contenidos.length,
-      }));
+      cursosParaMostrar = cursosDb.map((c, index) => {
+        const defaultMatch = CURSOS_DESTACADOS_DEFAULT[index % CURSOS_DESTACADOS_DEFAULT.length];
+        return {
+          id: c.id,
+          titulo: c.titulo,
+          descripcion: c.descripcion || "Explora las lecciones y actividades guiadas de este curso.",
+          tag: defaultMatch.tag,
+          categoria: defaultMatch.categoria,
+          nivel: defaultMatch.nivel,
+          modulos: `${c.contenidos.length} lecciones`,
+          tutorNombre: `Prof. ${c.tutor.nombre} ${c.tutor.apellido}`,
+          gradient: defaultMatch.gradient,
+        };
+      });
     }
   } catch {
-    // Si la base de datos o supabase no responden, usamos los cursos por defecto
-    cursosPublicados = [];
+    cursosParaMostrar = CURSOS_DESTACADOS_DEFAULT;
   }
-
-  const tieneCursosDb = cursosPublicados.length > 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 selection:text-primary">
-      {/* Barra de navegación superior */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/85 backdrop-blur-md transition-all">
+      {/* HEADER DE NAVEGACIÓN */}
+      <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 backdrop-blur-md transition-all">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-105">
@@ -126,7 +129,7 @@ export default async function Home() {
             <div className="flex flex-col">
               <span className="font-heading text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
                 Plataforma Educativa
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               </span>
               <span className="text-xs text-muted-foreground font-medium">
                 Prof. Fabio Andrés Aguirre
@@ -138,11 +141,11 @@ export default async function Home() {
             <a href="#cursos" className="transition-colors hover:text-foreground">
               Cursos
             </a>
+            <a href="#rutas" className="transition-colors hover:text-foreground">
+              Rutas STEAM
+            </a>
             <a href="#metodologia" className="transition-colors hover:text-foreground">
               Metodología
-            </a>
-            <a href="#experiencia" className="transition-colors hover:text-foreground">
-              Experiencia Estudiantil
             </a>
             <a href="#docente" className="transition-colors hover:text-foreground">
               Docente
@@ -151,7 +154,10 @@ export default async function Home() {
 
           <div className="flex items-center gap-3">
             {usuarioAutenticado ? (
-              <Link href="/dashboard" className={cn(buttonVariants(), "gap-2 font-medium min-h-11 touch:min-h-11")}>
+              <Link
+                href="/dashboard"
+                className={cn(buttonVariants(), "gap-2 font-medium min-h-10 touch:min-h-11 rounded-xl")}
+              >
                 Ir a mi Panel
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -159,13 +165,19 @@ export default async function Home() {
               <>
                 <Link
                   href="/login"
-                  className={cn(buttonVariants({ variant: "ghost" }), "hidden sm:inline-flex min-h-11 touch:min-h-11")}
+                  className={cn(
+                    buttonVariants({ variant: "ghost" }),
+                    "hidden sm:inline-flex min-h-10 touch:min-h-11 font-semibold text-muted-foreground hover:text-foreground"
+                  )}
                 >
                   Acceso
                 </Link>
                 <Link
                   href="/login"
-                  className={cn(buttonVariants(), "gap-2 shadow-xs font-semibold min-h-11 touch:min-h-11")}
+                  className={cn(
+                    buttonVariants(),
+                    "gap-2 shadow-xs font-semibold min-h-10 touch:min-h-11 rounded-xl"
+                  )}
                 >
                   Ingresar al Campus
                   <ArrowRight className="h-4 w-4" />
@@ -177,86 +189,94 @@ export default async function Home() {
       </header>
 
       <main className="flex-1">
-        {/* HERO SECTION */}
-        <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-32">
-          {/* Fondos luminosos sutiles con gradientes */}
-          <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center opacity-40">
-            <div className="h-[450px] w-[650px] rounded-full bg-gradient-to-tr from-primary/30 to-duo-blue/30 blur-3xl filter" />
-            <div className="h-[300px] w-[400px] rounded-full bg-gradient-to-br from-indigo-400/20 to-duo-gold/20 blur-2xl filter -translate-x-20 translate-y-20" />
+        {/* HERO SECTION (Estilo Platzi: dinámico, enfocado en jóvenes) */}
+        <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28">
+          {/* Luces de fondo sutiles */}
+          <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center opacity-30">
+            <div className="h-[450px] w-[650px] rounded-full bg-primary/20 blur-3xl filter" />
+            <div className="h-[300px] w-[400px] rounded-full bg-indigo-500/15 blur-2xl filter -translate-x-20 translate-y-20" />
           </div>
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              {/* Columna Izquierda: Mensaje principal */}
+              {/* Columna Izquierda: Mensaje y Buscador */}
               <div className="lg:col-span-7 flex flex-col items-start gap-6 text-left">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary shadow-xs">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary shadow-xs">
                   <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-                  <span>Ambiente de Aprendizaje Tecnológico Digital</span>
+                  <span>Campus Virtual & Aprendizaje STEAM</span>
                 </div>
 
                 <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12]">
-                  Aprende tecnología con{" "}
-                  <span className="bg-gradient-to-r from-primary via-indigo-500 to-duo-blue bg-clip-text text-transparent">
-                    propósito, práctica y seguimiento continuo
+                  Aprende tecnología creando{" "}
+                  <span className="bg-gradient-to-r from-primary via-indigo-400 to-sky-400 bg-clip-text text-transparent">
+                    proyectos reales
                   </span>
+                  .
                 </h1>
 
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
-                  Un campus virtual diseñado para transformar la curiosidad en habilidades reales.
-                  Accede a contenidos interactivos, proyectos guiados, progreso gamificado y
-                  acompañamiento docente.
+                  Un aula virtual moderna diseñada para que domines programación, robótica y lógica
+                  a tu propio ritmo, con retos interactivos, rachas de estudio y acompañamiento docente.
                 </p>
 
+                {/* Acciones principales */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto pt-2">
                   <Link
                     href="/login"
-                    className={cn(buttonVariants({ size: "lg" }), "h-12 min-h-11 touch:min-h-11 px-7 text-base font-semibold shadow-xs gap-2")}
+                    className={cn(
+                      buttonVariants({ size: "lg" }),
+                      "h-12 min-h-11 touch:min-h-11 px-7 text-base font-semibold shadow-xs gap-2 rounded-xl"
+                    )}
                   >
-                    {usuarioAutenticado ? "Entrar al Campus Virtual" : "Comenzar Ahora"}
+                    {usuarioAutenticado ? "Entrar al Campus" : "Comenzar Ahora"}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
 
                   <a
                     href="#cursos"
-                    className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 min-h-11 touch:min-h-11 px-6 text-base font-medium")}
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "lg" }),
+                      "h-12 min-h-11 touch:min-h-11 px-6 text-base font-medium rounded-xl"
+                    )}
                   >
                     <BookOpen className="h-4 w-4 mr-2" />
                     Explorar Cursos
                   </a>
                 </div>
 
-                {/* Métricas del entorno */}
-                <div className="grid grid-cols-3 gap-6 pt-6 border-t border-border/60 w-full max-w-lg mt-2">
-                  <div>
-                    <p className="font-heading text-2xl font-bold text-foreground">100%</p>
-                    <p className="text-xs text-muted-foreground font-medium">Práctico y guiado</p>
-                  </div>
-                  <div>
-                    <p className="font-heading text-2xl font-bold text-foreground">24/7</p>
-                    <p className="text-xs text-muted-foreground font-medium">Acceso a clases</p>
-                  </div>
-                  <div>
-                    <p className="font-heading text-2xl font-bold text-foreground">En Vivo</p>
-                    <p className="text-xs text-muted-foreground font-medium">Tracking de progreso</p>
-                  </div>
+                {/* Tecnologías destacadas en píldoras */}
+                <div className="pt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground mr-1">Rutas destacadas:</span>
+                  <span className="rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
+                    ⚡ React & Web
+                  </span>
+                  <span className="rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
+                    🤖 Robótica & Arduino
+                  </span>
+                  <span className="rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
+                    💡 Algoritmos
+                  </span>
+                  <span className="rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
+                    🗄️ SQL & Backend
+                  </span>
                 </div>
               </div>
 
-              {/* Columna Derecha: Tarjeta interactiva con vista previa visual (Ejemplo) */}
+              {/* Columna Derecha: Tarjeta interactiva con vista previa visual */}
               <div className="lg:col-span-5 relative">
                 <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-                  {/* Tarjeta principal flotante */}
-                  <div className="rounded-2xl border border-border/80 bg-card/95 p-6 shadow-2xl backdrop-blur-sm transition-all hover:shadow-primary/5">
+                  {/* Tarjeta principal interactiva */}
+                  <div className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-2xl backdrop-blur-sm transition-all hover:border-primary/40">
                     <div className="flex items-center justify-between border-b border-border/60 pb-4 mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-lg bg-success-soft text-success flex items-center justify-center font-bold">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
                           <Code2 className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="font-heading text-sm font-semibold text-foreground">
-                            Mi Ruta de Aprendizaje (Ejemplo)
+                          <p className="font-heading text-sm font-bold text-foreground">
+                            Mi Ruta de Aprendizaje
                           </p>
-                          <p className="text-xs text-muted-foreground">Progreso general de ciclo</p>
+                          <p className="text-xs text-muted-foreground">Desarrollo Web & Código</p>
                         </div>
                       </div>
                       <Badge variant="success" className="font-semibold">
@@ -264,46 +284,46 @@ export default async function Home() {
                       </Badge>
                     </div>
 
-                    {/* Barra de progreso de ejemplo */}
+                    {/* Barra de progreso */}
                     <div className="space-y-2 mb-6">
                       <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-foreground">Avance curricular (Ejemplo)</span>
-                        <span className="text-primary">78% Completado</span>
+                        <span className="text-foreground">Avance del ciclo</span>
+                        <span className="text-primary font-bold">78% Completado</span>
                       </div>
                       <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-duo-blue rounded-full transition-all duration-1000"
+                          className="h-full bg-gradient-to-r from-primary to-sky-400 rounded-full transition-all duration-1000"
                           style={{ width: "78%" }}
                         />
                       </div>
                     </div>
 
-                    {/* Lista de temas interactivos */}
+                    {/* Lista de temas del aula */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40">
                         <div className="flex items-center gap-3">
-                          <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+                          <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
                           <div className="text-xs">
                             <p className="font-medium text-foreground">Semana 1: Fundamentos & Lógica</p>
                             <p className="text-muted-foreground">Completado</p>
                           </div>
                         </div>
-                        <span className="text-xs font-semibold text-success bg-success-soft px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-semibold text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-0.5 rounded-full">
                           100%
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/20">
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/25">
                         <div className="flex items-center gap-3">
                           <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin shrink-0" />
                           <div className="text-xs">
-                            <p className="font-medium text-foreground">Semana 2: Estructuras y Algoritmos</p>
+                            <p className="font-medium text-foreground">Semana 2: Estructuras y Componentes</p>
                             <p className="text-primary font-medium">En curso actualmente</p>
                           </div>
                         </div>
                         <Link
                           href="/login"
-                          className={cn(buttonVariants({ variant: "default", size: "xs" }), "min-h-8 touch:min-h-11")}
+                          className={cn(buttonVariants({ size: "xs" }), "rounded-lg text-xs font-semibold")}
                         >
                           Continuar
                         </Link>
@@ -311,7 +331,7 @@ export default async function Home() {
 
                       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/30 opacity-70">
                         <div className="flex items-center gap-3">
-                          <div className="h-5 w-5 rounded-full border border-muted-foreground/30 flex items-center justify-center text-[10px] text-muted-foreground">
+                          <div className="h-5 w-5 rounded-full border border-muted-foreground/30 flex items-center justify-center text-[10px] text-muted-foreground font-semibold">
                             3
                           </div>
                           <div className="text-xs">
@@ -323,27 +343,27 @@ export default async function Home() {
                       </div>
                     </div>
 
-                    {/* Mini card de racha / gamificación */}
+                    {/* Mini widget de racha */}
                     <div className="mt-5 pt-4 border-t border-border/60 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-duo-orange/15 text-duo-orange">
-                          <Flame className="h-4 w-4 fill-duo-orange animate-flame-pulse" />
+                        <div className="p-1.5 rounded-lg bg-amber-500/15 text-amber-500">
+                          <Flame className="h-4 w-4 fill-amber-500 animate-flame-pulse" />
                         </div>
                         <span className="text-xs font-medium text-foreground">
-                          Racha de estudio: <strong className="text-duo-orange">5 días (Ejemplo)</strong>
+                          Racha activa: <strong className="text-amber-500">5 días seguidos</strong>
                         </span>
                       </div>
                       <Badge variant="achievement" className="text-[11px]">
-                        Nivel 3 ⚡ (Ejemplo)
+                        Nivel 3 ⚡
                       </Badge>
                     </div>
                   </div>
 
                   {/* Detalle decorativo flotante */}
-                  <div className="absolute -bottom-4 -left-4 rounded-xl border border-border bg-card p-3 shadow-lg flex items-center gap-2.5 hidden sm:flex">
-                    <Award className="h-5 w-5 text-duo-gold" />
+                  <div className="absolute -bottom-4 -left-4 rounded-2xl border border-border/80 bg-card p-3 shadow-lg flex items-center gap-2.5 hidden sm:flex">
+                    <Award className="h-5 w-5 text-amber-400" />
                     <span className="text-xs font-bold text-foreground">
-                      Insignia Desbloqueada (Ejemplo)
+                      Insignia: Desarrollador Jr.
                     </span>
                   </div>
                 </div>
@@ -352,8 +372,111 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* PILARES / METODOLOGÍA */}
-        <section id="metodologia" className="py-20 bg-muted/30 border-y border-border/60">
+        {/* RUTAS DE APRENDIZAJE STEAM (Estilo Platzi: De cero a avanzado) */}
+        <section id="rutas" className="py-20 bg-muted/20 border-y border-border/60">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <Badge variant="outline" className="mb-3 text-xs tracking-wide uppercase font-semibold">
+                Ruta Formativa
+              </Badge>
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                ¿Cómo aprendes en nuestro campus?
+              </h2>
+              <p className="mt-4 text-base text-muted-foreground">
+                Una trayectoria pedagógica paso a paso para convertir la curiosidad en proyectos tecnológicos funcionales.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
+                <div className="space-y-4">
+                  <span className="flex size-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 font-extrabold text-base">
+                    01
+                  </span>
+                  <h3 className="font-heading text-lg font-bold text-foreground">
+                    Pensamiento Lógico & Algoritmos
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Aprende las bases de la resolución de problemas, estructuras condicionales y cómo dar instrucciones claras al computador.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-border/50 mt-6 text-xs text-primary font-semibold flex items-center gap-1">
+                  Fundamento esencial <ArrowRight className="size-3" />
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
+                <div className="space-y-4">
+                  <span className="flex size-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-500 font-extrabold text-base">
+                    02
+                  </span>
+                  <h3 className="font-heading text-lg font-bold text-foreground">
+                    Desarrollo Web & Código Vivo
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Crea sitios y aplicaciones interactivas con React, componentes visuales, bases de datos estructuradas y diseño moderno.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-border/50 mt-6 text-xs text-primary font-semibold flex items-center gap-1">
+                  Proyectos digitales <ArrowRight className="size-3" />
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
+                <div className="space-y-4">
+                  <span className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 font-extrabold text-base">
+                    03
+                  </span>
+                  <h3 className="font-heading text-lg font-bold text-foreground">
+                    Robótica, Sensores & Hardware
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Lleva el código a la realidad con microcontroladores, sensores IoT y automatización para solucionar desafíos cotidianos.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-border/50 mt-6 text-xs text-primary font-semibold flex items-center gap-1">
+                  Aplicación en el mundo real <ArrowRight className="size-3" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CATÁLOGO DE CURSOS INTERACTIVO (Con Filtros & Buscador estilo Platzi) */}
+        <section id="cursos" className="py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <Badge variant="outline" className="mb-2 text-xs uppercase font-semibold">
+                  Oferta Formativa
+                </Badge>
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                  Cursos y Talleres Disponibles
+                </h2>
+                <p className="mt-2 text-muted-foreground max-w-xl">
+                  Selecciona una categoría o busca por tecnología para explorar los contenidos y proyectos activos.
+                </p>
+              </div>
+
+              <Link
+                href="/login"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "gap-2 shrink-0 self-start md:self-end min-h-11 rounded-xl"
+                )}
+              >
+                Acceder al campus
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {/* Catálogo Interactivo en Cliente */}
+            <LandingCoursesCatalog cursos={cursosParaMostrar} />
+          </div>
+        </section>
+
+        {/* PILARES / METODOLOGÍA ACTIVA */}
+        <section id="metodologia" className="py-20 bg-muted/20 border-t border-border/60">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <Badge variant="outline" className="mb-3 text-xs tracking-wide uppercase font-semibold">
@@ -363,302 +486,66 @@ export default async function Home() {
                 Diseñado para aprender haciendo
               </h2>
               <p className="mt-4 text-base text-muted-foreground">
-                La plataforma integra pedagogía activa y herramientas digitales para asegurar
-                que cada estudiante comprenda y aplique cada concepto.
+                Pedagogía activa con herramientas digitales para que cada estudiante comprenda y aplique cada concepto.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
+              <Card className="rounded-3xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                  <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
                     <Layers className="h-6 w-6" />
                   </div>
                   <h3 className="font-heading text-lg font-bold text-foreground">
                     Estructura por Semanas
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Módulos claros y secuenciales. Cada lección cuenta con objetivos precisos para
-                    organizar el avance en cada periodo.
+                    Módulos claros y secuenciales. Cada lección cuenta con objetivos precisos y entregas organizadas.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
+              <Card className="rounded-3xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-duo-blue/10 text-duo-blue flex items-center justify-center font-bold">
+                  <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold">
                     <Laptop className="h-6 w-6" />
                   </div>
                   <h3 className="font-heading text-lg font-bold text-foreground">
-                    Contenido Multimedia
+                    Contenido Práctico
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Videoclases explicativas, guías ilustradas, ejercicios en código y documentos de
-                    apoyo descargables.
+                    Videoclases explicativas, guías ilustradas, ejercicios de código y material de apoyo descargable.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
+              <Card className="rounded-3xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-duo-orange/15 text-duo-orange flex items-center justify-center font-bold">
+                  <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
                     <Flame className="h-6 w-6" />
                   </div>
                   <h3 className="font-heading text-lg font-bold text-foreground">
                     Progreso Gamificado
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Rachas de estudio, visualización de avance porcentual e insignias de logro que
-                    reconocen tu constancia.
+                    Rachas de estudio diarias, visualización de avance e insignias de logro que reconocen tu constancia.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
+              <Card className="rounded-3xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-success-soft text-success flex items-center justify-center font-bold">
+                  <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
                     <FileCheck2 className="h-6 w-6" />
                   </div>
                   <h3 className="font-heading text-lg font-bold text-foreground">
                     Acompañamiento Docente
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Seguimiento continuo por parte del docente con orientación académica, revisión de
-                    avances y soporte permanente.
+                    Seguimiento continuo por parte del docente con orientación académica, retroalimentación y soporte permanente.
                   </p>
                 </CardContent>
               </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* SECCIÓN DE CURSOS */}
-        <section id="cursos" className="py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-              <div>
-                <Badge variant="outline" className="mb-2 text-xs uppercase font-semibold">
-                  Oferta Formativa
-                </Badge>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                  Cursos y Rutas de Formación
-                </h2>
-                <p className="mt-2 text-muted-foreground max-w-xl">
-                  {tieneCursosDb
-                    ? "Explora los cursos activos actualmente en la plataforma institucional."
-                    : "Descubre los programas formativos diseñados para el desarrollo de competencias prácticas."}
-                </p>
-              </div>
-
-              <Link
-                href="/login"
-                className={cn(buttonVariants({ variant: "outline" }), "gap-2 shrink-0 self-start md:self-end min-h-11 touch:min-h-11")}
-              >
-                Acceder a todos los cursos
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {tieneCursosDb
-                ? cursosPublicados.map((curso, idx) => (
-                    <Card
-                      key={curso.id}
-                      className="group flex flex-col justify-between overflow-hidden border border-border/80 hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
-                    >
-                      <div>
-                        {/* Portada decorativa con gradiente */}
-                        <div
-                          className={`h-36 w-full bg-gradient-to-tr ${
-                            CURSOS_DESTACADOS_DEFAULT[idx % CURSOS_DESTACADOS_DEFAULT.length].gradient
-                          } p-4 flex flex-col justify-between text-white`}
-                        >
-                          <Badge className="bg-black/30 backdrop-blur-md text-white border-none w-fit">
-                            Curso Oficial
-                          </Badge>
-                          <BookOpen className="h-6 w-6 text-white/80 self-end" />
-                        </div>
-
-                        <CardContent className="p-5 flex flex-col gap-2">
-                          <h3 className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                            {curso.titulo}
-                          </h3>
-                          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                            {curso.descripcion}
-                          </p>
-                        </CardContent>
-                      </div>
-
-                      <div className="p-5 pt-0 border-t border-border/50 mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{curso.totalContenidos || 0} lecciones</span>
-                        <Link
-                          href="/login"
-                          className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "gap-1 font-semibold text-primary min-h-9 touch:min-h-11")}
-                        >
-                          Entrar
-                          <ArrowRight className="h-3 w-3" />
-                        </Link>
-                      </div>
-                    </Card>
-                  ))
-                : CURSOS_DESTACADOS_DEFAULT.map((curso) => (
-                    <Card
-                      key={curso.id}
-                      className="group flex flex-col justify-between overflow-hidden border border-border/80 hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
-                    >
-                      <div>
-                        <div
-                          className={`h-36 w-full bg-gradient-to-tr ${curso.gradient} p-4 flex flex-col justify-between text-white`}
-                        >
-                          <Badge className="bg-black/30 backdrop-blur-md text-white border-none w-fit text-[11px]">
-                            {curso.tag}
-                          </Badge>
-                          <Cpu className="h-6 w-6 text-white/80 self-end" />
-                        </div>
-
-                        <CardContent className="p-5 flex flex-col gap-2">
-                          <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium">
-                            <span>{curso.nivel}</span>
-                            <span>{curso.modulos}</span>
-                          </div>
-                          <h3 className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors">
-                            {curso.titulo}
-                          </h3>
-                          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                            {curso.descripcion}
-                          </p>
-                        </CardContent>
-                      </div>
-
-                      <div className="p-5 pt-0 border-t border-border/50 mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">Prof. Fabio Aguirre</span>
-                        <Link
-                          href="/login"
-                          className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "gap-1 font-semibold text-primary min-h-9 touch:min-h-11")}
-                        >
-                          Detalles
-                          <ArrowRight className="h-3 w-3" />
-                        </Link>
-                      </div>
-                    </Card>
-                  ))}
-            </div>
-          </div>
-        </section>
-
-        {/* EXPERIENCIA ESTUDIANTIL INTERACTIVA */}
-        <section id="experiencia" className="py-20 bg-muted/20 border-t border-border/60">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <Badge variant="outline" className="mb-3 text-xs uppercase font-semibold">
-                  Experiencia del Estudiante
-                </Badge>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
-                  Un aula virtual intuitiva que se adapta a tu ritmo
-                </h2>
-                <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-                  Construida con foco en la claridad, la motivación y la concentración del estudiante:
-                </p>
-
-                <div className="mt-8 space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                      <Compass className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-heading text-sm font-bold text-foreground">
-                        Botón &quot;Continuar donde lo dejaste&quot;
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Retoma tus lecciones al instante sin tener que buscar qué material te quedaba
-                        pendiente.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-lg bg-success-soft p-2 text-success">
-                      <CheckCircle2 className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-heading text-sm font-bold text-foreground">
-                        Marcado de temas completados
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Confirma cada lectura o video visto con un clic para actualizar tu barra de
-                        progreso personal.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-lg bg-duo-gold/15 p-2 text-duo-gold">
-                      <Award className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-heading text-sm font-bold text-foreground">
-                        Reconocimiento de avances
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Al completar todos los contenidos de un curso, celebra tu logro alcanzado y
-                        repasa los temas cuando lo necesites.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <Link href="/login" className={cn(buttonVariants(), "gap-2 min-h-11 touch:min-h-11")}>
-                    Acceder a mi Cuenta de Estudiante
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Tarjeta Visual de presentación de panel (Ejemplo) */}
-              <div className="relative rounded-2xl border border-border/80 bg-card p-6 shadow-xl">
-                <div className="flex items-center justify-between pb-4 border-b border-border/60">
-                  <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-destructive/60" />
-                    <span className="h-3 w-3 rounded-full bg-duo-gold/60" />
-                    <span className="h-3 w-3 rounded-full bg-success/60" />
-                  </div>
-                  <span className="text-xs font-mono text-muted-foreground">Vista previa del panel</span>
-                </div>
-
-                <div className="pt-6 space-y-4">
-                  <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-primary uppercase tracking-wide">
-                        Última lección vista (Ejemplo)
-                      </span>
-                      <span className="text-xs text-muted-foreground font-mono">15 min atrás</span>
-                    </div>
-                    <p className="font-heading text-base font-bold text-foreground mt-1">
-                      Algoritmos de Ordenamiento & Condicionales
-                    </p>
-                    <div className="mt-3 flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Tema 4 de 12</span>
-                      <span className="font-bold text-primary">33% completado</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-muted mt-1.5 overflow-hidden">
-                      <div className="h-full bg-primary rounded-full w-1/3" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3.5 rounded-xl border border-border/60 bg-muted/30">
-                      <p className="text-xs text-muted-foreground">Cursos activos (Ejemplo)</p>
-                      <p className="font-heading text-2xl font-bold text-foreground mt-1">3</p>
-                    </div>
-                    <div className="p-3.5 rounded-xl border border-border/60 bg-muted/30">
-                      <p className="text-xs text-muted-foreground">Temas completados (Ejemplo)</p>
-                      <p className="font-heading text-2xl font-bold text-success mt-1">24</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -666,7 +553,7 @@ export default async function Home() {
         {/* SOBRE EL DOCENTE */}
         <section id="docente" className="py-20 border-t border-border/60">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-            <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-indigo-600 text-white shadow-lg mx-auto mb-6">
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-primary to-indigo-600 text-white shadow-lg mx-auto mb-6">
               <Users className="h-10 w-10" />
             </div>
 
@@ -681,21 +568,21 @@ export default async function Home() {
               Docente del Área de Tecnología e Informática
             </p>
 
-            <p className="mt-4 text-base text-muted-foreground leading-relaxed">
+            <p className="mt-4 text-base text-muted-foreground leading-relaxed max-w-2xl mx-auto">
               Espacio formativo a cargo del docente Fabio Andrés Aguirre, orientando a los estudiantes
-              en el desarrollo de competencias tecnológicas, pensamiento lógico y proyectos prácticos.
+              en el desarrollo de competencias tecnológicas, pensamiento lógico y proyectos prácticos STEAM.
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3.5 py-1 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 border border-border/60 px-3.5 py-1 text-xs font-medium text-foreground">
                 <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                 Pedagogía Activa
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3.5 py-1 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 border border-border/60 px-3.5 py-1 text-xs font-medium text-foreground">
                 <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                 Proyectos STEAM
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3.5 py-1 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 border border-border/60 px-3.5 py-1 text-xs font-medium text-foreground">
                 <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                 Innovación Educativa
               </span>
@@ -706,30 +593,35 @@ export default async function Home() {
         {/* BANNER CTA FINAL */}
         <section className="py-20 bg-gradient-to-b from-background via-primary/5 to-background border-t border-border/60">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-3xl border border-primary/20 bg-card/80 p-8 sm:p-12 text-center shadow-xl backdrop-blur-md relative overflow-hidden">
+            <div className="rounded-3xl border border-primary/20 bg-card/90 p-8 sm:p-12 text-center shadow-xl backdrop-blur-md relative overflow-hidden">
               <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl filter" />
               <div className="pointer-events-none absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl filter" />
 
               <h2 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground max-w-2xl mx-auto">
-                ¿Listo para comenzar a aprender hoy mismo?
+                ¿Listo para construir tus propios proyectos hoy?
               </h2>
 
               <p className="mt-4 text-base text-muted-foreground max-w-xl mx-auto">
-                Ingresa con tu cuenta institucional y continúa construyendo tu futuro con
-                lecciones prácticas y guiadas.
+                Ingresa con tu cuenta institucional y continúa dominando las herramientas tecnológicas del futuro.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
                 <Link
                   href="/login"
-                  className={cn(buttonVariants({ size: "lg" }), "h-12 min-h-11 touch:min-h-11 px-8 font-semibold shadow-xs gap-2")}
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    "h-12 min-h-11 touch:min-h-11 px-8 font-semibold shadow-xs gap-2 rounded-xl"
+                  )}
                 >
                   Ingresar al Campus Virtual
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
                   href="#cursos"
-                  className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 min-h-11 touch:min-h-11 px-6")}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "h-12 min-h-11 touch:min-h-11 px-6 rounded-xl"
+                  )}
                 >
                   Ver Cursos Disponibles
                 </a>

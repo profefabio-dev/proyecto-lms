@@ -24,6 +24,12 @@ vi.mock("@/lib/prisma", () => ({
     contents: {
       count: vi.fn(),
     },
+    // 26/11/2026: el panel del docente estrenó la cola "Por calificar", que
+    // consulta las entregas sin nota de sus cursos.
+    entregas: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+    },
   },
 }));
 
@@ -67,18 +73,38 @@ describe("TutorPage (US18)", () => {
   it("consulta cursos, estudiantes inscritos (sin duplicados) y contenidos del tutor autenticado", async () => {
     mockSesion("auth-2");
     (prisma.users.findUnique as any).mockResolvedValue({ id: "tutor-1", rol: "TUTOR" });
-    (prisma.courses.findMany as any).mockResolvedValue([{ id: "curso-1" }, { id: "curso-2" }]);
+    // 26/11/2026: el panel pasó a mostrar tarjetas de curso, así que la
+    // consulta trae también el título, el estado y los tres conteos.
+    (prisma.courses.findMany as any).mockResolvedValue([
+      {
+        id: "curso-1",
+        titulo: "Curso 1",
+        estado: "PUBLICADO",
+        _count: { inscritos: 2, contenidos: 4, actividades: 1 },
+      },
+      {
+        id: "curso-2",
+        titulo: "Curso 2",
+        estado: "BORRADOR",
+        _count: { inscritos: 0, contenidos: 3, actividades: 0 },
+      },
+    ]);
     (prisma.courseUsers.findMany as any).mockResolvedValue([
       { userId: "est-1" },
       { userId: "est-2" },
     ]);
     (prisma.contents.count as any).mockResolvedValue(7);
+    (prisma.entregas.findMany as any).mockResolvedValue([]);
+    (prisma.entregas.count as any).mockResolvedValue(0);
 
     await TutorPage();
 
     expect(prisma.courses.findMany).toHaveBeenCalledWith({
       where: { tutorId: "tutor-1" },
-      select: { id: true },
+      include: {
+        _count: { select: { inscritos: true, contenidos: true, actividades: true } },
+      },
+      orderBy: { createdAt: "desc" },
     });
     expect(prisma.courseUsers.findMany).toHaveBeenCalledWith({
       where: { courseId: { in: ["curso-1", "curso-2"] } },

@@ -211,76 +211,126 @@ export default async function RutaEstudiantePage({
           )}
         </div>
 
-        {/* LOS PASOS DEL CAMINO */}
-        <section className="space-y-4">
-          <h2 className="font-heading text-xl font-bold text-foreground">El camino</h2>
+        {/* LOS PASOS DEL CAMINO (TIMELINE VISUAL ESTILO PLATZI) */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-xl font-bold text-foreground">
+              El Camino de Aprendizaje
+            </h2>
+            <span className="text-xs text-muted-foreground font-medium">
+              {pasos.length} {pasos.length === 1 ? "curso" : "cursos"} en secuencia
+            </span>
+          </div>
 
-          <ol className="space-y-3">
+          <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-4 before:top-4 before:bottom-4 before:w-0.5 before:bg-border/80">
             {pasos.map((paso) => {
               const completado = paso.total > 0 && paso.vistas >= paso.total;
+              const esSiguiente = siguientePaso?.courseId === paso.courseId;
 
               return (
-                <li
-                  key={paso.courseId}
-                  className={cn(
-                    "space-y-3 rounded-2xl border bg-card p-5 shadow-xs",
-                    completado ? "border-success/40" : "border-border/80"
-                  )}
-                >
-                  <div className="flex flex-wrap items-start gap-4">
-                    <span
-                      className={cn(
-                        "flex size-10 shrink-0 items-center justify-center rounded-xl font-heading text-base font-extrabold text-white shadow-xs",
-                        completado ? "bg-success/15 text-success" : "bg-primary text-primary-foreground"
-                      )}
-                      aria-hidden="true"
-                    >
-                      {completado ? <Check className="size-5" /> : paso.posicion}
-                    </span>
-
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <h3 className="font-heading text-base font-bold text-foreground">
-                        {paso.titulo}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">{paso.descripcion}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {paso.total === 0
-                          ? "Todavía sin lecciones publicadas"
-                          : `${paso.vistas} de ${paso.total} lecciones`}
-                      </p>
-                    </div>
-
-                    {!paso.publicado && (
-                      <Badge variant="secondary" className="gap-1">
-                        <Lock className="size-3" /> Aún no disponible
-                      </Badge>
+                <div key={paso.courseId} className="relative group">
+                  {/* Nodo de la línea temporal */}
+                  <div
+                    className={cn(
+                      "absolute -left-6 sm:-left-8 top-5 flex size-6 sm:size-7 -translate-x-1/2 items-center justify-center rounded-full text-xs font-bold transition-all shadow-xs z-10",
+                      completado
+                        ? "bg-emerald-500 text-white ring-4 ring-emerald-500/15"
+                        : esSiguiente
+                          ? "bg-primary text-primary-foreground ring-4 ring-primary/20 animate-pulse"
+                          : "bg-muted text-muted-foreground border border-border"
                     )}
+                  >
+                    {completado ? <Check className="size-3.5" /> : paso.posicion}
                   </div>
 
-                  {paso.total > 0 && (
-                    <Progress
-                      value={paso.progreso}
-                      variant={completado ? "success" : "default"}
-                      aria-label={`Avance del curso ${paso.titulo}`}
-                    />
-                  )}
+                  {/* Tarjeta del curso */}
+                  <div
+                    className={cn(
+                      "rounded-2xl border p-5 sm:p-6 transition-all duration-200 bg-card shadow-xs",
+                      completado
+                        ? "border-emerald-500/30 hover:border-emerald-500/50"
+                        : esSiguiente
+                          ? "border-primary/50 shadow-md ring-1 ring-primary/20"
+                          : "border-border/80 hover:border-border"
+                    )}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Paso {paso.posicion}
+                          </span>
+                          {esSiguiente && (
+                            <Badge variant="default" className="text-[10px] font-bold uppercase">
+                              En Curso
+                            </Badge>
+                          )}
+                          {completado && (
+                            <Badge variant="success" className="text-[10px] font-bold">
+                              Completado
+                            </Badge>
+                          )}
+                        </div>
+                        <h3 className="font-heading text-lg font-bold text-foreground">
+                          {paso.titulo}
+                        </h3>
+                        {paso.descripcion && (
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {paso.descripcion}
+                          </p>
+                        )}
+                      </div>
 
-                  {asociado && paso.publicado && (
-                    <Link
-                      href={paso.hrefLeccion}
-                      className={cn(
-                        buttonVariants({ variant: completado ? "outline" : "default" }),
-                        "gap-2 font-semibold"
+                      {!paso.publicado && (
+                        <Badge variant="secondary" className="gap-1 text-xs">
+                          <Lock className="size-3" /> Aún no disponible
+                        </Badge>
                       )}
-                    >
-                      {completado ? "Repasar" : paso.vistas > 0 ? "Continuar" : "Empezar"}
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  )}
-                </li>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1.5 flex-1 max-w-xs">
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-muted-foreground">
+                            {paso.total === 0
+                              ? "Sin lecciones"
+                              : `${paso.vistas} de ${paso.total} lecciones`}
+                          </span>
+                          <span className={completado ? "text-emerald-500" : "text-primary"}>
+                            {paso.progreso}%
+                          </span>
+                        </div>
+                        {paso.total > 0 && (
+                          <Progress
+                            value={paso.progreso}
+                            variant={completado ? "success" : "default"}
+                            size="default"
+                            aria-label={`Avance de ${paso.titulo}`}
+                          />
+                        )}
+                      </div>
+
+                      {asociado && paso.publicado && (
+                        <Link
+                          href={paso.hrefLeccion}
+                          className={cn(
+                            buttonVariants({
+                              variant: esSiguiente ? "default" : completado ? "outline" : "secondary",
+                              size: "default",
+                            }),
+                            "gap-2 font-bold rounded-xl shrink-0"
+                          )}
+                        >
+                          {completado ? "Repasar" : paso.vistas > 0 ? "Continuar" : "Empezar"}
+                          <ArrowRight className="size-4" />
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
               );
             })}
-          </ol>
+          </div>
         </section>
       </main>
     </AppShell>

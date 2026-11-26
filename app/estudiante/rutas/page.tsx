@@ -112,75 +112,99 @@ export default async function RutasEstudiantePage() {
           insignia={`${misRutas.length} ${misRutas.length === 1 ? "ruta en curso" : "rutas en curso"}`}
         />
 
-        {/* MIS RUTAS */}
+        {/* MIS RUTAS (RUTAS ACTIVAS) */}
         <section className="space-y-4">
-          <h2 className="font-heading text-xl font-bold text-foreground">Mis rutas</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-xl font-bold text-foreground">Mis Rutas en Curso</h2>
+            {misRutas.length > 0 && (
+              <Badge variant="outline" className="text-xs font-semibold">
+                {misRutas.length} {misRutas.length === 1 ? "activa" : "activas"}
+              </Badge>
+            )}
+          </div>
 
           {misRutas.length === 0 ? (
             <EmptyState
               icon={Compass}
-              message="Todavía no te has asociado a ninguna ruta. Mira abajo las que tu docente publicó."
+              message="Todavía no te has asociado a ninguna ruta. Mira abajo las rutas STEAM disponibles para comenzar."
             />
           ) : (
-            <ul className="space-y-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               {misRutas.map((ruta) => (
-                <li
+                <div
                   key={ruta.id}
-                  className="space-y-4 rounded-2xl border border-primary/30 bg-card p-5 shadow-xs"
+                  className="flex flex-col justify-between space-y-4 rounded-2xl border border-primary/30 bg-card p-5 shadow-xs transition-all hover:border-primary/60 hover:shadow-md"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-1">
-                      <h3 className="font-heading text-lg font-bold text-foreground">
-                        {ruta.titulo}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {ruta.totalCursos} {ruta.totalCursos === 1 ? "curso" : "cursos"} ·{" "}
-                        {ruta.avance.leccionesTotales}{" "}
-                        {ruta.avance.leccionesTotales === 1 ? "lección" : "lecciones"}
-                      </p>
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <Route className="size-4" />
+                        </span>
+                        <div>
+                          <h3 className="font-heading text-base font-bold text-foreground line-clamp-1">
+                            {ruta.titulo}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {ruta.totalCursos} {ruta.totalCursos === 1 ? "curso" : "cursos"} ·{" "}
+                            {ruta.avance.leccionesTotales}{" "}
+                            {ruta.avance.leccionesTotales === 1 ? "lección" : "lecciones"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Badge
+                        variant={ruta.avance.progreso === 100 ? "success" : "default"}
+                        className="font-semibold text-xs"
+                      >
+                        {ruta.avance.progreso}%
+                      </Badge>
                     </div>
 
-                    <Badge
+                    {ruta.descripcion && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        {ruta.descripcion}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <Progress
+                      value={ruta.avance.progreso}
                       variant={ruta.avance.progreso === 100 ? "success" : "default"}
-                      className="font-semibold"
-                    >
-                      {ruta.avance.progreso}%
-                    </Badge>
+                      size="default"
+                      aria-label={`Avance de la ruta ${ruta.titulo}`}
+                    />
+
+                    <div className="flex items-center justify-between gap-3 border-t border-border/50 pt-3 text-xs">
+                      <span className="text-muted-foreground font-medium">
+                        {ruta.avance.cursosCompletados} de {ruta.avance.cursosConContenido} cursos listos
+                      </span>
+
+                      <Link
+                        href={`/estudiante/rutas/${ruta.id}`}
+                        className={cn(
+                          buttonVariants({ size: "sm" }),
+                          "gap-1.5 font-bold rounded-xl text-xs"
+                        )}
+                      >
+                        Continuar
+                        <ArrowRight className="size-3.5" />
+                      </Link>
+                    </div>
                   </div>
-
-                  <Progress
-                    value={ruta.avance.progreso}
-                    variant={ruta.avance.progreso === 100 ? "success" : "default"}
-                    size="lg"
-                    aria-label={`Avance de la ruta ${ruta.titulo}`}
-                  />
-
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-xs text-muted-foreground">
-                      {ruta.avance.cursosCompletados} de {ruta.avance.cursosConContenido} cursos
-                      completados
-                    </p>
-
-                    <Link
-                      href={`/estudiante/rutas/${ruta.id}`}
-                      className={cn(buttonVariants({ variant: "outline" }), "gap-2 font-semibold")}
-                    >
-                      Ver la ruta
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </section>
 
         {/* RUTAS DISPONIBLES */}
         <section className="space-y-4 border-t border-border/60 pt-6">
           <div>
-            <h2 className="font-heading text-xl font-bold text-foreground">Rutas disponibles</h2>
+            <h2 className="font-heading text-xl font-bold text-foreground">Rutas Disponibles</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              Al asociarte, quedas inscrito en los cursos de la ruta y aparecen en tus cursos.
+              Al asociarte, quedas inscrito automáticamente en todos sus cursos para aprender la habilidad completa.
             </p>
           </div>
 
@@ -190,43 +214,54 @@ export default async function RutasEstudiantePage() {
               message="No hay rutas nuevas por ahora. Tu docente las publica desde su panel."
             />
           ) : (
-            <ul className="space-y-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               {porEmpezar.map((ruta) => (
-                <li
+                <div
                   key={ruta.id}
-                  className="space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs"
+                  className="flex flex-col justify-between space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-primary/40 hover:shadow-md"
                 >
-                  <div className="space-y-1">
-                    <h3 className="font-heading text-lg font-bold text-foreground">
-                      {ruta.titulo}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{ruta.descripcion}</p>
-                    <p className="flex flex-wrap items-center gap-3 pt-1 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <BookOpen className="size-3.5 text-muted-foreground" />
-                        {ruta.totalCursos} {ruta.totalCursos === 1 ? "curso" : "cursos"}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                        <BookOpen className="size-4" />
+                      </span>
+                      <h3 className="font-heading text-base font-bold text-foreground line-clamp-1">
+                        {ruta.titulo}
+                      </h3>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                      {ruta.descripcion}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-muted-foreground">
+                      <span className="font-medium">
+                        {ruta.totalCursos} {ruta.totalCursos === 1 ? "curso" : "cursos"} incluidos
                       </span>
                       {ruta.tutor && (
                         <span>
                           Docente: {ruta.tutor.nombre} {ruta.tutor.apellido}
                         </span>
                       )}
-                    </p>
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 border-t border-border/60 pt-4">
-                    <JoinRutaForm rutaId={ruta.id} />
+                  <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
                     <Link
                       href={`/estudiante/rutas/${ruta.id}`}
-                      className={cn(buttonVariants({ variant: "ghost" }), "gap-2 text-sm")}
+                      className={cn(
+                        buttonVariants({ variant: "ghost", size: "sm" }),
+                        "gap-1.5 text-xs font-semibold"
+                      )}
                     >
-                      Ver qué incluye
-                      <ArrowRight className="size-4" />
+                      Ver temario
+                      <ArrowRight className="size-3.5" />
                     </Link>
+                    <JoinRutaForm rutaId={ruta.id} />
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </section>
       </main>

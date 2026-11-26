@@ -48,6 +48,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { agruparContenidoPorSeccion, contenidoSinSeccion } from "@/lib/group-content-by-section";
+import { CourseClassCodeCard } from "@/components/course-class-code-card";
 
 export default async function CursoDetallePage({
   params,
@@ -295,6 +296,9 @@ export default async function CursoDetallePage({
             </p>
           )}
         </div>
+
+        {/* US51: CÓDIGO DE CLASE PARA AUTO-INSCRIPCIÓN */}
+        <CourseClassCodeCard courseId={curso.id} tituloCurso={curso.titulo} />
 
         {/* ANUNCIOS — US53 (25/11/2026). Lo que el docente le dice a su
             grupo con sus propias palabras: las novedades de OP11 son

@@ -101,7 +101,9 @@ describe("BuscarPage (US17)", () => {
           { descripcion: { contains: "html", mode: "insensitive" } },
         ],
       },
-      include: { course: true },
+      // 26/11/2026: la pantalla pasó a traer solo lo que muestra del curso
+      // (id y título) en vez del registro completo. Menos datos por consulta.
+      include: { course: { select: { id: true, titulo: true } } },
       orderBy: { titulo: "asc" },
     });
   });
