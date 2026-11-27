@@ -135,7 +135,7 @@ export default async function TutorPage() {
               </div>
 
               <h1 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-                ¡Hola, Prof. {usuarioActual.nombre}! 👋
+                ¡Hola, Prof. {usuarioActual.nombre}!
               </h1>
 
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
@@ -147,14 +147,14 @@ export default async function TutorPage() {
             <div className="flex flex-wrap items-center gap-2.5 shrink-0">
               <Link
                 href="/tutor/cursos"
-                className={cn(buttonVariants({ size: "default" }), "gap-1.5 font-bold rounded-xl shadow-xs")}
+                className={cn(buttonVariants({ size: "default" }), "gap-1.5 font-bold rounded-2xl shadow-xs")}
               >
                 <Plus className="size-4" />
                 Nuevo Curso
               </Link>
               <Link
                 href="/tutor/rutas"
-                className={cn(buttonVariants({ variant: "outline", size: "default" }), "gap-1.5 font-semibold rounded-xl")}
+                className={cn(buttonVariants({ variant: "outline", size: "default" }), "gap-1.5 font-semibold rounded-2xl")}
               >
                 <Route className="size-4 text-primary" />
                 Rutas STEAM
@@ -166,7 +166,7 @@ export default async function TutorPage() {
         {/* RESUMEN DE INDICADORES (KPIs) */}
         <section aria-label="Indicadores generales" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs flex items-center gap-3.5">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <BookOpen className="size-5" />
             </div>
             <div>
@@ -178,7 +178,7 @@ export default async function TutorPage() {
           </div>
 
           <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs flex items-center gap-3.5">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
               <GraduationCap className="size-5" />
             </div>
             <div>
@@ -190,7 +190,7 @@ export default async function TutorPage() {
           </div>
 
           <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs flex items-center gap-3.5">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <FileText className="size-5" />
             </div>
             <div>
@@ -201,7 +201,7 @@ export default async function TutorPage() {
 
           <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs flex items-center gap-3.5">
             <div className={cn(
-              "flex size-11 shrink-0 items-center justify-center rounded-xl font-bold",
+              "flex size-11 shrink-0 items-center justify-center rounded-2xl font-bold",
               totalPendientes > 0
                 ? "bg-amber-500/15 text-amber-500"
                 : "bg-emerald-500/10 text-emerald-500"
@@ -227,7 +227,7 @@ export default async function TutorPage() {
             className="rounded-2xl border border-primary/30 bg-primary/5 p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
           >
             <div className="flex items-center gap-3.5">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xs">
                 <Sparkles className="size-5" />
               </div>
               <div className="space-y-0.5">
@@ -249,7 +249,7 @@ export default async function TutorPage() {
             </div>
             <Link
               href="/tutor/catalogo"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "text-xs shrink-0 rounded-xl font-semibold")}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "text-xs shrink-0 rounded-2xl font-semibold")}
             >
               Explorar catálogo
             </Link>
@@ -287,7 +287,7 @@ export default async function TutorPage() {
                 </p>
                 <Link
                   href="/tutor/cursos"
-                  className={cn(buttonVariants({ size: "sm" }), "font-bold rounded-xl")}
+                  className={cn(buttonVariants({ size: "sm" }), "font-bold rounded-2xl")}
                 >
                   Crear mi primer curso
                 </Link>
@@ -358,7 +358,7 @@ export default async function TutorPage() {
                           href={`/tutor/cursos/${curso.id}`}
                           className={cn(
                             buttonVariants({ size: "xs" }),
-                            "gap-1 font-bold rounded-lg text-xs"
+                            "gap-1 font-bold rounded-2xl text-xs"
                           )}
                         >
                           Gestionar
@@ -378,7 +378,7 @@ export default async function TutorPage() {
             <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-border/60">
                 <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                  <div className="flex size-7 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500">
                     <ClipboardCheck className="size-4" />
                   </div>
                   <h3 className="font-heading text-sm font-bold text-foreground">
@@ -408,7 +408,7 @@ export default async function TutorPage() {
                     <li key={entrega.id}>
                       <Link
                         href={`/tutor/cursos/${entrega.actividad.courseId}/actividades/${entrega.actividad.id}`}
-                        className="group block rounded-xl border border-border/70 bg-background/60 p-3 transition-colors hover:border-primary/40 hover:bg-muted/30"
+                        className="group block rounded-2xl border border-border/70 bg-background/60 p-3 transition-colors hover:border-primary/40 hover:bg-muted/30"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <span className="font-heading text-xs font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
@@ -446,7 +446,7 @@ export default async function TutorPage() {
               <div className="space-y-2">
                 <Link
                   href="/tutor/estudiantes"
-                  className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-card text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-2xs"
+                  className="flex items-center justify-between p-3 rounded-2xl border border-border/80 bg-card text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-2xs"
                 >
                   <span className="flex items-center gap-2">
                     <Users className="size-4 text-emerald-500" />
@@ -457,7 +457,7 @@ export default async function TutorPage() {
 
                 <Link
                   href="/tutor/rutas"
-                  className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-card text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-2xs"
+                  className="flex items-center justify-between p-3 rounded-2xl border border-border/80 bg-card text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-2xs"
                 >
                   <span className="flex items-center gap-2">
                     <Route className="size-4 text-primary" />
@@ -468,7 +468,7 @@ export default async function TutorPage() {
 
                 <Link
                   href="/tutor/catalogo"
-                  className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-card text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-2xs"
+                  className="flex items-center justify-between p-3 rounded-2xl border border-border/80 bg-card text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-2xs"
                 >
                   <span className="flex items-center gap-2">
                     <Library className="size-4 text-indigo-400" />

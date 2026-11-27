@@ -111,7 +111,7 @@ export function LessonCurriculum({
                       href={`/estudiante/cursos/${courseId}/lecciones/${leccion.id}`}
                       aria-current={esActual ? "page" : undefined}
                       className={cn(
-                        "flex min-h-11 items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors",
+                        "flex min-h-11 items-center gap-2.5 rounded-2xl px-2.5 py-2 text-xs font-medium transition-colors",
                         esActual
                           ? "bg-primary/10 font-bold text-primary ring-1 ring-primary/30"
                           : "text-foreground hover:bg-muted"
@@ -119,7 +119,7 @@ export function LessonCurriculum({
                     >
                       <span
                         className={cn(
-                          "flex size-6 shrink-0 items-center justify-center rounded-lg shadow-xs",
+                          "flex size-6 shrink-0 items-center justify-center rounded-2xl shadow-xs",
                           leccion.visto ? "bg-success/15 text-success" : clase
                         )}
                         aria-hidden="true"
@@ -149,7 +149,7 @@ export function LessonCurriculum({
       {terminosDelGlosario > 0 && (
         <Link
           href={`/estudiante/cursos/${courseId}/glosario`}
-          className="flex items-center gap-2 rounded-xl border border-border/80 px-3 py-2.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+          className="flex items-center gap-2 rounded-2xl border border-border/80 px-3 py-2.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
         >
           <BookA className="size-4 text-primary" aria-hidden="true" />
           Glosario del curso

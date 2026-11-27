@@ -138,7 +138,7 @@ export default async function RutasEstudiantePage() {
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2.5">
-                        <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <span className="flex size-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                           <Route className="size-4" />
                         </span>
                         <div>
@@ -185,7 +185,7 @@ export default async function RutasEstudiantePage() {
                         href={`/estudiante/rutas/${ruta.id}`}
                         className={cn(
                           buttonVariants({ size: "sm" }),
-                          "gap-1.5 font-bold rounded-xl text-xs"
+                          "gap-1.5 font-bold rounded-2xl text-xs"
                         )}
                       >
                         Continuar
@@ -222,7 +222,7 @@ export default async function RutasEstudiantePage() {
                 >
                   <div className="space-y-2">
                     <div className="flex items-center gap-2.5">
-                      <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                      <span className="flex size-9 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                         <BookOpen className="size-4" />
                       </span>
                       <h3 className="font-heading text-base font-bold text-foreground line-clamp-1">

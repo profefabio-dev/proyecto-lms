@@ -124,7 +124,7 @@ export default async function BuscarPage({
         <div className="space-y-6 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <span className="flex size-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Search className="size-4" />
               </span>
               <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
@@ -145,11 +145,11 @@ export default async function BuscarPage({
                 name="q"
                 defaultValue={termino}
                 placeholder="Un tema, un curso... o un código como ABCD-1234"
-                className="w-full h-11 rounded-xl border border-border/80 bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+                className="w-full h-11 rounded-2xl border border-border/80 bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                 aria-label="Buscar en mis cursos"
               />
             </div>
-            <Button type="submit" size="lg" className="rounded-xl font-bold px-6">
+            <Button type="submit" size="lg" className="rounded-2xl font-bold px-6">
               Buscar
             </Button>
           </form>
@@ -163,7 +163,7 @@ export default async function BuscarPage({
               <Link
                 key={sug}
                 href={`/estudiante/buscar?q=${encodeURIComponent(sug)}`}
-                className="rounded-lg bg-muted/60 border border-border/60 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                className="rounded-2xl bg-muted/60 border border-border/60 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
               >
                 {sug}
               </Link>
@@ -245,7 +245,7 @@ export default async function BuscarPage({
                     <Link
                       key={curso.id}
                       href={`/estudiante/cursos/${curso.id}`}
-                      className="group flex items-center justify-between p-4 rounded-xl border border-border/80 bg-card hover:border-primary/40 hover:bg-muted/30 transition-all shadow-xs"
+                      className="group flex items-center justify-between p-4 rounded-2xl border border-border/80 bg-card hover:border-primary/40 hover:bg-muted/30 transition-all shadow-xs"
                     >
                       <div className="min-w-0 pr-3">
                         <p className="font-heading text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
@@ -282,7 +282,7 @@ export default async function BuscarPage({
                     <li key={contenido.id}>
                       <Link
                         href={`/estudiante/cursos/${contenido.courseId}/lecciones/${contenido.id}`}
-                        className="group flex items-center justify-between p-3.5 rounded-xl border border-border/80 bg-card hover:border-primary/40 hover:bg-muted/30 transition-all shadow-xs"
+                        className="group flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-card hover:border-primary/40 hover:bg-muted/30 transition-all shadow-xs"
                       >
                         <div className="min-w-0 pr-3 space-y-0.5">
                           <p className="font-heading text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">

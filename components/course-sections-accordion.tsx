@@ -79,7 +79,7 @@ export function CourseSectionsAccordion({
           <button
             type="button"
             onClick={expandirTodas}
-            className="text-muted-foreground hover:text-foreground font-semibold px-2 py-1 rounded-md hover:bg-muted/40 transition-colors"
+            className="text-muted-foreground hover:text-foreground font-semibold px-2 py-1 rounded-2xl hover:bg-muted/40 transition-colors"
           >
             Expandir todos los módulos
           </button>
@@ -87,7 +87,7 @@ export function CourseSectionsAccordion({
           <button
             type="button"
             onClick={colapsarTodas}
-            className="text-muted-foreground hover:text-foreground font-semibold px-2 py-1 rounded-md hover:bg-muted/40 transition-colors"
+            className="text-muted-foreground hover:text-foreground font-semibold px-2 py-1 rounded-2xl hover:bg-muted/40 transition-colors"
           >
             Colapsar todos
           </button>
@@ -122,7 +122,7 @@ export function CourseSectionsAccordion({
                 <div className="flex flex-wrap items-center gap-3 min-w-0">
                   <span
                     className={cn(
-                      "flex size-9 shrink-0 items-center justify-center rounded-xl font-bold transition-colors",
+                      "flex size-9 shrink-0 items-center justify-center rounded-2xl font-bold transition-colors",
                       seccion.esActual
                         ? "bg-primary text-primary-foreground shadow-xs"
                         : "bg-primary/10 text-primary"
@@ -159,7 +159,7 @@ export function CourseSectionsAccordion({
 
                   <div
                     className={cn(
-                      "flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-transform duration-200",
+                      "flex size-7 items-center justify-center rounded-2xl text-muted-foreground transition-transform duration-200",
                       estaAbierta ? "rotate-180 text-foreground" : ""
                     )}
                   >
@@ -172,12 +172,12 @@ export function CourseSectionsAccordion({
               {estaAbierta && (
                 <div className="p-4 sm:p-5 pt-0 border-t border-border/40 mt-1">
                   {bloqueada ? (
-                    <p className="rounded-xl border border-border/60 bg-muted/30 p-4 text-xs sm:text-sm text-muted-foreground mt-3">
+                    <p className="rounded-2xl border border-border/60 bg-muted/30 p-4 text-xs sm:text-sm text-muted-foreground mt-3">
                       Esta sección todavía no está disponible — tu docente la habilitará según el
                       avance de la clase.
                     </p>
                   ) : totalLecciones === 0 ? (
-                    <p className="rounded-xl border border-border/60 bg-muted/30 p-4 text-xs sm:text-sm text-muted-foreground mt-3">
+                    <p className="rounded-2xl border border-border/60 bg-muted/30 p-4 text-xs sm:text-sm text-muted-foreground mt-3">
                       Esta sección todavía no tiene lecciones publicadas.
                     </p>
                   ) : (

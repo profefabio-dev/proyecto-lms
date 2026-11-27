@@ -66,7 +66,7 @@ export function EditContentForm({
   }
 
   return (
-    <form action={accion} className="space-y-3 rounded-lg border bg-muted/30 p-3">
+    <form action={accion} className="space-y-3 rounded-2xl border bg-muted/30 p-3">
       <input type="hidden" name="contentId" value={contentId} />
 
       <div className="space-y-1">
@@ -114,7 +114,7 @@ export function EditContentForm({
             rows={8}
             value={valores.contenido}
             onChange={(e) => setValores((v) => ({ ...v, contenido: e.target.value }))}
-            className="w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
+            className="w-full min-w-0 rounded-2xl border border-input bg-transparent px-2.5 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
           />
           <p className="text-xs text-muted-foreground">
             Admite formato Markdown: # para títulos, **texto** para negrita y - para listas.
@@ -150,7 +150,7 @@ export function EditContentForm({
             rows={10}
             value={valores.contenido}
             onChange={(e) => setValores((v) => ({ ...v, contenido: e.target.value }))}
-            className="w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-2 font-mono text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+            className="w-full min-w-0 rounded-2xl border border-input bg-transparent px-2.5 py-2 font-mono text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
           />
           <p className="text-xs text-muted-foreground">
             La primera línea, si dice <code>lenguaje: python</code>, define el lenguaje que se

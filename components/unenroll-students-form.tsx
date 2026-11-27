@@ -70,7 +70,7 @@ export function UnenrollStudentsForm({
       <ul className="max-h-72 space-y-0.5 overflow-y-auto text-sm">
         {estudiantes.map((estudiante) => (
           <li key={estudiante.id}>
-            <label className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted touch:py-2.5">
+            <label className="flex items-center gap-2 rounded-2xl px-2 py-1 hover:bg-muted touch:py-2.5">
               <input
                 type="checkbox"
                 checked={seleccionados.has(estudiante.id)}
@@ -98,7 +98,7 @@ export function UnenrollStudentsForm({
       )}
 
       {paso === "primera" && (
-        <div className="space-y-2 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+        <div className="space-y-2 rounded-2xl border border-destructive/40 bg-destructive/5 p-3 text-sm">
           <p>
             ¿Seguro que quieres quitar a {seleccionados.size} estudiante(s) de este curso? Se
             pierde su inscripción y su progreso en este curso — su cuenta y su historial en
@@ -118,7 +118,7 @@ export function UnenrollStudentsForm({
       {paso === "segunda" && (
         <form
           action={accion}
-          className="space-y-2 rounded-md border border-destructive bg-destructive/10 p-3 text-sm"
+          className="space-y-2 rounded-2xl border border-destructive bg-destructive/10 p-3 text-sm"
         >
           <input type="hidden" name="courseId" value={courseId} />
           {[...seleccionados].map((id) => (

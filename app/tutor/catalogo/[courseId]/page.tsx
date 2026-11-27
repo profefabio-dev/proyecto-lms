@@ -112,7 +112,7 @@ export default async function FichaCursoCompartidoPage({
           Volver al catálogo
         </Link>
 
-        <article className="overflow-hidden rounded-3xl border border-border/80 bg-card">
+        <article className="overflow-hidden rounded-2xl border border-border/80 bg-card">
           {curso.imagen && (
             // eslint-disable-next-line @next/next/no-img-element
             <img

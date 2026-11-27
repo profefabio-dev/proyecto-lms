@@ -235,7 +235,7 @@ export default async function RutaTutorPage({
                   className="flex flex-wrap items-center gap-4 rounded-2xl border border-border/80 bg-card p-5"
                 >
                   <span
-                    className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 font-heading text-base font-extrabold text-primary"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 font-heading text-base font-extrabold text-primary"
                     aria-hidden="true"
                   >
                     {posicion + 1}

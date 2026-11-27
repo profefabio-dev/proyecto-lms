@@ -229,7 +229,7 @@ export default async function RevisarActividadPage({
                   </div>
 
                   {entrega.texto && (
-                    <div className="rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-sm whitespace-pre-wrap text-foreground">
+                    <div className="rounded-2xl border border-border/60 bg-muted/30 px-3 py-2 text-sm whitespace-pre-wrap text-foreground">
                       {entrega.texto}
                     </div>
                   )}

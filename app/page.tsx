@@ -1,21 +1,25 @@
 import Link from "next/link";
 import {
-  GraduationCap,
   ArrowRight,
+  Award,
   BookOpen,
-  Sparkles,
+  Bot,
   CheckCircle2,
   Code2,
+  Compass,
   Cpu,
+  Database,
+  FileCheck2,
   Flame,
-  Award,
+  GraduationCap,
   Laptop,
   Layers,
-  Users,
-  Compass,
-  FileCheck2,
+  Lightbulb,
   Rocket,
   Search,
+  Sparkles,
+  Users,
+  Zap,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -123,7 +127,7 @@ export default async function Home() {
       <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 backdrop-blur-md transition-all">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-105">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-105">
               <GraduationCap className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
@@ -156,7 +160,7 @@ export default async function Home() {
             {usuarioAutenticado ? (
               <Link
                 href="/dashboard"
-                className={cn(buttonVariants(), "gap-2 font-medium min-h-10 touch:min-h-11 rounded-xl")}
+                className={cn(buttonVariants(), "gap-2 font-medium min-h-10 touch:min-h-11 rounded-2xl")}
               >
                 Ir a mi Panel
                 <ArrowRight className="h-4 w-4" />
@@ -176,7 +180,7 @@ export default async function Home() {
                   href="/login"
                   className={cn(
                     buttonVariants(),
-                    "gap-2 shadow-xs font-semibold min-h-10 touch:min-h-11 rounded-xl"
+                    "gap-2 shadow-xs font-semibold min-h-10 touch:min-h-11 rounded-2xl"
                   )}
                 >
                   Ingresar al Campus
@@ -225,7 +229,7 @@ export default async function Home() {
                     href="/login"
                     className={cn(
                       buttonVariants({ size: "lg" }),
-                      "h-12 min-h-11 touch:min-h-11 px-7 text-base font-semibold shadow-xs gap-2 rounded-xl"
+                      "h-12 min-h-11 touch:min-h-11 px-7 text-base font-semibold shadow-xs gap-2 rounded-2xl"
                     )}
                   >
                     {usuarioAutenticado ? "Entrar al Campus" : "Comenzar Ahora"}
@@ -236,7 +240,7 @@ export default async function Home() {
                     href="#cursos"
                     className={cn(
                       buttonVariants({ variant: "outline", size: "lg" }),
-                      "h-12 min-h-11 touch:min-h-11 px-6 text-base font-medium rounded-xl"
+                      "h-12 min-h-11 touch:min-h-11 px-6 text-base font-medium rounded-2xl"
                     )}
                   >
                     <BookOpen className="h-4 w-4 mr-2" />
@@ -247,17 +251,21 @@ export default async function Home() {
                 {/* Tecnologías destacadas en píldoras */}
                 <div className="pt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   <span className="font-semibold text-foreground mr-1">Rutas destacadas:</span>
-                  <span className="rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
-                    ⚡ React & Web
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
+                    <Zap className="size-3.5 text-primary" aria-hidden="true" />
+                    React & Web
                   </span>
-                  <span className="rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
-                    🤖 Robótica & Arduino
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
+                    <Bot className="size-3.5 text-primary" aria-hidden="true" />
+                    Robótica & Arduino
                   </span>
-                  <span className="rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
-                    💡 Algoritmos
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
+                    <Lightbulb className="size-3.5 text-primary" aria-hidden="true" />
+                    Algoritmos
                   </span>
-                  <span className="rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
-                    🗄️ SQL & Backend
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 border border-border/60 px-2.5 py-1 font-medium">
+                    <Database className="size-3.5 text-primary" aria-hidden="true" />
+                    SQL & Backend
                   </span>
                 </div>
               </div>
@@ -266,10 +274,10 @@ export default async function Home() {
               <div className="lg:col-span-5 relative">
                 <div className="relative mx-auto w-full max-w-md lg:max-w-none">
                   {/* Tarjeta principal interactiva */}
-                  <div className="rounded-3xl border border-border/80 bg-card/95 p-6 shadow-2xl backdrop-blur-sm transition-all hover:border-primary/40">
+                  <div className="rounded-2xl border border-border/80 bg-card/95 p-6 shadow-2xl backdrop-blur-sm transition-all hover:border-primary/40">
                     <div className="flex items-center justify-between border-b border-border/60 pb-4 mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                        <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
                           <Code2 className="h-5 w-5" />
                         </div>
                         <div>
@@ -300,7 +308,7 @@ export default async function Home() {
 
                     {/* Lista de temas del aula */}
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/40">
+                      <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/40">
                         <div className="flex items-center gap-3">
                           <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
                           <div className="text-xs">
@@ -313,7 +321,7 @@ export default async function Home() {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/25">
+                      <div className="flex items-center justify-between p-3 rounded-2xl bg-primary/10 border border-primary/25">
                         <div className="flex items-center gap-3">
                           <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin shrink-0" />
                           <div className="text-xs">
@@ -323,13 +331,13 @@ export default async function Home() {
                         </div>
                         <Link
                           href="/login"
-                          className={cn(buttonVariants({ size: "xs" }), "rounded-lg text-xs font-semibold")}
+                          className={cn(buttonVariants({ size: "xs" }), "rounded-2xl text-xs font-semibold")}
                         >
                           Continuar
                         </Link>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/30 opacity-70">
+                      <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/20 border border-border/30 opacity-70">
                         <div className="flex items-center gap-3">
                           <div className="h-5 w-5 rounded-full border border-muted-foreground/30 flex items-center justify-center text-[10px] text-muted-foreground font-semibold">
                             3
@@ -346,7 +354,7 @@ export default async function Home() {
                     {/* Mini widget de racha */}
                     <div className="mt-5 pt-4 border-t border-border/60 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-amber-500/15 text-amber-500">
+                        <div className="p-1.5 rounded-2xl bg-amber-500/15 text-amber-500">
                           <Flame className="h-4 w-4 fill-amber-500 animate-flame-pulse" />
                         </div>
                         <span className="text-xs font-medium text-foreground">
@@ -354,7 +362,7 @@ export default async function Home() {
                         </span>
                       </div>
                       <Badge variant="achievement" className="text-[11px]">
-                        Nivel 3 ⚡
+                        Nivel 3
                       </Badge>
                     </div>
                   </div>
@@ -388,7 +396,7 @@ export default async function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
                 <div className="space-y-4">
                   <span className="flex size-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 font-extrabold text-base">
                     01
@@ -405,7 +413,7 @@ export default async function Home() {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
                 <div className="space-y-4">
                   <span className="flex size-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-500 font-extrabold text-base">
                     02
@@ -422,7 +430,7 @@ export default async function Home() {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs relative flex flex-col justify-between">
                 <div className="space-y-4">
                   <span className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 font-extrabold text-base">
                     03
@@ -462,7 +470,7 @@ export default async function Home() {
                 href="/login"
                 className={cn(
                   buttonVariants({ variant: "outline" }),
-                  "gap-2 shrink-0 self-start md:self-end min-h-11 rounded-xl"
+                  "gap-2 shrink-0 self-start md:self-end min-h-11 rounded-2xl"
                 )}
               >
                 Acceder al campus
@@ -491,7 +499,7 @@ export default async function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="rounded-3xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
+              <Card className="rounded-2xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
                     <Layers className="h-6 w-6" />
@@ -505,7 +513,7 @@ export default async function Home() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-3xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
+              <Card className="rounded-2xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold">
                     <Laptop className="h-6 w-6" />
@@ -519,7 +527,7 @@ export default async function Home() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-3xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
+              <Card className="rounded-2xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
                     <Flame className="h-6 w-6" />
@@ -533,7 +541,7 @@ export default async function Home() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-3xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
+              <Card className="rounded-2xl border border-border/70 hover:border-primary/40 transition-all hover:shadow-xs">
                 <CardContent className="p-6 flex flex-col gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
                     <FileCheck2 className="h-6 w-6" />
@@ -553,7 +561,7 @@ export default async function Home() {
         {/* SOBRE EL DOCENTE */}
         <section id="docente" className="py-20 border-t border-border/60">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-            <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-primary to-indigo-600 text-white shadow-lg mx-auto mb-6">
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-indigo-600 text-white shadow-lg mx-auto mb-6">
               <Users className="h-10 w-10" />
             </div>
 
@@ -593,7 +601,7 @@ export default async function Home() {
         {/* BANNER CTA FINAL */}
         <section className="py-20 bg-gradient-to-b from-background via-primary/5 to-background border-t border-border/60">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-3xl border border-primary/20 bg-card/90 p-8 sm:p-12 text-center shadow-xl backdrop-blur-md relative overflow-hidden">
+            <div className="rounded-2xl border border-primary/20 bg-card/90 p-8 sm:p-12 text-center shadow-xl backdrop-blur-md relative overflow-hidden">
               <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl filter" />
               <div className="pointer-events-none absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl filter" />
 
@@ -610,7 +618,7 @@ export default async function Home() {
                   href="/login"
                   className={cn(
                     buttonVariants({ size: "lg" }),
-                    "h-12 min-h-11 touch:min-h-11 px-8 font-semibold shadow-xs gap-2 rounded-xl"
+                    "h-12 min-h-11 touch:min-h-11 px-8 font-semibold shadow-xs gap-2 rounded-2xl"
                   )}
                 >
                   Ingresar al Campus Virtual
@@ -620,7 +628,7 @@ export default async function Home() {
                   href="#cursos"
                   className={cn(
                     buttonVariants({ variant: "outline", size: "lg" }),
-                    "h-12 min-h-11 touch:min-h-11 px-6 rounded-xl"
+                    "h-12 min-h-11 touch:min-h-11 px-6 rounded-2xl"
                   )}
                 >
                   Ver Cursos Disponibles
@@ -635,7 +643,7 @@ export default async function Home() {
       <footer className="border-t border-border/60 bg-muted/20 py-12 text-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
               <GraduationCap className="h-4 w-4" />
             </div>
             <div>

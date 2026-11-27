@@ -231,7 +231,7 @@ export default async function SuperAdminPage() {
                     {curso.reportes.map((reporte) => (
                       <li
                         key={reporte.id}
-                        className="space-y-1 rounded-xl border border-border/60 bg-card p-3"
+                        className="space-y-1 rounded-2xl border border-border/60 bg-card p-3"
                       >
                         <p className="text-xs font-semibold text-foreground">
                           {reporte.motivo}

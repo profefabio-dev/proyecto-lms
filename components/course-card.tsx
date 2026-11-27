@@ -6,12 +6,18 @@ import { Progress } from "@/components/ui/progress";
 import { CelebrationBadge } from "@/components/celebration-badge";
 import { cn } from "@/lib/utils";
 
-// Paleta de portadas cuando el curso no tiene imagen propia
-const PORTADAS_DEGRADADO = [
-  "from-indigo-600 to-sky-500",
-  "from-duo-orange to-duo-gold",
-  "from-duo-green to-teal-500",
-  "from-primary to-indigo-700",
+// Color de portada cuando el curso no tiene imagen propia.
+//
+// 27/11/2026: eran cuatro **degradados**. La regla 4 de `DESIGN.md` pasó a
+// valer en las pantallas de trabajo, y "Mis cursos" es una de ellas, así que
+// quedan planos. Los colores `duo-*` sobreviven acá porque sustituyen una
+// imagen que falta, que es ilustración y no decoración de interfaz — el uso
+// que la regla 1 les deja, junto con la racha y el confeti.
+const PORTADAS = [
+  "bg-indigo-600",
+  "bg-duo-orange",
+  "bg-duo-green",
+  "bg-primary",
 ];
 
 function varianteEstado(label: string): "success" | "warning" | "secondary" {
@@ -64,8 +70,8 @@ export function CourseCard({
           ) : (
             <div
               className={cn(
-                "flex h-full w-full items-center justify-center bg-gradient-to-br transition-transform duration-500 group-hover/course-card:scale-105",
-                PORTADAS_DEGRADADO[index % PORTADAS_DEGRADADO.length]
+                "flex h-full w-full items-center justify-center transition-transform duration-500 group-hover/course-card:scale-105",
+                PORTADAS[index % PORTADAS.length]
               )}
             >
               <BookOpen className="size-11 text-white/90 drop-shadow-sm" aria-hidden="true" />

@@ -84,7 +84,7 @@ export function CreateGlossaryTermForm({ courseId }: { courseId: string }) {
           {estado && !estado.success && (
             <p
               role="alert"
-              className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              className="rounded-2xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
             >
               {estado.error}
             </p>

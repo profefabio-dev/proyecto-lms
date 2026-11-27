@@ -30,7 +30,7 @@ export function CourseClassCodeCard({
     <div className="rounded-2xl border border-primary/30 bg-card p-5 shadow-xs space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <span className="flex size-7 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             <KeyRound className="size-4" />
           </span>
           <span className="font-heading text-xs font-bold uppercase tracking-wider text-foreground">
@@ -41,7 +41,7 @@ export function CourseClassCodeCard({
         <button
           type="button"
           onClick={copiarAlPortapapeles}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors shadow-2xs"
+          className="inline-flex items-center gap-1.5 rounded-2xl border border-border/80 bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors shadow-2xs"
           title="Copiar código al portapapeles"
         >
           {copiado ? (
@@ -58,7 +58,7 @@ export function CourseClassCodeCard({
         </button>
       </div>
 
-      <div className="flex items-center justify-between rounded-xl border border-border/80 bg-background/60 p-3.5">
+      <div className="flex items-center justify-between rounded-2xl border border-border/80 bg-background/60 p-3.5">
         <div className="space-y-0.5">
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Clave de inscripción

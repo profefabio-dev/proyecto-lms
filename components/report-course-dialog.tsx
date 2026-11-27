@@ -53,7 +53,7 @@ export function ReportCourseDialog({ courseId }: { courseId: string }) {
       >
         {estado?.success ? (
           <div className="space-y-4 py-2">
-            <div className="rounded-xl border border-success/30 bg-success-soft p-4 space-y-2">
+            <div className="rounded-2xl border border-success/30 bg-success-soft p-4 space-y-2">
               <div className="flex items-center gap-2 text-success font-heading font-semibold text-base">
                 <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
                 <h3>Reporte enviado</h3>

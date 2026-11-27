@@ -80,14 +80,14 @@ export function AddCourseToRutaForm({
       {estado && !estado.success && (
         <p
           role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          className="rounded-2xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
           {estado.error}
         </p>
       )}
 
       {estado?.success && estado.inscritosNuevos > 0 && (
-        <p className="rounded-md border border-success-border bg-success-soft px-3 py-2 text-sm text-success">
+        <p className="rounded-2xl border border-success-border bg-success-soft px-3 py-2 text-sm text-success">
           Curso agregado. Se inscribió a {estado.inscritosNuevos}{" "}
           {estado.inscritosNuevos === 1 ? "estudiante" : "estudiantes"} que ya venía recorriendo la
           ruta.
@@ -159,7 +159,7 @@ export function ToggleRutaEstadoForm({
       {estado && !estado.success && (
         <p
           role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          className="rounded-2xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
           {estado.error}
         </p>

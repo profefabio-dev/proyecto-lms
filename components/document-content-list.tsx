@@ -17,7 +17,7 @@ export function DocumentContentList({ documentos }: { documentos: DocumentoConUr
             <>
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-muted/30 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <FileText className="size-5" />
                   </div>
                   <div>
@@ -30,7 +30,7 @@ export function DocumentContentList({ documentos }: { documentos: DocumentoConUr
 
                 <a
                   href={documento.url}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 shadow-xs"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 shadow-xs"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

@@ -52,7 +52,7 @@ export function GlossaryList({
             <a
               key={grupo.letra}
               href={`#glosario-${grupo.letra}`}
-              className="flex size-9 items-center justify-center rounded-xl border border-border/80 bg-card text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+              className="flex size-9 items-center justify-center rounded-2xl border border-border/80 bg-card text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
             >
               {grupo.letra}
             </a>

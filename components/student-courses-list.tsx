@@ -75,11 +75,11 @@ export function StudentCoursesList({
       {/* Barra de Controles: Filtros en Píldoras + Botón Unirse + Buscador rápido */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
         {/* Pestañas de filtrado */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/40 border border-border/60 w-fit">
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 border border-border/60 w-fit">
           <button
             type="button"
             onClick={() => setFiltro("todos")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all ${
               filtro === "todos"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -91,7 +91,7 @@ export function StudentCoursesList({
           <button
             type="button"
             onClick={() => setFiltro("en_progreso")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all ${
               filtro === "en_progreso"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -103,7 +103,7 @@ export function StudentCoursesList({
           <button
             type="button"
             onClick={() => setFiltro("completados")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all ${
               filtro === "completados"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -124,7 +124,7 @@ export function StudentCoursesList({
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Filtrar cursos..."
-              className="w-full h-9 rounded-xl border border-border/80 bg-card pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-xs"
+              className="w-full h-9 rounded-2xl border border-border/80 bg-card pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-xs"
             />
           </div>
         </div>

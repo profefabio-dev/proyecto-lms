@@ -201,7 +201,7 @@ export function BulkImportStudentsForm({
 
   if (paso === "resultado" && resultadoFinal) {
     return (
-      <div className="space-y-3 rounded-lg border bg-muted/30 p-4 text-sm">
+      <div className="space-y-3 rounded-2xl border bg-muted/30 p-4 text-sm">
         <p className="font-semibold">
           Carga completada: {resultadoFinal.creados.length} estudiante(s) creado(s)
           {resultadoFinal.inscritos > 0
@@ -211,7 +211,7 @@ export function BulkImportStudentsForm({
         </p>
 
         {resultadoFinal.creados.length > 0 && (
-          <div className="overflow-x-auto rounded-md border">
+          <div className="overflow-x-auto rounded-2xl border">
             <table className="w-full min-w-[28rem] border-collapse text-xs">
               <thead>
                 <tr className="border-b bg-muted/50 text-left">
@@ -302,7 +302,7 @@ export function BulkImportStudentsForm({
           evento.preventDefault();
           void confirmarCarga();
         }}
-        className="space-y-3 rounded-lg border p-4"
+        className="space-y-3 rounded-2xl border p-4"
       >
         {cursos && cursos.length > 0 && (
           <div className="space-y-1">
@@ -314,7 +314,7 @@ export function BulkImportStudentsForm({
               value={cursoSeleccionado}
               onChange={(evento) => setCursoSeleccionado(evento.target.value)}
               disabled={confirmando}
-              className="w-full rounded-md border border-input bg-transparent px-2 py-1.5 text-sm"
+              className="w-full rounded-2xl border border-input bg-transparent px-2 py-1.5 text-sm"
             >
               <option value="">Sin inscribir (crear solamente)</option>
               {cursos.map((curso) => (
@@ -333,7 +333,7 @@ export function BulkImportStudentsForm({
         </p>
 
         {totalExistentes > 0 && (
-          <p className="rounded-md border p-2 text-sm">
+          <p className="rounded-2xl border p-2 text-sm">
             <span
               className={`mr-1.5 rounded px-1.5 py-0.5 text-xs font-medium ${COLOR_ESTUDIANTE_EXISTENTE.insignia}`}
             >
@@ -349,7 +349,7 @@ export function BulkImportStudentsForm({
           </p>
         )}
 
-        <div className="max-h-[32rem] space-y-3 overflow-auto rounded-md border bg-muted/10 p-3">
+        <div className="max-h-[32rem] space-y-3 overflow-auto rounded-2xl border bg-muted/10 p-3">
           {grupos.map(({ grupo, indices }) => {
             const seleccionadosGrupo = indices.filter((indice) => filas[indice].incluido).length;
             const todosSeleccionados = seleccionadosGrupo === indices.length;
@@ -363,7 +363,7 @@ export function BulkImportStudentsForm({
               <details
                 key={grupo || "sin-grado"}
                 open
-                className={`space-y-2 rounded-lg border border-l-4 bg-card p-3 ${color.borde}`}
+                className={`space-y-2 rounded-2xl border border-l-4 bg-card p-3 ${color.borde}`}
               >
                 <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 text-sm font-semibold">
                   <span>
@@ -496,7 +496,7 @@ export function BulkImportStudentsForm({
   }
 
   return (
-    <form action={accionPrevisualizar} className="space-y-3 rounded-lg border p-4">
+    <form action={accionPrevisualizar} className="space-y-3 rounded-2xl border p-4">
       <div className="space-y-1">
         <label className="text-sm font-medium" htmlFor="bulk-import-file">
           Cargar listado de estudiantes (Excel o PDF)

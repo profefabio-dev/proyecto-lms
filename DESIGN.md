@@ -36,9 +36,18 @@ aire. El color lo ponen las portadas de los cursos, no la interfaz.
    un daltónico por aula es lo normal).
 3. **El tipo de contenido lo dice el ícono, no el color.** Video, lectura, documento, enlace y código
    comparten chip; cambia el ícono. Antes eran cuatro colores peleando con el acento.
+   **Y lo dice un ícono, no un emoji** (27/11/2026): clasificar por emoji cumple exactamente la misma
+   función que cumplían los colores `duo-*`, y además cada sistema operativo los dibuja distinto. Los
+   iconos salen todos de `lucide-react`. El emoji sobrevive **solo como celebración** — el 🎉 de
+   "curso terminado" —, igual que el verde vivo.
 4. **Una sola decoración por elemento.** Borde *o* fondo distinto *o* sombra — nunca las tres encima
-   de la misma tarjeta, y ningún degradado en la interfaz. En fondo oscuro la separación entre
-   superficies la hace la diferencia de tono; las sombras no se ven.
+   de la misma tarjeta, y ningún degradado. En fondo oscuro la separación entre superficies la hace
+   la diferencia de tono; las sombras no se ven.
+   **Acotada el 27/11/2026, por decisión del docente: la regla vale en las pantallas de trabajo.**
+   La portada pública y el login son escaparate —quedaron fuera de OP09 a propósito— y ahí un
+   degradado vende; en el panel, el curso, el quiz y las listas, no. Un degradado también puede
+   **sustituir una imagen que falta** (la portada de un curso sin foto), porque ahí no es decoración
+   de interfaz sino contenido ausente — aunque hoy esas portadas quedaron en color plano.
 5. **Dos niveles de tipografía y mucho aire.** Un título grande y todo lo demás pequeño y apagado,
    con etiquetas en mayúscula pequeña. 40 px entre secciones.
 
@@ -72,8 +81,14 @@ se propaga a toda la plataforma sin tocar un solo componente.
   `letter-spacing: 0.05em`. Nada entre medio: si hace falta un tamaño nuevo, casi siempre el problema
   es la jerarquía, no la escala.
 - **Espacio:** 40px entre secciones · 24px dentro de una tarjeta · 10px entre filas de una lista.
-- **Radio:** 12px (`rounded-2xl`, el más usado hoy) para todo, y `rounded-full` solo para píldoras y
-  avatares. Los demás radios se van retirando.
+- **Radio: tres, y los tres son una decisión** (unificados el 27/11/2026, 214 reemplazos en 77
+  archivos). `rounded-2xl` para **toda superficie** —tarjetas, campos, chips, ventanas—;
+  `rounded-full` solo para píldoras y avatares; y **los botones en 6px**, que es una decisión del
+  09/09/2026 y no un descuido: los LMS institucionales tipo Canvas tienen botones poco redondeados, y
+  estaba escrita solo en un comentario del código.
+  **Corrección de este archivo:** acá decía "12px (`rounded-2xl`)", y las dos cosas no coinciden —
+  `--radius` es 0.75rem y `--radius-2xl` es 1.8 veces eso, o sea ~21.6px. Se conservó la **clase**,
+  que es el aspecto que ya tenía la plataforma, y se corrigió el número.
 - **Altura mínima de un control táctil:** 44px, como ya exige la variante `touch:` desde el 12/11.
 
 ## Implementado (25/11/2026) — Rediseño integral: Platzi + Canvas LMS
@@ -139,11 +154,25 @@ pantallas internas y escribirlo acá**, no dejar que el archivo diga una cosa y 
 que sí queda abierto de verdad es el panel del Estudiante y el quiz, que son pantallas de trabajo
 diario.
 
+## Hecho el 27/11/2026
+
+Las tres cosas que esta lista pedía, con las dos decisiones tomadas por el docente:
+
+| Qué | 21/11 | 26/11 | 27/11 |
+|---|---|---|---|
+| Usos de los cuatro colores `duo-*` | 86 | 45 | **4** (racha, insignia de 100 % y dos portadas sin imagen: lo que la regla 1 permite) |
+| Archivos con degradado | 13 | 7 | **3** (portada, login y el catálogo de la portada: solo escaparate) |
+| Radios distintos en uso | 6 | 6 | **3**, y los tres escritos arriba |
+| Emoji en la interfaz | — | 9 | **1** (el 🎉 de celebración) |
+
+Se retiró además la variante `chunky` del botón —el 3D verde estilo Duolingo—, que no usaba ninguna
+pantalla y definía su propio radio y su propio color.
+
 ## Pendiente (en orden)
 
-1. **Acotar o confirmar la regla 4** a la vista de los degradados nuevos, y decidir lo mismo sobre
-   los emoji de la portada. Es una decisión del docente, no una corrección.
-2. **Unificar los seis radios en 12px**, dejando `rounded-full` solo para píldoras y avatares.
-3. **Terminar el retiro de los `duo-*`** en los 45 usos que quedan.
-4. **La capa "para niños"** que el docente pidió — que **no** se hace con más colores en la interfaz
+1. **Mirar el barrido en navegador.** 214 clases cambiadas se verifican con los ojos, no con `tsc`.
+2. **La capa "para niños"** que el docente pidió — que **no** se hace con más colores en la interfaz
    (eso era justo lo que había antes de OP09), sino con imágenes, momentos de premio y forma/voz.
+3. **La hoja de estilos para imprimir** (US55): el fondo oscuro en papel es una mancha de tinta, así
+   que el PDF del curso necesita su propia versión clara. Es el costo del tema oscuro que este
+   archivo anota desde el 21/11, y ahora tiene historia propia.

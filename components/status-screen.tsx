@@ -19,11 +19,11 @@ export function StatusScreen({
   children?: React.ReactNode;
 }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-gradient-to-b from-primary/10 via-background to-background p-4">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background p-4">
       <p className="text-sm font-semibold tracking-wide text-primary uppercase">
         Plataforma Educativa
       </p>
-      <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-xl border bg-card p-8 text-center shadow-sm">
+      <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl border bg-card p-8 text-center shadow-sm">
         <span className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Icon className="size-7" aria-hidden="true" />
         </span>

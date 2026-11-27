@@ -89,7 +89,7 @@ export default async function GruposPage() {
                     <div className="flex items-center justify-between">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-bold tracking-wide shadow-2xs",
+                          "inline-flex items-center gap-1.5 px-3 py-1 rounded-2xl text-sm font-bold tracking-wide shadow-2xs",
                           // Corrección (27/11/2026): `colorDeGrupo` devuelve
                           // `{ borde, insignia }` — no existen `fondo` ni
                           // `texto`, así que esto no compilaba y la insignia

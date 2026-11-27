@@ -234,7 +234,7 @@ export default async function LeccionEstudiantePage({
                 )}
               </div>
 
-              <header className="space-y-4 rounded-3xl border border-border/80 bg-card p-6 shadow-xs sm:p-8">
+              <header className="space-y-4 rounded-2xl border border-border/80 bg-card p-6 shadow-xs sm:p-8">
                 <div className="flex flex-wrap items-center gap-3">
                   <span
                     className={cn(
@@ -269,7 +269,7 @@ export default async function LeccionEstudiantePage({
             </>
           }
           content={
-            <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs sm:p-8">
+            <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs sm:p-8">
               <ContentBody
                 tipo={actual.tipo}
                 titulo={actual.titulo}
@@ -280,7 +280,7 @@ export default async function LeccionEstudiantePage({
           }
           navigation={
             <div className="space-y-3">
-              <div className="flex flex-col gap-4 rounded-3xl border border-border/80 bg-card p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-4 rounded-2xl border border-border/80 bg-card p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
                 {anterior ? (
                   <Link
                     href={`/estudiante/cursos/${curso.id}/lecciones/${anterior.id}`}

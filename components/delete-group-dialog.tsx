@@ -47,7 +47,7 @@ export function DeleteGroupDialog({
         >
           <input type="hidden" name="grupoId" value={grupoId} />
 
-          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-2 text-sm">
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 space-y-2 text-sm">
             <div className="flex items-center gap-2 text-destructive font-semibold">
               <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
               <span>Acción permanente</span>

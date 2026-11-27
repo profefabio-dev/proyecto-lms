@@ -318,7 +318,7 @@ export default async function RutaEstudiantePage({
                               variant: esSiguiente ? "default" : completado ? "outline" : "secondary",
                               size: "default",
                             }),
-                            "gap-2 font-bold rounded-xl shrink-0"
+                            "gap-2 font-bold rounded-2xl shrink-0"
                           )}
                         >
                           {completado ? "Repasar" : paso.vistas > 0 ? "Continuar" : "Empezar"}

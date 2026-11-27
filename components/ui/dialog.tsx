@@ -54,7 +54,7 @@ function DialogContent({
           "inset-0 w-full",
           // Escritorio: ventana centrada, con alto máximo para que el
           // formulario haga scroll por dentro y nunca estire la página.
-          "sm:inset-auto sm:top-1/2 sm:left-1/2 sm:max-h-[85dvh] sm:w-[calc(100%-2rem)] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl",
+          "sm:inset-auto sm:top-1/2 sm:left-1/2 sm:max-h-[85dvh] sm:w-[calc(100%-2rem)] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl",
           // `scale` y `translate` son propiedades aparte en Tailwind v4, así
           // que la transición nombra `scale` y no `transform`.
           "transition-[opacity,scale] duration-200 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 sm:data-[starting-style]:scale-95 sm:data-[ending-style]:scale-95 motion-reduce:transition-none",
@@ -76,7 +76,7 @@ function DialogContent({
 
           <DialogPrimitive.Close
             aria-label="Cerrar"
-            className="-mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="-mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-2xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
             <X className="size-5" aria-hidden="true" />
           </DialogPrimitive.Close>

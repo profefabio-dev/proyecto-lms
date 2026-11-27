@@ -98,7 +98,7 @@ export function LandingCoursesCatalog({
                 type="button"
                 onClick={() => setCategoriaSeleccionada(cat.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border",
+                  "inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all border",
                   activa
                     ? "bg-primary text-primary-foreground border-primary shadow-xs scale-102"
                     : "bg-card text-muted-foreground border-border/80 hover:text-foreground hover:border-primary/40 hover:bg-muted/40"
@@ -119,7 +119,7 @@ export function LandingCoursesCatalog({
             value={terminoBusqueda}
             onChange={(e) => setTerminoBusqueda(e.target.value)}
             placeholder="Buscar por tema o tecnología..."
-            className="w-full h-10 rounded-xl border border-border/80 bg-card pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-xs"
+            className="w-full h-10 rounded-2xl border border-border/80 bg-card pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-xs"
           />
         </div>
       </div>
@@ -177,7 +177,7 @@ export function LandingCoursesCatalog({
                       <span className="rounded-full bg-black/40 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white border border-white/10">
                         {curso.tag}
                       </span>
-                      <span className="text-[11px] font-semibold text-white/90 bg-white/15 px-2 py-0.5 rounded-md">
+                      <span className="text-[11px] font-semibold text-white/90 bg-white/15 px-2 py-0.5 rounded-2xl">
                         {curso.nivel}
                       </span>
                     </div>

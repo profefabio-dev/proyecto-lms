@@ -157,7 +157,7 @@ export function AppShell({
           <button
             type="button"
             onClick={alternarMenu}
-            className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground touch:p-3"
+            className="shrink-0 rounded-2xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground touch:p-3"
             aria-label="Mostrar u ocultar el menú"
           >
             <Menu className="size-5" aria-hidden="true" />
@@ -251,7 +251,7 @@ function Sidebar({
         <button
           type="button"
           onClick={onCerrar}
-          className="shrink-0 rounded-md p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground touch:p-2.5 md:hidden"
+          className="shrink-0 rounded-2xl p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground touch:p-2.5 md:hidden"
           aria-label="Cerrar menú"
         >
           <X className="size-5" aria-hidden="true" />
@@ -274,7 +274,7 @@ function Sidebar({
               href={enlace.href}
               title={!abierto ? enlace.label : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors touch:py-3",
+                "flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-colors touch:py-3",
                 !abierto && "md:justify-center md:px-2",
                 activo
                   ? "bg-sidebar-primary/15 text-sidebar-primary"

@@ -2,7 +2,7 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-27 — **US54 (el glosario del curso)** y, después, **la revisión de lo que trajo Antigravity**: US32 (grupos) y las dos piezas que faltaban de US49 (reportar un curso y el contador de impacto). De esa revisión salieron **tres errores que bloqueaban la compilación** —entre ellos los dos modelos de Prisma que faltaban—, **una fuga de seguridad de la familia de US50** y **la mitad que faltaba del reporte**: nadie leía la tabla.
+Última actualización: 2026-11-27 — **US54 (el glosario del curso)**, **la revisión de lo que trajo Antigravity** (US32 grupos y las dos piezas de US49, con tres errores de compilación y una fuga de seguridad corregidos) y **el barrido de diseño**: los degradados quedan solo en portada y login, los nueve emoji pasaron a iconos salvo el confeti, y los seis radios quedaron en uno. Anotada **US55** (plantilla de curso y descarga en PDF), sin construir.
 
 ## Rediseño UI/UX — Modernización integral para jóvenes (Platzi + Canvas LMS)
 
@@ -158,6 +158,47 @@ escribieron los tipos explícitos en las dos consultas nuevas, como dice `AGENTS
 **Estado después de las dos:** `tsc` sin errores nuevos, `eslint` con **0 errores y 23 avisos** (uno
 menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
 tocadas en verde — `course-code` 17, `novedades` 4, `join-course-by-code` 15 y `buscar/page` 9.
+
+## El barrido de diseño — 27/11/2026
+
+Las tres cosas que `DESIGN.md` dejaba abiertas desde el 26/11, con las dos decisiones tomadas por el
+docente.
+
+**1. La regla 4 se acota a las pantallas de trabajo.** El rediseño del 25/11 había metido degradados
+en siete archivos, contra la regla que decía "ningún degradado en la interfaz". El docente eligió
+**acotarla**: la portada pública y el login son escaparate —quedaron fuera de OP09 a propósito— y ahí
+un degradado vende; las pantallas de uso diario van planas. Se quitaron del **panel del Estudiante**
+(la racha, la tarjeta de "continuar" y la barra de progreso), del **quiz**, de la **pantalla de
+error** y de las **portadas de curso sin imagen**, que pasaron de cuatro degradados a cuatro colores
+planos. Quedan tres archivos con degradado, los tres del escaparate.
+
+**2. Los nueve emoji pasaron a iconos.** Las cuatro píldoras de la portada (React, Robótica,
+Algoritmos, SQL) usaban emoji **como clasificador de tema**, que es la misma función que cumplían los
+colores `duo-*` que OP09 retiró — y además cada sistema operativo los dibuja distinto. Ahora usan
+iconos de `lucide-react`, como el resto de la plataforma. Se quitaron también los dos saludos con
+mano y el visto del quiz. **Sobrevive uno**: el 🎉 de "Curso terminado", que es celebración y no
+clasificación, igual que el confeti y la racha.
+
+**3. Un solo radio, con dos excepciones escritas.** Se reemplazaron **214 usos** en 77 archivos:
+`rounded-md`, `lg`, `xl` y `3xl` pasaron todos a `rounded-2xl`, el que ya dominaba (124 usos). Quedan
+**tres radios y los tres son una decisión**: `rounded-2xl` para toda superficie (338 usos),
+`rounded-full` para píldoras y avatares (45), y los **botones en 6px**, que es una decisión del
+09/09/2026 —los LMS institucionales tipo Canvas tienen botones poco redondeados— que estaba en un
+comentario del código y ahora está en `DESIGN.md`. Los cinco `rounded-md` que quedan son la costura
+interna de los grupos de botones, no una cuarta decisión.
+
+**Y de paso, los `duo-*` quedaron en su sitio.** Eran 86 el 21/11 y 45 el 26/11; hoy quedan **cuatro
+usos**, y los cuatro son los que la regla 1 permite: la racha, la insignia de 100 % y los dos colores
+de portada de curso sin imagen, que es ilustración. La caída no fue un barrido sino el efecto de
+reescribir pantallas enteras. Se retiró además la variante **`chunky`** del botón (el 3D verde estilo
+Duolingo): no la usaba ninguna pantalla y definía su propio radio y su propio color.
+
+**Verificación:** `tsc` sin errores nuevos, `eslint` 0 errores, y la suite **idéntica** a antes del
+barrido (329 pruebas pasan; las que fallan en el clon son el ruido conocido). Nada de esto cambia
+comportamiento: son clases de CSS.
+
+**Pendiente de mirar en navegador**, que acá importa más que de costumbre: un barrido de 214 clases
+se verifica con los ojos, no con `tsc`.
 
 ## Revisión de US32 y US49 — 27/11/2026
 

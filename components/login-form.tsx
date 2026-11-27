@@ -61,7 +61,7 @@ export function LoginForm({
       {error && (
         <div
           role="alert"
-          className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-destructive animate-pop-in"
+          className="flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-destructive animate-pop-in"
         >
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <span className="font-medium leading-relaxed">{error}</span>

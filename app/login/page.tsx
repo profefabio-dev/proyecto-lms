@@ -29,7 +29,7 @@ export default async function LoginPage({
       <section className="hidden lg:flex lg:col-span-6 xl:col-span-7 flex-col justify-between p-12 bg-gradient-to-br from-sidebar via-background to-primary/15 border-r border-border/60 relative overflow-hidden">
         {/* Marca institucional superior */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+          <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
             <GraduationCap className="h-5 w-5" />
           </div>
           <div>
@@ -100,7 +100,7 @@ export default async function LoginPage({
       <section className="col-span-1 lg:col-span-6 xl:col-span-5 flex flex-col justify-between p-6 sm:p-12 lg:p-16">
         {/* Cabecera móvil */}
         <div className="flex items-center gap-2.5 lg:hidden mb-6">
-          <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold">
+          <div className="h-8 w-8 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold">
             <GraduationCap className="h-4 w-4" />
           </div>
           <span className="text-sm font-bold font-heading text-foreground">Plataforma Educativa</span>
@@ -121,7 +121,7 @@ export default async function LoginPage({
           <LoginForm errorInicial={errorInicial} />
 
           {/* Caja de ayuda / soporte */}
-          <div className="rounded-xl border border-border/80 bg-muted/40 p-4 text-xs text-muted-foreground flex items-start gap-3">
+          <div className="rounded-2xl border border-border/80 bg-muted/40 p-4 text-xs text-muted-foreground flex items-start gap-3">
             <HelpCircle className="h-4 w-4 shrink-0 text-primary mt-0.5" />
             <p className="leading-relaxed">
               ¿Tienes dudas con tus datos de acceso? Consulta directamente con tu docente de área

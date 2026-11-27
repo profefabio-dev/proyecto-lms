@@ -73,14 +73,14 @@ export function AssignStudentsForm({
     <form action={accion} className="space-y-4">
       <input type="hidden" name="courseId" value={courseId} />
 
-      <div className="max-h-96 space-y-2 overflow-y-auto rounded-lg border bg-muted/10 p-2">
+      <div className="max-h-96 space-y-2 overflow-y-auto rounded-2xl border bg-muted/10 p-2">
         {grupos.map(({ grado, estudiantes: estudiantesDelGrado }) => {
           const color = colorDeGrupo(grado);
           return (
             <details
               key={grado || "sin-grado"}
               open
-              className={`space-y-1 rounded-md border-l-4 bg-card p-2 ${color.borde}`}
+              className={`space-y-1 rounded-2xl border-l-4 bg-card p-2 ${color.borde}`}
             >
               <summary className="cursor-pointer text-sm font-semibold">
                 {grado || "Sin grado"}{" "}
@@ -93,7 +93,7 @@ export function AssignStudentsForm({
                 {estudiantesDelGrado.map((estudiante) => (
                   <label
                     key={estudiante.id}
-                    className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted touch:py-2.5"
+                    className="flex items-center gap-2 rounded-2xl px-2 py-1 text-sm hover:bg-muted touch:py-2.5"
                   >
                     <input
                       type="checkbox"

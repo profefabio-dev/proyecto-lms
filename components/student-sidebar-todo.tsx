@@ -59,7 +59,7 @@ export function StudentSidebarTodo({
       <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
           <div className="flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex size-7 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <ClipboardList className="size-4" />
             </div>
             <h3 className="font-heading text-sm font-bold text-foreground">
@@ -93,7 +93,7 @@ export function StudentSidebarTodo({
                 <li key={tarea.id}>
                   <Link
                     href={`/estudiante/cursos/${tarea.courseId}`}
-                    className="group block rounded-xl border border-border/70 bg-background/60 p-3 transition-all hover:border-primary/40 hover:bg-muted/30"
+                    className="group block rounded-2xl border border-border/70 bg-background/60 p-3 transition-all hover:border-primary/40 hover:bg-muted/30"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-heading text-xs font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
@@ -135,7 +135,7 @@ export function StudentSidebarTodo({
         <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <div className="flex size-7 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Megaphone className="size-4" />
               </div>
               <h3 className="font-heading text-sm font-bold text-foreground">
@@ -150,7 +150,7 @@ export function StudentSidebarTodo({
               <li key={anuncio.id}>
                 <Link
                   href={`/estudiante/cursos/${anuncio.courseId}`}
-                  className="group block rounded-xl border border-border/70 bg-background/60 p-3 transition-colors hover:border-primary/40 hover:bg-muted/30"
+                  className="group block rounded-2xl border border-border/70 bg-background/60 p-3 transition-colors hover:border-primary/40 hover:bg-muted/30"
                 >
                   <p className="font-heading text-xs font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                     {anuncio.titulo}
@@ -174,7 +174,7 @@ export function StudentSidebarTodo({
         <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
             <div className="flex items-center gap-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20">
+              <div className="flex size-7 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20">
                 <Award className="size-4" />
               </div>
               <h3 className="font-heading text-sm font-bold text-foreground">
@@ -194,7 +194,7 @@ export function StudentSidebarTodo({
               <li key={cal.id}>
                 <Link
                   href="/estudiante/notas"
-                  className="group block rounded-xl border border-border/70 bg-background/60 p-3 transition-colors hover:border-primary/40 hover:bg-muted/30"
+                  className="group block rounded-2xl border border-border/70 bg-background/60 p-3 transition-colors hover:border-primary/40 hover:bg-muted/30"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-heading text-xs font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
@@ -211,7 +211,7 @@ export function StudentSidebarTodo({
                     {cal.cursoTitulo}
                   </p>
                   {cal.retroalimentacion && (
-                    <p className="mt-2 text-[11px] italic text-muted-foreground/90 bg-muted/40 rounded-lg p-2 line-clamp-2 border-l-2 border-primary/40">
+                    <p className="mt-2 text-[11px] italic text-muted-foreground/90 bg-muted/40 rounded-2xl p-2 line-clamp-2 border-l-2 border-primary/40">
                       “{cal.retroalimentacion}”
                     </p>
                   )}
@@ -230,14 +230,14 @@ export function StudentSidebarTodo({
         <div className="grid grid-cols-2 gap-2">
           <Link
             href="/estudiante/notas"
-            className="flex items-center gap-2 rounded-xl border border-border/80 bg-card p-2.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-xs"
+            className="flex items-center gap-2 rounded-2xl border border-border/80 bg-card p-2.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-xs"
           >
             <Award className="size-4 text-emerald-500 shrink-0" />
             <span className="truncate">Mis Notas</span>
           </Link>
           <Link
             href="/estudiante/rutas"
-            className="flex items-center gap-2 rounded-xl border border-border/80 bg-card p-2.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-xs"
+            className="flex items-center gap-2 rounded-2xl border border-border/80 bg-card p-2.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:bg-muted/40 transition-colors shadow-xs"
           >
             <Sparkles className="size-4 text-primary shrink-0" />
             <span className="truncate">Rutas STEAM</span>

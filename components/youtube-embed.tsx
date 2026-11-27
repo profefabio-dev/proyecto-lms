@@ -27,7 +27,7 @@ export function YoutubeEmbed({ url, titulo }: { url: string; titulo: string }) {
   // salida siempre está visible y el estudiante nunca queda atascado.
   return (
     <div className="space-y-2">
-      <div className="aspect-video w-full overflow-hidden rounded-lg border">
+      <div className="aspect-video w-full overflow-hidden rounded-2xl border">
         <iframe
           src={embedUrl}
           title={titulo}

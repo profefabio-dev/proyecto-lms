@@ -11,6 +11,18 @@ la regla de cuándo dos términos son el mismo en `lib/glosario.ts`, probada apa
 nuevas. Un error atrapado por su propia prueba: convertía la **ñ** en **n** al quitar acentos, así que
 "Diseño" se comparaba como "diseno".
 
+**Y el barrido de diseño**, con las dos decisiones que tomó el docente: la regla de "ningún
+degradado" **se acota a las pantallas de trabajo** (la portada y el login lo conservan, el panel, el
+quiz y las tarjetas no), y los **nueve emoji pasaron a iconos** salvo el 🎉 de celebración. Además se
+unificaron los radios: **214 reemplazos en 77 archivos**, y quedan tres radios, los tres escritos en
+`DESIGN.md`. Los `duo-*` quedaron en cuatro usos, todos permitidos por la regla 1.
+
+**Anotada US55 y sin construir:** la **plantilla común de curso** editable por secciones y la
+**descarga en PDF** para el estudiante. Al empezarla se le muestran primero al docente dos o tres
+maquetas —cómo se ve en el LMS y cómo se ve ya impresa— y él elige, como se hizo en OP09. Las cuatro
+cosas por resolver (el tema oscuro no se imprime, cómo se genera el PDF, qué entra y qué no, y si
+lleva el nombre del estudiante, que es dato de un menor) están en su fila del `Backlog.md`.
+
 **Y después, la revisión de lo que trajo Antigravity:** US32 (grupos) y las dos piezas que le
 faltaban a US49 (reportar un curso y el contador de impacto), más un commit que cerró OP07. De ahí
 salieron cuatro cosas, todas corregidas:

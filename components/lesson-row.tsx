@@ -41,7 +41,7 @@ export function LessonRow({
             // OP09 (21/11/2026): el chulo de "completada" era verde vivo y
             // pesaba mas que la leccion que sigue. Pasa a un verde apagado:
             // se sigue leyendo como logro, deja de competir.
-            "flex size-11 shrink-0 items-center justify-center rounded-xl shadow-xs",
+            "flex size-11 shrink-0 items-center justify-center rounded-2xl shadow-xs",
             visto ? "bg-success/15 text-success" : clase
           )}
           aria-hidden="true"

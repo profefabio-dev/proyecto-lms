@@ -35,7 +35,7 @@ function StudentFormBody({
   if (estado?.success) {
     return (
       <div className="space-y-5 py-1">
-        <div className="rounded-xl border border-success/30 bg-success-soft p-4 space-y-3">
+        <div className="rounded-2xl border border-success/30 bg-success-soft p-4 space-y-3">
           <div className="flex items-center gap-2 text-success font-heading font-semibold text-base">
             <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
             <h3>Estudiante creado exitosamente</h3>
@@ -43,7 +43,7 @@ function StudentFormBody({
           <p className="text-sm text-foreground/80">
             Se ha creado la cuenta del estudiante. Copia y comparte su contraseña temporal de acceso:
           </p>
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-border/80 bg-background px-3.5 py-2.5 shadow-2xs">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/80 bg-background px-3.5 py-2.5 shadow-2xs">
             <code className="font-mono text-sm font-bold tracking-wider text-foreground">
               {estado.passwordTemporal}
             </code>

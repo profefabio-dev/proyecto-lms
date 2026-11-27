@@ -94,7 +94,7 @@ export function SubmitActivityForm({
           <input type="hidden" name="actividadId" value={actividadId} />
 
           {yaEntregada && (
-            <p className="rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            <p className="rounded-2xl border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
               Si vuelves a entregar, tu entrega anterior se reemplaza y la nota que tuviera queda
               sin efecto hasta que tu profesor la revise de nuevo.
             </p>
@@ -104,7 +104,7 @@ export function SubmitActivityForm({
               descubrirlo al enviar. Y el campo que no aplica no se muestra:
               un campo deshabilitado invita a preguntarse por qué está ahí. */}
           {tipoEntrega !== "AMBOS" && (
-            <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-foreground">
+            <p className="rounded-2xl border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-foreground">
               {textoDeLoQueSeEspera(tipoEntrega)}
             </p>
           )}
@@ -165,7 +165,7 @@ export function SubmitActivityForm({
           {estado && !estado.success && (
             <p
               role="alert"
-              className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              className="rounded-2xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
             >
               {estado.error}
             </p>

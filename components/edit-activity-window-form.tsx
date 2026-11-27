@@ -67,7 +67,7 @@ export function EditActivityWindowForm({
             type="datetime-local"
             name="fechaLimite"
             defaultValue={valorParaCampoDeFecha(fechaLimite)}
-            className="h-11 w-full rounded-xl border border-border/80 bg-background px-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+            className="h-11 w-full rounded-2xl border border-border/80 bg-background px-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
         </label>
 
@@ -77,7 +77,7 @@ export function EditActivityWindowForm({
             type="datetime-local"
             name="fechaCierre"
             defaultValue={valorParaCampoDeFecha(fechaCierre)}
-            className="h-11 w-full rounded-xl border border-border/80 bg-background px-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+            className="h-11 w-full rounded-2xl border border-border/80 bg-background px-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
         </label>
       </div>

@@ -277,7 +277,7 @@ export default async function EstudiantePage() {
               </div>
 
               <h1 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-                ¡Hola, {usuarioActual.nombre}! 👋
+                ¡Hola, {usuarioActual.nombre}!
               </h1>
 
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
@@ -293,7 +293,7 @@ export default async function EstudiantePage() {
             <div className="flex flex-wrap items-center gap-3 shrink-0">
               {racha > 0 ? (
                 <div
-                  className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-duo-orange to-amber-500 px-5 py-3 shadow-[0_4px_0_var(--duo-orange-shadow)] text-white"
+                  className="flex items-center gap-3 rounded-2xl bg-duo-orange px-5 py-3 shadow-[0_4px_0_var(--duo-orange-shadow)] text-white"
                   title="Días consecutivos de actividad"
                 >
                   <Flame className="size-7 animate-flame-pulse fill-white drop-shadow" />
@@ -326,7 +326,7 @@ export default async function EstudiantePage() {
         {totalCursos > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <BookOpen className="size-5" />
               </div>
               <div>
@@ -338,7 +338,7 @@ export default async function EstudiantePage() {
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20">
                 <Trophy className="size-5" />
               </div>
               <div>
@@ -350,7 +350,7 @@ export default async function EstudiantePage() {
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <CheckCircle2 className="size-5" />
               </div>
               <div>
@@ -360,7 +360,7 @@ export default async function EstudiantePage() {
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs flex items-center gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <BarChart3 className="size-5" />
               </div>
               <div>
@@ -377,7 +377,7 @@ export default async function EstudiantePage() {
           <section className="lg:col-span-8 space-y-8">
             {/* TARJETA DESTACADA: "CONTINUAR APRENDIENDO" (Estilo Platzi) */}
             {cursoEnProgreso && (
-              <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-card via-card to-primary/5 p-6 shadow-md transition-all hover:border-primary/60">
+              <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-card p-6 shadow-md transition-all hover:border-primary/60">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div className="space-y-3 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -412,7 +412,7 @@ export default async function EstudiantePage() {
                       </div>
                       <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-indigo-500 rounded-full transition-all duration-700"
+                          className="h-full bg-primary rounded-full transition-all duration-700"
                           style={{ width: `${cursoEnProgreso.progreso}%` }}
                         />
                       </div>
@@ -424,7 +424,7 @@ export default async function EstudiantePage() {
                       href={cursoEnProgreso.hrefContinuar}
                       className={cn(
                         buttonVariants({ size: "lg" }),
-                        "h-12 px-6 rounded-xl font-bold shadow-sm gap-2 w-full sm:w-auto"
+                        "h-12 px-6 rounded-2xl font-bold shadow-sm gap-2 w-full sm:w-auto"
                       )}
                     >
                       <PlayCircle className="size-5 fill-current" />

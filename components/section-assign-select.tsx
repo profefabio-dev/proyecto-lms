@@ -42,7 +42,7 @@ export function SectionAssignSelect({
         name="seccionId"
         defaultValue={seccionIdActual ?? ""}
         aria-label="Sección de este contenido"
-        className="rounded-md border border-input bg-transparent px-2 py-1 text-xs"
+        className="rounded-2xl border border-input bg-transparent px-2 py-1 text-xs"
       >
         <option value="">Sin sección</option>
         {secciones.map((seccion) => (

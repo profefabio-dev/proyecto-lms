@@ -37,7 +37,7 @@ export function JoinCourseDialog() {
         onClick={() => {
           setAbierto(true);
         }}
-        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-primary/40 bg-primary/10 px-3 text-xs font-bold text-primary hover:bg-primary/20 hover:border-primary transition-all shadow-xs"
+        className="inline-flex h-9 items-center gap-1.5 rounded-2xl border border-primary/40 bg-primary/10 px-3 text-xs font-bold text-primary hover:bg-primary/20 hover:border-primary transition-all shadow-xs"
       >
         <Plus className="size-3.5" />
         <span>Unirme con código</span>
@@ -51,7 +51,7 @@ export function JoinCourseDialog() {
             <button
               type="button"
               onClick={() => setAbierto(false)}
-              className="absolute right-4 top-4 p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+              className="absolute right-4 top-4 p-1.5 text-muted-foreground hover:text-foreground rounded-2xl hover:bg-muted transition-colors"
               aria-label="Cerrar modal"
             >
               <X className="size-4" />
@@ -96,12 +96,12 @@ export function JoinCourseDialog() {
                       maxLength={9}
                       autoFocus
                       required
-                      className="w-full h-12 rounded-xl border border-border/80 bg-background px-4 text-center font-mono text-lg font-bold tracking-widest text-foreground uppercase placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+                      className="w-full h-12 rounded-2xl border border-border/80 bg-background px-4 text-center font-mono text-lg font-bold tracking-widest text-foreground uppercase placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                     />
                   </div>
 
                   {estado && !estado.success && (
-                    <p className="text-xs text-destructive font-medium bg-destructive/10 p-2.5 rounded-lg border border-destructive/20 text-center">
+                    <p className="text-xs text-destructive font-medium bg-destructive/10 p-2.5 rounded-2xl border border-destructive/20 text-center">
                       {estado.error}
                     </p>
                   )}
@@ -112,7 +112,7 @@ export function JoinCourseDialog() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setAbierto(false)}
-                      className="rounded-xl"
+                      className="rounded-2xl"
                     >
                       Cancelar
                     </Button>
@@ -123,7 +123,7 @@ export function JoinCourseDialog() {
                       type="submit"
                       size="sm"
                       disabled={enviando || !esFormaDeCodigo(codigoInput)}
-                      className="rounded-xl font-bold gap-1.5"
+                      className="rounded-2xl font-bold gap-1.5"
                     >
                       {enviando ? "Verificando..." : "Inscribirme"}
                       <ArrowRight className="size-3.5" />

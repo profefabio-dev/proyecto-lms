@@ -101,7 +101,7 @@ export function CreateActivityForm({
               y no el docente. Van juntas y debajo de lo básico, porque la
               mayoría de las actividades no las necesita — es el patrón de
               "parámetros avanzados" que usa la plataforma del colegio. */}
-          <div className="grid gap-4 rounded-xl border border-dashed border-border bg-muted/20 p-4 sm:grid-cols-2">
+          <div className="grid gap-4 rounded-2xl border border-dashed border-border bg-muted/20 p-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="fechaCierre">Cerrar la entrega (opcional)</Label>
               <Input id="fechaCierre" name="fechaCierre" type="datetime-local" />
@@ -142,7 +142,7 @@ export function CreateActivityForm({
           {estado && !estado.success && (
             <p
               role="alert"
-              className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              className="rounded-2xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
             >
               {estado.error}
             </p>

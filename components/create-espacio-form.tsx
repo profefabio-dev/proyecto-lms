@@ -19,7 +19,7 @@ export function CreateEspacioForm() {
   const [estado, formAction, isPending] = useActionState(accionInicial, null);
 
   return (
-    <form action={formAction} className="space-y-4 rounded-lg border p-4">
+    <form action={formAction} className="space-y-4 rounded-2xl border p-4">
       <div className="space-y-2">
         <Label htmlFor="nombreEspacio">Nombre del espacio (docente o institución)</Label>
         <Input id="nombreEspacio" name="nombreEspacio" required />
@@ -44,7 +44,7 @@ export function CreateEspacioForm() {
       )}
 
       {estado && estado.success && (
-        <div className="rounded-md bg-success-soft p-3 text-sm text-success">
+        <div className="rounded-2xl bg-success-soft p-3 text-sm text-success">
           Espacio creado. Contraseña temporal del Administrador (compártela de forma segura):{" "}
           <code className="font-mono font-semibold">{estado.passwordTemporal}</code>
         </div>

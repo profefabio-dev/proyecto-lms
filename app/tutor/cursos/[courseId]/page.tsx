@@ -301,7 +301,7 @@ export default async function CursoDetallePage({
               una copia. Va arriba y a la vista, no en letra pequeña: es lo
               que hace que compartir tenga sentido para quien comparte. */}
           {curso.origenAutor && (
-            <p className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+            <p className="flex items-center gap-2 rounded-2xl border border-border/60 bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
               <Share2 className="size-4 shrink-0" aria-hidden="true" />
               Adaptado de un curso de{" "}
               <span className="font-semibold text-foreground">{curso.origenAutor}</span>
@@ -380,11 +380,11 @@ export default async function CursoDetallePage({
                 <details
                   key={seccion.id}
                   open
-                  className="group/seccion space-y-5 rounded-3xl border border-border/80 bg-card p-6 shadow-xs"
+                  className="group/seccion space-y-5 rounded-2xl border border-border/80 bg-card p-6 shadow-xs"
                 >
                   <summary className="cursor-pointer flex flex-wrap items-center justify-between gap-3 text-lg font-bold select-none min-h-11 list-none [&::-webkit-details-marker]:hidden">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <span className="flex size-8 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                         <Calendar className="size-4" />
                       </span>
                       <span className="font-heading text-xl font-bold text-foreground">
@@ -495,7 +495,7 @@ export default async function CursoDetallePage({
 
               {/* Contenido sin sección asignada */}
               {(contenidoSueltoTutor.length > 0 || curso.secciones.length === 0) && (
-                <div className="space-y-4 rounded-3xl border border-border/80 bg-card p-6 shadow-xs">
+                <div className="space-y-4 rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
                   {curso.secciones.length > 0 && (
                     <h3 className="font-heading text-lg font-bold text-foreground">
                       Lecciones sin sección asignada
@@ -616,7 +616,7 @@ export default async function CursoDetallePage({
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href={`/tutor/cursos/${curso.id}/seguimiento`}
-                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
                 <TrendingUp className="size-4 text-primary" aria-hidden="true" />
                 Ver seguimiento
@@ -747,7 +747,7 @@ export default async function CursoDetallePage({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Asignar nuevos estudiantes */}
-            <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs space-y-4">
+            <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs space-y-4">
               <div className="flex items-center gap-2 text-primary">
                 <UserPlus className="size-5" />
                 <h3 className="font-heading text-lg font-bold text-foreground">
@@ -761,7 +761,7 @@ export default async function CursoDetallePage({
             </div>
 
             {/* Estudiantes inscritos actualmente */}
-            <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xs space-y-4">
+            <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs space-y-4">
               <div className="flex items-center gap-2 text-success">
                 <Users className="size-5" />
                 <h3 className="font-heading text-lg font-bold text-foreground">

@@ -33,7 +33,7 @@ export function EnrollGroupDialog({
     <Dialog open={abierto} onOpenChange={setAbierto}>
       <DialogTrigger
         render={
-          <Button type="button" variant="outline" size="sm" className="gap-1.5 font-semibold text-xs rounded-xl">
+          <Button type="button" variant="outline" size="sm" className="gap-1.5 font-semibold text-xs rounded-2xl">
             <Users className="size-3.5 text-primary" aria-hidden="true" />
             Matricular grupo escolar
           </Button>
@@ -46,7 +46,7 @@ export function EnrollGroupDialog({
       >
         {estado?.success ? (
           <div className="space-y-4 py-2">
-            <div className="rounded-xl border border-success/30 bg-success-soft p-4 space-y-2">
+            <div className="rounded-2xl border border-success/30 bg-success-soft p-4 space-y-2">
               <div className="flex items-center gap-2 text-success font-heading font-semibold text-base">
                 <UserCheck className="size-5 shrink-0" aria-hidden="true" />
                 <h3>Matrícula completada</h3>

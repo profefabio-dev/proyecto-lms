@@ -351,7 +351,7 @@ export default async function CursoEstudiantePage({
 
         {/* CONTINUAR / COMENZAR — US43 */}
         {leccionParaContinuar && (
-          <div className="rounded-3xl border border-primary/30 bg-card p-6 shadow-md transition-colors hover:border-primary/60">
+          <div className="rounded-2xl border border-primary/30 bg-card p-6 shadow-md transition-colors hover:border-primary/60">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1 space-y-3">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-wide text-primary uppercase">
@@ -415,9 +415,9 @@ export default async function CursoEstudiantePage({
 
             {/* CONTENIDO SIN SECCIÓN */}
             {leccionesSueltas.length > 0 && (
-              <div className="space-y-4 rounded-3xl border border-border/80 bg-card/60 p-5 shadow-xs sm:p-6">
+              <div className="space-y-4 rounded-2xl border border-border/80 bg-card/60 p-5 shadow-xs sm:p-6">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="flex size-8 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <BookOpen className="size-4" />
                   </span>
                   <span className="font-heading text-xl font-bold text-foreground">
@@ -498,7 +498,7 @@ export default async function CursoEstudiantePage({
                     <MarkdownContent contenido={actividad.instrucciones} />
 
                     {entrega?.retroalimentacion && (
-                      <div className="rounded-md border border-success-border bg-success-soft px-3 py-2 text-sm">
+                      <div className="rounded-2xl border border-success-border bg-success-soft px-3 py-2 text-sm">
                         <p className="font-semibold text-success">Comentario de tu profesor</p>
                         <p className="whitespace-pre-wrap text-foreground">
                           {entrega.retroalimentacion}

@@ -42,7 +42,7 @@ export function JoinByCodeResult({
     return (
       <Tarjeta codigo={codigo}>
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-500">
+          <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500">
             <CheckCircle2 className="size-5" />
           </span>
           <div className="min-w-0 space-y-1">
@@ -54,7 +54,7 @@ export function JoinByCodeResult({
         </div>
         <Link
           href={`/estudiante/cursos/${estado.courseId}`}
-          className={cn(buttonVariants({ size: "sm" }), "rounded-xl font-bold gap-1.5")}
+          className={cn(buttonVariants({ size: "sm" }), "rounded-2xl font-bold gap-1.5")}
           onClick={() => router.refresh()}
         >
           Entrar al curso <ArrowRight className="size-3.5" />
@@ -66,7 +66,7 @@ export function JoinByCodeResult({
   return (
     <Tarjeta codigo={codigo}>
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <KeyRound className="size-4" />
         </span>
         <div className="min-w-0 space-y-1">
@@ -78,7 +78,7 @@ export function JoinByCodeResult({
           {estado && !estado.success && (
             <p
               role="alert"
-              className="rounded-lg border border-destructive/20 bg-destructive/10 p-2 text-xs font-medium text-destructive"
+              className="rounded-2xl border border-destructive/20 bg-destructive/10 p-2 text-xs font-medium text-destructive"
             >
               {estado.error}
             </p>
@@ -89,14 +89,14 @@ export function JoinByCodeResult({
       {yaInscrito ? (
         <Link
           href={`/estudiante/cursos/${curso.id}`}
-          className={cn(buttonVariants({ size: "sm" }), "rounded-xl font-bold gap-1.5")}
+          className={cn(buttonVariants({ size: "sm" }), "rounded-2xl font-bold gap-1.5")}
         >
           Ya estás inscrito — entrar <ArrowRight className="size-3.5" />
         </Link>
       ) : (
         <form action={formAction}>
           <input type="hidden" name="codigo" value={codigo} />
-          <Button type="submit" size="sm" disabled={enviando} className="rounded-xl font-bold gap-1.5">
+          <Button type="submit" size="sm" disabled={enviando} className="rounded-2xl font-bold gap-1.5">
             <UserPlus className="size-3.5" />
             {enviando ? "Inscribiendo..." : "Inscribirme en este curso"}
           </Button>

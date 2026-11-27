@@ -116,7 +116,7 @@ export default async function AdminPage() {
                   <CardContent className="flex flex-col gap-3 p-4">
                     <div
                       className={cn(
-                        "flex size-10 items-center justify-center rounded-xl",
+                        "flex size-10 items-center justify-center rounded-2xl",
                         indicador.tono
                       )}
                     >
@@ -141,7 +141,7 @@ export default async function AdminPage() {
             <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
               <div className="space-y-2">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="flex size-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <UserCog className="size-5" aria-hidden="true" />
                   </span>
                   <h3 className="font-heading text-lg font-bold text-foreground">Gestión de Tutores</h3>
@@ -162,7 +162,7 @@ export default async function AdminPage() {
             <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
               <div className="space-y-2">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex size-9 items-center justify-center rounded-xl bg-success-soft text-success">
+                  <span className="flex size-9 items-center justify-center rounded-2xl bg-success-soft text-success">
                     <Users className="size-5" aria-hidden="true" />
                   </span>
                   <h3 className="font-heading text-lg font-bold text-foreground">Usuarios del sistema</h3>

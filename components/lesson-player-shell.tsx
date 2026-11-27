@@ -94,7 +94,7 @@ export function LessonPlayerShell({
           type="button"
           onClick={() => setModoEnfoque((prev) => !prev)}
           className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border shadow-xs",
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all border shadow-xs",
             modoEnfoque
               ? "bg-primary text-primary-foreground border-primary"
               : "bg-card text-muted-foreground border-border/80 hover:text-foreground hover:bg-muted/40"
@@ -119,7 +119,7 @@ export function LessonPlayerShell({
       {progreso === 100 && (
         <div className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-600 dark:text-emerald-400 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500 text-white font-bold shrink-0">
+            <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-500 text-white font-bold shrink-0">
               <Trophy className="size-5" />
             </div>
             <div>
@@ -167,7 +167,7 @@ export function LessonPlayerShell({
                 href={hrefAnterior}
                 className={cn(
                   buttonVariants({ variant: "outline", size: "sm" }),
-                  "rounded-xl gap-1.5 text-xs font-semibold shrink-0"
+                  "rounded-2xl gap-1.5 text-xs font-semibold shrink-0"
                 )}
                 title={tituloAnterior ?? "Lección anterior"}
               >

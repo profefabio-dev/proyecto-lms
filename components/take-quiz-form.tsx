@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect } from "react";
 import Link from "next/link";
-import {
+import { Check,
   Send,
   CheckCircle2,
   Trophy,
@@ -68,10 +68,10 @@ export function TakeQuizForm({
     return (
       <div className="space-y-6">
         <div
-          className={`relative overflow-hidden rounded-3xl border p-6 sm:p-10 text-center transition-all ${
+          className={`relative overflow-hidden rounded-2xl border p-6 sm:p-10 text-center transition-all ${
             aprobado
-              ? "border-emerald-500/30 bg-gradient-to-b from-emerald-500/10 via-background to-card shadow-lg shadow-emerald-500/5"
-              : "border-amber-500/30 bg-gradient-to-b from-amber-500/10 via-background to-card shadow-lg shadow-amber-500/5"
+              ? "border-emerald-500/30 bg-emerald-500/5"
+              : "border-amber-500/30 bg-amber-500/5"
           }`}
         >
           {/* Icono de estado */}
@@ -140,7 +140,7 @@ export function TakeQuizForm({
               type="button"
               variant="outline"
               onClick={() => window.location.reload()}
-              className="rounded-xl font-semibold min-h-11 gap-2"
+              className="rounded-2xl font-semibold min-h-11 gap-2"
             >
               <RotateCcw className="size-4" />
               Nuevo intento
@@ -149,7 +149,7 @@ export function TakeQuizForm({
             {courseId && (
               <Link
                 href={`/estudiante/cursos/${courseId}`}
-                className={cn(buttonVariants(), "rounded-xl font-semibold min-h-11 gap-2")}
+                className={cn(buttonVariants(), "rounded-2xl font-semibold min-h-11 gap-2")}
               >
                 <ArrowLeft className="size-4" />
                 Volver al curso
@@ -222,7 +222,7 @@ export function TakeQuizForm({
               <fieldset className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <legend className="font-heading text-base font-bold text-foreground leading-snug">
-                    <span className="mr-2 inline-flex size-6 items-center justify-center rounded-lg bg-primary/10 text-xs font-mono font-bold text-primary">
+                    <span className="mr-2 inline-flex size-6 items-center justify-center rounded-2xl bg-primary/10 text-xs font-mono font-bold text-primary">
                       {indice + 1}
                     </span>
                     {pregunta.enunciado}
@@ -246,7 +246,7 @@ export function TakeQuizForm({
                     return (
                       <label
                         key={opcion.id}
-                        className={`group flex min-h-12 cursor-pointer items-center gap-3.5 rounded-xl border p-3.5 transition-all ${
+                        className={`group flex min-h-12 cursor-pointer items-center gap-3.5 rounded-2xl border p-3.5 transition-all ${
                           seleccionada
                             ? "border-primary bg-primary/8 shadow-xs text-foreground"
                             : "border-border/70 bg-card/40 hover:border-border hover:bg-muted/40 text-foreground/90"
@@ -254,7 +254,7 @@ export function TakeQuizForm({
                       >
                         {/* Insignia de letra A, B, C, D */}
                         <div
-                          className={`flex size-7 shrink-0 items-center justify-center rounded-lg border font-mono text-xs font-bold transition-all ${
+                          className={`flex size-7 shrink-0 items-center justify-center rounded-2xl border font-mono text-xs font-bold transition-all ${
                             seleccionada
                               ? "border-primary bg-primary text-primary-foreground shadow-xs"
                               : "border-border/80 bg-muted/30 text-muted-foreground group-hover:border-primary/40 group-hover:text-foreground"
@@ -305,7 +305,8 @@ export function TakeQuizForm({
         <p className="text-xs text-muted-foreground text-center sm:text-left">
           {todasRespondidas ? (
             <span className="text-emerald-500 font-semibold">
-              ✓ Has respondido todas las preguntas. ¡Listo para calificar!
+              <Check className="size-4 shrink-0" aria-hidden="true" /> Has respondido todas las
+              preguntas. ¡Listo para calificar!
             </span>
           ) : (
             <span>
@@ -321,7 +322,7 @@ export function TakeQuizForm({
         <Button
           type="submit"
           disabled={enviando}
-          className="w-full sm:w-auto min-h-11 rounded-xl font-semibold gap-2 shadow-xs"
+          className="w-full sm:w-auto min-h-11 rounded-2xl font-semibold gap-2 shadow-xs"
         >
           <Send className="size-4" aria-hidden="true" />
           {enviando ? "Calificando evaluación..." : "Enviar respuestas"}

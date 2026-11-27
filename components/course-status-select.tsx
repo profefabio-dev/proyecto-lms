@@ -43,7 +43,7 @@ export function CourseStatusSelect({
         name="estado"
         defaultValue={estadoActual}
         aria-label="Estado del curso"
-        className="rounded-md border border-input bg-transparent px-2 py-1 text-sm"
+        className="rounded-2xl border border-input bg-transparent px-2 py-1 text-sm"
       >
         {Object.entries(ETIQUETAS_ESTADO).map(([valor, etiqueta]) => (
           <option key={valor} value={valor}>

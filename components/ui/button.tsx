@@ -5,11 +5,17 @@ import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
   // Segunda vuelta de rediseño visual (2026-09-09): esquinas más
-  // cuadradas (`rounded-[6px]` fijo en vez de `rounded-md`, que hereda
+  // cuadradas (`rounded-[6px]` fijo en vez de `rounded-2xl`, que hereda
   // el radio general `--radius` de las tarjetas) — los botones de los
   // LMS institucionales tipo Canvas son planos y poco redondeados, a
-  // diferencia del resto de la plataforma. El botón "chunky" (abajo)
-  // define su propio radio y no se ve afectado por este cambio.
+  // diferencia del resto de la plataforma.
+  //
+  // 27/11/2026: esta excepción queda escrita en `DESIGN.md` al unificar los
+  // radios — las superficies van todas al radio de las tarjetas y los
+  // botones se quedan en 6px, que es una decisión y no un descuido. De paso
+  // se retiró la variante "chunky" (el botón 3D verde estilo Duolingo), que
+  // definía su propio radio y su propio color `duo-*` y no se usaba en
+  // ninguna pantalla.
   "group/button inline-flex shrink-0 items-center justify-center rounded-[6px] border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
@@ -27,16 +33,6 @@ const buttonVariants = cva(
         // "Chunky": botón 3D presionable estilo Duolingo, para las llamadas a
         // la acción principales del panel de Estudiante (pase de diseño de
         // 2026-09-04). El borde inferior grueso se simula con box-shadow en
-        // vez de border-bottom real, para que no mueva el layout al
-        // "presionarse" — al soltar el shadow, el botón baja 4px con
-        // `active:translate-y-1` y queda plano, como si se hundiera.
-        chunky:
-          // El `!` en las dos utilidades de :active es necesario: la clase
-          // base de más arriba ya define `active:not-aria-[haspopup]:translate-y-px`,
-          // que por el `:not()` termina con más especificidad que un simple
-          // `active:translate-y-1` y si no se fuerza, gana esa y el botón
-          // "chunky" apenas se mueve 1px en vez de los 4px del efecto 3D.
-          "rounded-2xl bg-duo-green font-extrabold tracking-wide text-white uppercase shadow-[0_4px_0_var(--duo-green-shadow)] transition-transform hover:brightness-105 active:translate-y-1! active:shadow-none!",
       },
       // Paquete 2 de interfaz (2026-11-12): en pantallas táctiles (`touch:`,
       // ver `app/globals.css`) cada tamaño sube: default 44 px, lg 48 px, sm

@@ -155,7 +155,7 @@ export default async function NotasEstudiantePage() {
         {promedioGeneral !== null && (
           <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-border bg-card p-6">
             <div
-              className="flex size-20 shrink-0 flex-col items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-xs"
+              className="flex size-20 shrink-0 flex-col items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xs"
               aria-hidden="true"
             >
               <span className="font-heading text-2xl font-extrabold leading-none">
@@ -193,11 +193,11 @@ export default async function NotasEstudiantePage() {
             {cursosConNotas.map((curso) => (
               <section
                 key={curso.courseId}
-                className="space-y-4 rounded-3xl border border-border/80 bg-card p-5 shadow-xs sm:p-6"
+                className="space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs sm:p-6"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                       <BookOpen className="size-4" aria-hidden="true" />
                     </span>
                     <Link
@@ -249,7 +249,7 @@ export default async function NotasEstudiantePage() {
                       </div>
 
                       {calificacion.retroalimentacion && (
-                        <div className="rounded-md border border-success-border bg-success-soft px-3 py-2 text-sm">
+                        <div className="rounded-2xl border border-success-border bg-success-soft px-3 py-2 text-sm">
                           <p className="font-semibold text-success">Comentario de tu profesor</p>
                           <p className="whitespace-pre-wrap text-foreground">
                             {calificacion.retroalimentacion}
