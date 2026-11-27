@@ -173,6 +173,7 @@ model Courses {
   quizzes     Quizzes[]
   rutas       RutaCursos[]
   anuncios    Anuncios[]
+  glosario    Glosario[]
 
   @@map("courses")
 }
@@ -464,6 +465,25 @@ model Anuncios {
 
   @@index([courseId, createdAt])
   @@map("anuncios")
+}
+
+/// US54 (27/11/2026): el glosario del curso — los términos propios de la
+/// materia, definidos una vez por el docente y consultables desde cualquier
+/// lección. Sin columna `orden`: un glosario se consulta y no se recorre, así
+/// que el orden es alfabético y lo pone la pantalla.
+model Glosario {
+  id         String   @id @default(uuid())
+  courseId   String
+  termino    String
+  /// En Markdown, igual que el cuerpo de un anuncio (US53).
+  definicion String
+  createdAt  DateTime @default(now())
+
+  course Courses @relation(fields: [courseId], references: [id])
+
+  @@unique([courseId, termino])
+  @@index([courseId])
+  @@map("glosario")
 }
 
 model Contents {

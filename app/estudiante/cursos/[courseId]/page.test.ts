@@ -92,6 +92,7 @@ describe("CursoEstudiantePage (US15)", () => {
       contenidos: [],
       secciones: [],
       anuncios: [],
+      _count: { glosario: 0 },
       actividades: [],
       quizzes: [],
     });
@@ -112,6 +113,7 @@ describe("CursoEstudiantePage (US15)", () => {
       contenidos: [],
       secciones: [],
       anuncios: [],
+      _count: { glosario: 0 },
       actividades: [],
       quizzes: [],
     });
@@ -143,6 +145,7 @@ describe("CursoEstudiantePage (US15)", () => {
       contenidos: [],
       secciones: [],
       anuncios: [],
+      _count: { glosario: 0 },
       actividades: [],
       quizzes: [],
     });
@@ -170,6 +173,7 @@ describe("CursoEstudiantePage (US15)", () => {
       ],
       secciones: [],
       anuncios: [],
+      _count: { glosario: 0 },
       actividades: [],
       quizzes: [],
     });
@@ -185,6 +189,9 @@ describe("CursoEstudiantePage (US15)", () => {
         tutor: { select: { nombre: true, apellido: true } },
         contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } },
         secciones: { orderBy: { orden: "asc" } },
+        // US54 (27/11/2026): solo el conteo del glosario — la lista vive en
+        // su propia pantalla.
+        _count: { select: { glosario: true } },
         // US53 (25/11/2026): los anuncios del docente en la portada del curso.
         anuncios: {
           orderBy: { createdAt: "desc" },
@@ -221,6 +228,7 @@ describe("CursoEstudiantePage (US15)", () => {
       ],
       secciones: [],
       anuncios: [],
+      _count: { glosario: 0 },
       actividades: [],
       quizzes: [],
     });
@@ -246,6 +254,7 @@ describe("CursoEstudiantePage (US15)", () => {
       contenidos: [],
       secciones: [],
       anuncios: [],
+      _count: { glosario: 0 },
       actividades: [],
       quizzes: [],
     });
@@ -273,6 +282,7 @@ describe("CursoEstudiantePage (US15)", () => {
         { id: "sec-2", titulo: "Semana 2", orden: 1, estado: "NO_DISPONIBLE", esActual: false },
       ],
       anuncios: [],
+      _count: { glosario: 0 },
       actividades: [],
       quizzes: [],
     });

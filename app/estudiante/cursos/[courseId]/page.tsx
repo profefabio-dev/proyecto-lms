@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import {
+  BookA,
   Inbox,
   ArrowLeft,
   ArrowRight,
@@ -101,6 +102,10 @@ export default async function CursoEstudiantePage({
       secciones: {
         orderBy: { orden: "asc" },
       },
+      // US54 (27/11/2026): solo **cuántos** términos tiene el glosario. La
+      // lista vive en su propia pantalla; acá alcanza con saber si hay algo
+      // que enlazar, para no ofrecerle al estudiante un glosario vacío.
+      _count: { select: { glosario: true } },
       // US53 (25/11/2026): los anuncios del docente, lo más nuevo primero.
       // Van en la portada del curso, además del panel del estudiante.
       anuncios: {
@@ -306,6 +311,19 @@ export default async function CursoEstudiantePage({
                 {curso.quizzes.length}{" "}
                 {curso.quizzes.length === 1 ? "evaluación" : "evaluaciones"}
               </span>
+
+              {/* US54 (27/11/2026): el glosario del curso. Se enlaza solo si
+                  tiene términos — ofrecerle un glosario vacío al estudiante
+                  es ruido, y por eso la consulta trae el conteo. */}
+              {curso._count.glosario > 0 && (
+                <Link
+                  href={`/estudiante/cursos/${curso.id}/glosario`}
+                  className="flex items-center gap-1.5 font-semibold text-primary hover:underline"
+                >
+                  <BookA className="size-4" />
+                  Glosario ({curso._count.glosario})
+                </Link>
+              )}
             </div>
           </div>
         </div>

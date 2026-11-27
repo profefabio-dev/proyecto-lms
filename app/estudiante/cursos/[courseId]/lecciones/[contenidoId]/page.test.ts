@@ -68,6 +68,8 @@ function cursoConSeccionCerrada() {
     titulo: "Curso 1",
     // US42: la pantalla ahora compara el dueño del curso con el usuario.
     tutorId: "tutor-1",
+    // US54 (27/11/2026): el conteo del glosario, para el enlace del temario.
+    _count: { glosario: 0 },
     secciones: [
       { id: "s1", titulo: "Semana 1", orden: 0, estado: "DISPONIBLE", esActual: true },
       { id: "s2", titulo: "Semana 2", orden: 1, estado: "NO_DISPONIBLE", esActual: false },

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { BookA, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { ICONO_POR_TIPO, type TipoContenidoConIcono } from "@/lib/content-type-icon";
@@ -39,6 +39,7 @@ export function LessonCurriculum({
   total,
   modulos,
   leccionActualId,
+  terminosDelGlosario = 0,
 }: {
   courseId: string;
   tituloCurso: string;
@@ -47,6 +48,12 @@ export function LessonCurriculum({
   total: number;
   modulos: ModuloDelTemario[];
   leccionActualId?: string;
+  /**
+   * US54 (27/11/2026): cuántos términos tiene el glosario del curso. Con
+   * cero no se enlaza nada. Por omisión es 0, así que ninguna pantalla que
+   * todavía no lo pase cambia.
+   */
+  terminosDelGlosario?: number;
 }) {
   return (
     <div className="space-y-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
@@ -134,6 +141,21 @@ export function LessonCurriculum({
           </div>
         ))}
       </nav>
+
+      {/* US54: el glosario, al pie del temario. Acá es donde hace falta —
+          mientras se lee una lección y aparece una palabra que no se
+          entiende— y no en la portada del curso, que el estudiante ya dejó
+          atrás. */}
+      {terminosDelGlosario > 0 && (
+        <Link
+          href={`/estudiante/cursos/${courseId}/glosario`}
+          className="flex items-center gap-2 rounded-xl border border-border/80 px-3 py-2.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+        >
+          <BookA className="size-4 text-primary" aria-hidden="true" />
+          Glosario del curso
+          <span className="ml-auto text-muted-foreground">{terminosDelGlosario}</span>
+        </Link>
+      )}
     </div>
   );
 }

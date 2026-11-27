@@ -73,6 +73,11 @@ export default async function LeccionEstudiantePage({
     include: {
       contenidos: { orderBy: { orden: "asc" }, include: { documentos: true } },
       secciones: { orderBy: { orden: "asc" } },
+      // US54 (27/11/2026): solo cuántos términos tiene el glosario, para
+      // enlazarlo desde el temario lateral mientras se estudia — que es
+      // justo cuando hace falta buscar una palabra. La lista no se trae: es
+      // otra pantalla.
+      _count: { select: { glosario: true } },
     },
   });
 
@@ -318,6 +323,7 @@ export default async function LeccionEstudiantePage({
               total={lecciones.length}
               modulos={modulos}
               leccionActualId={actual.id}
+              terminosDelGlosario={curso._count.glosario}
             />
           }
           tituloLeccion={actual.titulo}

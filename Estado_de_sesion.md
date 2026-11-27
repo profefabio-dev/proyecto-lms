@@ -4,7 +4,21 @@
 > estado de cada historia es [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md); este
 > archivo solo dice **dónde quedamos y qué sigue**, y se reescribe al cerrar cada sesión.
 
-Última sesión: **26 de noviembre de 2026.** Una sola cosa, a pedido del docente: **documentar lo que
+Última sesión: **27 de noviembre de 2026.** Una sola cosa, elegida de cuatro opciones: **US54, el
+glosario del curso** — la última de las cinco ideas que salieron de revisar la plataforma del
+colegio. Tabla nueva `Glosario` con RLS (migración `20261127040000`, **la sexta sin aplicar**),
+pantalla propia para el estudiante enlazada desde el temario y desde el temario lateral de cada
+lección, gestión para el tutor en la pantalla de su curso, orden alfabético con índice de letras, y
+la regla de cuándo dos términos son el mismo en `lib/glosario.ts`, probada aparte. **30 pruebas
+nuevas.** Lo que queda fuera, anotado: enlazar los términos automáticamente dentro del texto de una
+lección (frágil: rompería los bloques de código) y editar un término (borrar y escribir de nuevo no
+pierde nada, a diferencia de un anuncio).
+
+**Un error atrapado por su propia prueba:** la primera versión de `normalizarTermino` convertía la
+**ñ** en **n** al quitar acentos, así que "Diseño" se comparaba como "diseno". Vale la regla general:
+al normalizar texto en español, la ñ se protege y la diéresis se quita.
+
+Sesión anterior: **26 de noviembre de 2026.** Una sola cosa, a pedido del docente: **documentar lo que
 llegó de Antigravity y después buscar errores.** Antigravity rehizo el 25/11 la interfaz del
 Estudiante, la portada pública, el login, el temario, el reproductor de lecciones, el quiz y el panel
 del Docente, y construyó **US51** (el código de clase del curso) dentro de esa pasada. Lo que salió
@@ -86,12 +100,15 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
   nuevo, `components/join-course-dialog.tsx`), la limpieza de `lib/novedades.ts` con su prueba y
   `app/estudiante/page.tsx`, los cuatro documentos
   (`Backlog.md`, `progress.md`, `DESIGN.md`, `Estado_de_sesion.md`) y el `AGENTS.md` nuevo.
-- **Un borrado pendiente que solo puede hacer el docente:** `git rm components/news-feed.tsx`. El
-  archivo está versionado y el puente no borra archivos; el código ya no lo importa nadie, así que
-  mientras siga ahí es solo código muerto, no un error.
-- **Cinco migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
+- **Sin confirmar al cerrar el 27/11:** los diecisiete archivos de US54 — la migración y el modelo,
+  `lib/glosario.ts` y su prueba, las dos acciones con sus pruebas, `components/glossary-list.tsx` y
+  `create-glossary-term-form.tsx`, la pantalla del glosario, los enlaces en el temario, en
+  `lesson-curriculum.tsx` y en el reproductor, la sección del curso del tutor, y las dos pruebas de
+  pantalla actualizadas — más `Backlog.md`, `progress.md` y este archivo.
+- **Seis migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
   `20261124040000_add_curso_verificado`, `20261125040000_add_espacio_origen_estudiante`,
-  `20261125050000_add_ventana_y_tipo_entrega` y `20261125060000_add_anuncios` — **cinco**. Siempre
+  `20261125050000_add_ventana_y_tipo_entrega`, `20261125060000_add_anuncios` y
+  `20261127040000_add_glosario` — **seis**. Siempre
   con `npx prisma migrate deploy` + `npx prisma generate`, nunca `migrate dev`.
 - **`bulk-import-students.test.ts` hay que correrlo en su máquina**: no corre en el clon de la nube
   porque `xlsx` está bloqueado ahí, y US50 le cambió la detección de duplicados.
@@ -132,12 +149,11 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
    eso **no se puede revocar**: si se filtra, la única salida es rehacer el curso. Lo que falta es una
    columna `codigo` propia —aleatoria, única, indexada— y un botón de "restablecer código" para el
    Tutor, como en Google Classroom y Moodle. Necesita migración; está escrito en la fila de US51.
-4. **El glosario del curso**, lo único que queda de revisar la plataforma del colegio (25/11; de las
-   cinco ideas ya se construyeron US52, US53 y US42, y los cuatro detalles chicos el 26/11). Para
-   Tecnología con chicos de 10 a 18 no es menor: el vocabulario es la materia. Necesita tabla propia
-   y migración. **Lo que sigue fuera de esas historias, ya chico:** editar el **tipo de entrega** de
-   una actividad ya creada (tiene el mismo problema que tenían las fechas) y **fijar** un anuncio
-   arriba del resto (necesita una columna nueva).
+4. **Lo que queda chico de las historias recientes**, todo anotado: enlazar los términos del
+   glosario automáticamente dentro del texto de una lección (se evaluó y se dejó de lado: sustituir
+   texto en Markdown ya renderizado rompe los bloques de código); editar el **tipo de entrega** de
+   una actividad ya creada (tiene el mismo problema que tenían las fechas); y **fijar** un anuncio
+   arriba del resto, que necesita una columna nueva.
 5. **Seguir el rediseño donde quedó**, según `DESIGN.md`, que volvió a tener su lista de pendientes
    —el rediseño del 25/11 la había borrado sin hacerla—: decidir si la regla de "ningún degradado"
    se acota a las pantallas internas (la portada pública y el login ahora los tienen, y ahí puede

@@ -32,6 +32,8 @@ import { ContentBody } from "@/components/content-body";
 import { CreateActivityForm } from "@/components/create-activity-form";
 import { CreateAnnouncementForm } from "@/components/create-announcement-form";
 import { AnnouncementList } from "@/components/announcement-list";
+import { GlossaryList } from "@/components/glossary-list";
+import { CreateGlossaryTermForm } from "@/components/create-glossary-term-form";
 import { CreateQuizForm } from "@/components/create-quiz-form";
 import { DeleteEvaluacionForm } from "@/components/delete-evaluacion-form";
 import { ContentOrderControls } from "@/components/content-order-controls";
@@ -85,6 +87,9 @@ export default async function CursoDetallePage({
       secciones: {
         orderBy: { orden: "asc" },
       },
+      // US54 (27/11/2026): el glosario del curso. Acá sí se trae completo:
+      // esta pantalla es donde el docente lo escribe.
+      glosario: { select: { id: true, termino: true, definicion: true } },
       // US53 (25/11/2026): los anuncios de este curso, lo más nuevo primero.
       anuncios: {
         orderBy: { createdAt: "desc" },
@@ -331,6 +336,18 @@ export default async function CursoDetallePage({
           />
           <CreateAnnouncementForm courseId={curso.id} />
         </div>
+
+        {/* GLOSARIO — US54 (27/11/2026). Los términos de la materia, que en
+            Tecnología son el contenido y no un adorno. El estudiante los
+            consulta desde su propia pantalla, enlazada desde el temario y
+            desde cada lección. */}
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-heading text-lg font-bold text-foreground">Glosario del curso</h2>
+            <CreateGlossaryTermForm courseId={curso.id} />
+          </div>
+          <GlossaryList terminos={curso.glosario} puedeGestionar />
+        </section>
 
         {/* US47: compartir este curso con otros docentes. */}
         <ShareCourseForm

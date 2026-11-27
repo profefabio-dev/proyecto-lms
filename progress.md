@@ -2,7 +2,7 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-26 — **Cierre de OP07 (modales de creación de Tutores y Estudiantes) y sincronización de pruebas.** Se completó el patrón de OP07 pasando `create-tutor-form.tsx` y `create-student-form.tsx` a ventanas modales `Dialog` accionadas desde `PageHeader`, con campos controlados, confirmación de credenciales con copiado de contraseña temporal en un clic y reinicio limpio; las pantallas de `/admin/tutores` y `/tutor/estudiantes` abren ahora directamente mostrando el listado sin formularios vacíos ocupando espacio. Se actualizaron las pruebas de `page.test.ts` de tutores, estudiantes, admin/usuarios y superadmin para contemplar `espacioOrigenId` (US50). La suite completa pasa al 100% (**76 archivos de prueba, 646 pruebas pasando**, 0 fallos).
+Última actualización: 2026-11-27 — **US54: el glosario del curso**, la última de las cinco ideas que salieron de revisar la plataforma del colegio. Tabla nueva con RLS, pantalla propia enlazada desde el temario y desde cada lección, orden alfabético con índice de letras, y la regla de cuándo dos términos son el mismo (sin mayúsculas ni acentos, pero **respetando la ñ**) en un módulo probado aparte. Antes, el 26/11: revisión del rediseño de Antigravity (dos errores de CI corregidos, tres pruebas actualizadas), **US51 endurecida** y el buscador aceptando el código de clase, el **bloque de novedades cerrado**, los **cuatro pendientes chicos** de US52/US53/US42, y las reglas del proyecto escritas en `AGENTS.md`.
 
 ## Rediseño UI/UX — Modernización integral para jóvenes (Platzi + Canvas LMS)
 
@@ -159,6 +159,54 @@ escribieron los tipos explícitos en las dos consultas nuevas, como dice `AGENTS
 menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
 tocadas en verde — `course-code` 17, `novedades` 4, `join-course-by-code` 15 y `buscar/page` 9.
 
+## US54 — el glosario del curso (27/11/2026)
+
+La quinta y última idea de revisar la plataforma del colegio. **Para esta materia no es un adorno:**
+en Tecnología e Informática con chicos de 10 a 18 años el vocabulario es la materia — "algoritmo",
+"variable", "protoboard" **son** el contenido. Hasta hoy esas palabras se explicaban suelto en el
+texto de una lección, donde el estudiante que las olvidó dos semanas después no sabe dónde buscarlas.
+
+**Tres decisiones que vale la pena dejar escritas.**
+
+**(1) Sin columna `orden`.** Un glosario se consulta, no se recorre: el orden es alfabético (con
+`localeCompare` en español) y lo pone la pantalla, agrupado por letra inicial y con un índice arriba
+para saltar. Es justo lo contrario de las lecciones (US12) y las secciones (US30), donde la secuencia
+**es** la decisión pedagógica. Una columna de orden manual acá obligaría al docente a mantener a mano
+lo que el abecedario ya resuelve.
+
+**(2) Pantalla propia, no un bloque más del temario.** El temario ya es largo —módulos, lecciones,
+actividades, evaluaciones y anuncios— y el glosario no se lee una vez de arriba abajo: se consulta
+**mientras** se estudia, muchas veces, desde la lección donde apareció la palabra. Por eso tiene URL
+propia y se enlaza desde dos sitios: la cabecera del temario y **el temario lateral del reproductor
+de lecciones**, que es donde de verdad hace falta. La lista vive en un solo lugar en vez de repetirse
+en dos pantallas, y los dos enlaces **solo aparecen si hay términos** — por eso las dos consultas
+traen `_count` y no la lista: ofrecerle un glosario vacío al estudiante es ruido.
+
+**(3) Cuándo dos términos son el mismo.** Sin mayúsculas, sin acentos y sin espacios de sobra, con el
+mismo criterio de deduplicación que la carga masiva usa con los nombres (US29): en una lista escrita a
+mano conviven "Código" y "Codigo", y guardar las dos sería un error visible para el estudiante. **Pero
+la ñ se protege**: `normalize("NFD")` más borrar las marcas combinantes la convierte en "n", y en
+español eso cambia la palabra — "año" contra "ano", y en esta materia "diseño". La diéresis sí se
+quita, porque la ü no es una letra aparte ("pingüino" y "pinguino" son la misma palabra mal escrita).
+La Ñ tiene además su propio grupo en el índice de letras, como corresponde al abecedario español.
+
+**Lo que no se construyó, y por qué.** No hay acción de **editar** un término: corregir una definición
+es borrarlo y escribirlo de nuevo, y acá eso no pierde nada ni "vuelve nuevo" el término — con un
+anuncio sí pasaba, reaparecía como novedad en el panel del estudiante, y por eso ese sí necesitó
+edición propia el 26/11. Y no se **enlazan automáticamente** los términos cuando aparecen en el texto
+de una lección: sustituir palabras dentro de Markdown ya renderizado es frágil y rompería los bloques
+de código, donde "variable" aparece todo el tiempo.
+
+**Dos cosas que pasaron al construirlo.** La primera versión de `normalizarTermino` **convertía la ñ
+en n** y lo atrapó su propia prueba, escrita a propósito con "Diseño" porque es una palabra de esta
+materia. Y **la prueba que fija la consulta exacta del curso del Estudiante volvió a avisar: es la
+sexta vez** — acá era lo esperado, porque la consulta cambió a propósito para traer el conteo del
+glosario; sigue siendo la prueba que hay que revisar en cada cambio de esa consulta.
+
+**Verificación:** `tsc` sin errores nuevos, `eslint` 0 errores y 21 avisos, y **30 pruebas nuevas en
+verde** (14 de `lib/glosario.ts`, 9 de crear y 7 de borrar), más las dos pruebas de pantalla
+actualizadas.
+
 ### Los cuatro pendientes chicos (26/11/2026)
 
 Elegidos por el docente de cuatro opciones, por ser los que se topa a diario. Ninguno necesitó
@@ -312,7 +360,7 @@ Lo que se construyó, en tres piezas. **El piso de calidad:** `faltaParaComparti
 
 **Tres decisiones tomadas al construir.** Los requisitos **solo se comprueban al activar** el compartir, nunca al desactivar — un curso que ya circulaba no puede quedar atrapado porque su autor le ocultó una lección después. **Retirar quita el sello en la misma operación**, porque lo retirado no puede seguir llevando el respaldo de la plataforma. Y la moderación vive en `lib/actions/moderate-course.ts`, aparte de las demás acciones de curso, porque son **las dos únicas del proyecto que escriben sobre el curso de otro tutor**: conviene que esa excepción se vea en la estructura de archivos y no solo en un comentario. El Super Administrador entra a la ficha del catálogo para moderar, pero **no puede adoptar** — no es docente de ningún espacio.
 
-**Deuda reconocida: faltan dos de las cuatro piezas de la historia.** El botón para que un Tutor **reporte** un curso, que no es por calidad sino por seguridad —la plataforma es para menores, y un curso inapropiado tiene que poder retirarse a cualquier hora— y el **contador de impacto** en el panel del Tutor ("tu curso lo usan 4 docentes y 112 estudiantes"), que era la pieza que más mueve a compartir y que sale gratis de los datos que US47 ya guarda. Ninguna de las dos está construida.
+**Completada el 26/11/2026 con sus dos piezas restantes:** se agregó el botón para que un Tutor **reporte** un curso ajeno del catálogo por contenido inapropiado o vulneración de normas (tabla `reportes_curso` con RLS en migración `20261126210000`, Server Action `reportarCurso` en `lib/actions/report-course.ts` con 6 pruebas, y modal `components/report-course-dialog.tsx` en la ficha del curso) y el **contador de impacto** en el panel del Tutor (`app/tutor/page.tsx`: calcula con un `Promise.all` tutores que adoptaron sus cursos y estudiantes impactados, mostrando un banner motivador cuando sus materiales son usados por colegas).
 
 **Verificación:** 21 pruebas nuevas (`lib/course-shareable.ts` 11, `lib/actions/moderate-course.ts` 10), más las de `toggle-course-shareable` rehechas a 9 al entrar los requisitos. Las de Server Actions fallan en el entorno de nube por el límite conocido del enum `Rol`; se volvieron a correr con el enum simulado y pasan.
 
