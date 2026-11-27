@@ -21,6 +21,9 @@ vi.mock("@/lib/prisma", () => ({
     },
     courses: {
       count: vi.fn(),
+      // US49 (27/11/2026): los cursos reportados que esta pantalla ahora
+      // lista para que el Super Administrador pueda retirarlos.
+      findMany: vi.fn(),
     },
   },
 }));
@@ -56,6 +59,7 @@ describe("SuperAdminPage (US25/US27)", () => {
     vi.clearAllMocks();
     (prisma.courses.count as any).mockResolvedValue(0);
     (prisma.users.count as any).mockResolvedValue(0);
+    (prisma.courses.findMany as any).mockResolvedValue([]);
   });
 
   it("redirige a /login si no hay sesion activa", async () => {

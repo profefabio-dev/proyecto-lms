@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Building2 } from "lucide-react";
+import { Building2, Flag } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
@@ -12,6 +12,8 @@ import { DataTable, Td, Th } from "@/components/data-table";
 import { PageHeader } from "@/components/page-header";
 import { etiquetaEstado } from "@/lib/etiquetas";
 import { Badge } from "@/components/ui/badge";
+import { ModerateCourseControls } from "@/components/moderate-course-controls";
+import { MarkdownContent } from "@/components/markdown-content";
 
 export default async function SuperAdminPage() {
   const supabase = await createClient();
@@ -60,6 +62,52 @@ export default async function SuperAdminPage() {
       return { ...espacio, administradorPrincipal, cantidadTutores, cantidadCursos, cantidadEstudiantes };
     })
   );
+
+  // US49 (27/11/2026): los cursos reportados por otros docentes.
+  //
+  // El botón de reportar se construyó el 26/11, pero **ninguna pantalla leía
+  // la tabla**: los reportes se guardaban y nadie los veía nunca, con lo cual
+  // la pieza de seguridad de US49 —"retirar en treinta segundos, no aprobar
+  // lento"— no existía en la práctica. Esta sección es la otra mitad.
+  //
+  // Solo los cursos **que siguen en el catálogo**: un curso ya retirado no
+  // necesita decisión, y dejarlo acá convertiría la lista en un historial en
+  // vez de una bandeja de pendientes.
+  type CursoReportado = {
+    id: string;
+    titulo: string;
+    verificado: boolean;
+    compartible: boolean;
+    tutor: { nombre: string; apellido: string };
+    reportes: {
+      id: string;
+      motivo: string;
+      detalles: string | null;
+      createdAt: Date;
+      tutor: { nombre: string; apellido: string };
+    }[];
+  };
+
+  const cursosReportados: CursoReportado[] = await prisma.courses.findMany({
+    where: { compartible: true, reportes: { some: {} } },
+    select: {
+      id: true,
+      titulo: true,
+      verificado: true,
+      compartible: true,
+      tutor: { select: { nombre: true, apellido: true } },
+      reportes: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          motivo: true,
+          detalles: true,
+          createdAt: true,
+          tutor: { select: { nombre: true, apellido: true } },
+        },
+      },
+    },
+  });
 
   return (
     <AppShell usuario={usuarioActual}>
@@ -130,6 +178,80 @@ export default async function SuperAdminPage() {
             ))}
           </tbody>
         </DataTable>
+
+        {/* CURSOS REPORTADOS — US49 (27/11/2026). La plataforma es para
+            menores de edad: un curso con contenido inapropiado tiene que
+            poder retirarse a cualquier hora, y para eso hay que verlo. */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Flag className="size-5 text-destructive" aria-hidden="true" />
+            <h2 className="font-heading text-xl font-bold text-foreground">Cursos reportados</h2>
+            {cursosReportados.length > 0 && (
+              <Badge variant="destructive" className="text-xs font-semibold">
+                {cursosReportados.length}
+              </Badge>
+            )}
+          </div>
+
+          {cursosReportados.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border/80 p-6 text-center text-sm text-muted-foreground">
+              Ningún docente ha reportado un curso del catálogo.
+            </p>
+          ) : (
+            <ul className="space-y-4">
+              {cursosReportados.map((curso) => (
+                <li
+                  key={curso.id}
+                  className="space-y-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-5"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="font-heading text-base font-bold text-foreground">
+                        {curso.titulo}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        De {curso.tutor.nombre} {curso.tutor.apellido} ·{" "}
+                        <span className="font-semibold text-destructive">
+                          {curso.reportes.length}{" "}
+                          {curso.reportes.length === 1 ? "reporte" : "reportes"}
+                        </span>
+                      </p>
+                    </div>
+
+                    {/* Las dos acciones que ya existían (US49): quitar el
+                        sello o retirarlo del catálogo. */}
+                    <ModerateCourseControls
+                      courseId={curso.id}
+                      verificado={curso.verificado}
+                      compartible={curso.compartible}
+                    />
+                  </div>
+
+                  <ul className="space-y-2">
+                    {curso.reportes.map((reporte) => (
+                      <li
+                        key={reporte.id}
+                        className="space-y-1 rounded-xl border border-border/60 bg-card p-3"
+                      >
+                        <p className="text-xs font-semibold text-foreground">
+                          {reporte.motivo}
+                          <span className="ml-2 font-normal text-muted-foreground">
+                            {reporte.tutor.nombre} {reporte.tutor.apellido} ·{" "}
+                            {reporte.createdAt.toLocaleDateString("es-CO", {
+                              day: "numeric",
+                              month: "long",
+                            })}
+                          </span>
+                        </p>
+                        {reporte.detalles && <MarkdownContent contenido={reporte.detalles} />}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </main>
     </AppShell>
   );

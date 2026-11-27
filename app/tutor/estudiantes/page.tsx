@@ -1,5 +1,9 @@
+import Link from "next/link";
+// Corrección (27/11/2026): la página llama a `redirect()` tres veces y no lo
+// importaba — no compilaba, así que `npm run verificar` y el CI fallaban y la
+// pantalla habría dado error 500.
 import { redirect } from "next/navigation";
-import { Users, Sparkles } from "lucide-react";
+import { Users, Sparkles, FolderKanban } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { CreateStudentForm } from "@/components/create-student-form";
@@ -7,14 +11,26 @@ import { BulkImportStudentsForm } from "@/components/bulk-import-students-form";
 import { EditEmailForm } from "@/components/edit-email-form";
 import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { ResetPasswordForm } from "@/components/reset-password-form";
+import { AssignGroupToStudent } from "@/components/assign-group-to-student";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { etiquetaEstado } from "@/lib/etiquetas";
 import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
 import { Rol } from "@prisma/client";
+import { cn } from "@/lib/utils";
 
-export default async function EstudiantesPage() {
+export default async function EstudiantesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ grupo?: string }>;
+  // El objeto va con valor por omisión: Next siempre lo pasa, pero las
+  // pruebas de esta pantalla llaman `EstudiantesPage()` sin argumentos para
+  // comprobar las tres redirecciones, y sin esto no compilan.
+} = {}) {
+  const { grupo: grupoFiltro } = (await searchParams) ?? {};
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,21 +46,23 @@ export default async function EstudiantesPage() {
     redirect("/login");
   }
 
-  // Épica Multi-docente (US24): antes de esto, un Tutor veía (y podía
-  // editar/resetear la contraseña de) TODOS los Estudiantes de la
-  // plataforma, sin importar si tenían algo que ver con sus cursos — un
-  // vacío real, no solo un límite de la vista. Ahora se limita a los
-  // Estudiantes con al menos una inscripción en un curso de su mismo
-  // espacio (los Estudiantes son cuentas compartidas entre espacios, así
-  // que no tienen espacioId propio — se filtran por inscripción real, ver
-  // `lib/espacio-scope.ts`). Caso defensivo: todo Tutor existente quedó
-  // con espacioId asignado por la migración de la épica.
   if (!usuarioActual.espacioId) {
     redirect("/login");
   }
 
+  const grupos = await prisma.grupos.findMany({
+    where: { espacioId: usuarioActual.espacioId },
+    select: { id: true, nombre: true },
+    orderBy: { nombre: "asc" },
+  });
+
+  const baseWhere = filtroUsuarioVisibleEnEspacio(usuarioActual.espacioId, Rol.ESTUDIANTE);
+  const whereEstudiantes = grupoFiltro
+    ? { ...baseWhere, grupoId: grupoFiltro }
+    : baseWhere;
+
   const estudiantes = await prisma.users.findMany({
-    where: filtroUsuarioVisibleEnEspacio(usuarioActual.espacioId, Rol.ESTUDIANTE),
+    where: whereEstudiantes,
     orderBy: { createdAt: "desc" },
   });
 

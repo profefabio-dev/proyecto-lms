@@ -86,6 +86,11 @@ model Users {
   // `lib/group-color.ts`). Opcional: un estudiante creado a mano (US06)
   // o desde un archivo sin columna de grado no tiene ningún valor aquí.
   grado     String?
+  // US32 (26/11/2026): el grupo al que pertenece el estudiante, ahora como
+  // entidad propia. Opcional, y **`grado` se conserva**: es el texto tal como
+  // venía en la hoja del colegio (US29), y de ahí salieron los grupos al
+  // migrar. Borrarlo sería perder el dato de origen de la carga.
+  grupoId   String?
   // Épica Multi-docente (Backlog.md): obligatorio a nivel de aplicación
   // solo para ADMINISTRADOR y TUTOR (cada uno pertenece a un único
   // espacio, sin acceso a los datos de otro). SUPERADMIN y ESTUDIANTE no
@@ -120,6 +125,8 @@ model Users {
   intentosQuiz     IntentosQuiz[]
   rutasComoTutor   Rutas[]        @relation("TutorRutas")
   anunciosPublicados Anuncios[]   @relation("TutorAnuncios")
+  grupo              Grupos?        @relation(fields: [grupoId], references: [id])
+  reportesEnviados   ReportesCurso[] @relation("ReportesDelTutor")
   rutasInscritas   RutaUsuarios[]
 
   @@map("users")
@@ -136,6 +143,7 @@ model Espacios {
   createdAt DateTime      @default(now())
 
   usuarios Users[]
+  grupos   Grupos[]
 
   @@map("espacios")
 }
@@ -174,6 +182,7 @@ model Courses {
   rutas       RutaCursos[]
   anuncios    Anuncios[]
   glosario    Glosario[]
+  reportes    ReportesCurso[]
 
   @@map("courses")
 }
@@ -543,4 +552,54 @@ model ContentViews {
 
   @@unique([contentId, userId])
   @@map("content_views")
+}
+
+/// US32 (26/11/2026): el grupo / salón de clase ("6A", "7B") como entidad
+/// propia, por espacio. Antes era un campo de texto suelto en `Users.grado`,
+/// detectado por la carga masiva (US29), sin listado ni gestión: no se podía
+/// renombrar, ni contar estudiantes por grupo, ni matricular un grupo
+/// completo a un curso.
+///
+/// **Es del espacio y no del tutor**: un salón del colegio es el mismo para
+/// todos los docentes de esa institución, igual que los estudiantes (US24).
+/// Por eso el nombre es único dentro del espacio — no hay dos "6A" en el
+/// mismo colegio — y los grupos se borran en cascada con su espacio.
+model Grupos {
+  id        String   @id @default(uuid())
+  nombre    String
+  espacioId String
+  createdAt DateTime @default(now())
+
+  espacio     Espacios @relation(fields: [espacioId], references: [id], onDelete: Cascade)
+  estudiantes Users[]
+
+  @@unique([nombre, espacioId])
+  @@index([espacioId])
+  @@map("grupos")
+}
+
+/// US49 (26/11/2026): un Tutor reporta un curso del catálogo.
+///
+/// **No es por calidad, es por seguridad**: la plataforma es para menores de
+/// edad y un curso con contenido inapropiado tiene que poder retirarse en
+/// treinta segundos y a cualquier hora, no esperando a que alguien vacíe una
+/// cola de revisión (ver la justificación de US49). El reporte no retira
+/// nada por sí solo — avisa al Super Administrador, que es quien puede
+/// quitarlo del catálogo.
+///
+/// `tutorId` guarda quién reportó, para poder distinguir diez reportes de
+/// diez docentes de diez reportes del mismo.
+model ReportesCurso {
+  id        String   @id @default(uuid())
+  courseId  String
+  tutorId   String
+  motivo    String
+  detalles  String?
+  createdAt DateTime @default(now())
+
+  course Courses @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tutor  Users   @relation("ReportesDelTutor", fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, createdAt(sort: Desc)])
+  @@map("reportes_curso")
 }

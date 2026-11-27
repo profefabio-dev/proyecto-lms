@@ -15,6 +15,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AdoptCourseForm } from "@/components/adopt-course-form";
 import { ModerateCourseControls } from "@/components/moderate-course-controls";
+import { ReportCourseDialog } from "@/components/report-course-dialog";
 import { cn } from "@/lib/utils";
 
 /**
@@ -181,14 +182,22 @@ export default async function FichaCursoCompartidoPage({
                   Este curso es tuyo. Así es como lo ven los demás docentes.
                 </p>
               ) : yaAdoptado ? (
-                <Link
-                  href={`/tutor/cursos/${yaAdoptado.id}`}
-                  className={cn(buttonVariants({ variant: "outline" }), "min-h-11 gap-2")}
-                >
-                  Ya tienes tu copia — abrirla
-                </Link>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <Link
+                    href={`/tutor/cursos/${yaAdoptado.id}`}
+                    className={cn(buttonVariants({ variant: "outline" }), "min-h-11 gap-2")}
+                  >
+                    Ya tienes tu copia — abrirla
+                  </Link>
+                  <ReportCourseDialog courseId={curso.id} />
+                </div>
               ) : (
-                <AdoptCourseForm courseId={curso.id} titulo={curso.titulo} autor={autor} />
+                <div className="space-y-4">
+                  <AdoptCourseForm courseId={curso.id} titulo={curso.titulo} autor={autor} />
+                  <div className="flex justify-end">
+                    <ReportCourseDialog courseId={curso.id} />
+                  </div>
+                </div>
               )}
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-27 — **US54: el glosario del curso**, la última de las cinco ideas que salieron de revisar la plataforma del colegio. Tabla nueva con RLS, pantalla propia enlazada desde el temario y desde cada lección, orden alfabético con índice de letras, y la regla de cuándo dos términos son el mismo (sin mayúsculas ni acentos, pero **respetando la ñ**) en un módulo probado aparte. Antes, el 26/11: revisión del rediseño de Antigravity (dos errores de CI corregidos, tres pruebas actualizadas), **US51 endurecida** y el buscador aceptando el código de clase, el **bloque de novedades cerrado**, los **cuatro pendientes chicos** de US52/US53/US42, y las reglas del proyecto escritas en `AGENTS.md`.
+Última actualización: 2026-11-27 — **US54 (el glosario del curso)** y, después, **la revisión de lo que trajo Antigravity**: US32 (grupos) y las dos piezas que faltaban de US49 (reportar un curso y el contador de impacto). De esa revisión salieron **tres errores que bloqueaban la compilación** —entre ellos los dos modelos de Prisma que faltaban—, **una fuga de seguridad de la familia de US50** y **la mitad que faltaba del reporte**: nadie leía la tabla.
 
 ## Rediseño UI/UX — Modernización integral para jóvenes (Platzi + Canvas LMS)
 
@@ -158,6 +158,61 @@ escribieron los tipos explícitos en las dos consultas nuevas, como dice `AGENTS
 **Estado después de las dos:** `tsc` sin errores nuevos, `eslint` con **0 errores y 23 avisos** (uno
 menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
 tocadas en verde — `course-code` 17, `novedades` 4, `join-course-by-code` 15 y `buscar/page` 9.
+
+## Revisión de US32 y US49 — 27/11/2026
+
+Llegó trabajo de Antigravity: **US32 (grupos)** completa y las dos piezas que le faltaban a **US49**
+(el botón de reportar un curso y el contador de impacto del panel del Tutor), más un commit que cerró
+OP07 pasando a ventana los formularios de crear tutor y crear estudiante. El commit de OP07 ya estaba
+hecho; lo de US32 y US49 estaba **sin confirmar**. Se revisó con el mismo método de siempre: clon en
+la nube, tipos, lint y suite, comparando contra la base.
+
+**Lo primero y más grave: faltaban los dos modelos de Prisma.** Las dos migraciones nuevas
+(`20261126210000_add_reportes_curso` y `20261126220000_add_grupos`) creaban las tablas, pero
+`prisma/schema.prisma` **no las declaraba**, así que el cliente no tenía `prisma.grupos` ni
+`prisma.reportesCurso`: todo lo que las usa —cinco acciones, dos pantallas, los diálogos— no
+compilaba, y en ejecución habría sido `undefined`. Se escribieron los dos modelos (`Grupos` y
+`ReportesCurso`) calcados de las migraciones, con sus relaciones en `Users`, `Espacios` y `Courses`,
+el `grupoId` opcional en `Users`, y los índices y borrados en cascada que el SQL ya define. **Regla
+para quien agregue una tabla: la migración y el modelo van juntos; una sin el otro no es media
+función, es cero.**
+
+**Dos errores de compilación más, los dos corregidos.** `app/tutor/estudiantes/page.tsx` llamaba a
+`redirect()` **tres veces sin importarlo** —la pantalla habría dado error 500— y su prueba llamaba
+`EstudiantesPage()` sin argumentos contra una firma que ya los exigía (se le puso valor por omisión al
+objeto de props, que es lo correcto: Next siempre los pasa y las pruebas de redirección siguen
+valiendo). Y `app/tutor/grupos/page.tsx` usaba `estiloColor.fondo` y `.texto`, pero `colorDeGrupo`
+devuelve `{ borde, insignia }` desde el 16/09: la insignia se habría quedado sin color.
+
+**Y una fuga de seguridad, de la misma familia que US50.** `asignarGrupoEstudiante` comprobaba el
+**grupo** (que fuera del espacio del tutor) pero **no el estudiante**: `userId` llegaba del formulario
+y se escribía directo. Con el id de un alumno de otro colegio se lo podía meter a un grupo propio y,
+de ahí, con "matricular el grupo completo", a un curso de este espacio — justo lo que US50 cerró en el
+selector de "Inscribir estudiantes", y la misma lección: **ocultar un control no es una restricción.**
+Ahora la acción reutiliza `usuarioVisibleEnEspacio` (US50) y exige además que el id sea de un
+Estudiante (antes se le podía poner `grupoId` a la cuenta de un Tutor). **Esa acción estaba importada
+en el archivo de pruebas sin un solo caso**; ahora tiene 6, incluidos los dos de la fuga y el de un
+estudiante de otro espacio que sí está inscrito acá, que debe aceptarse (US26).
+
+**La otra mitad del reporte, que no existía.** El botón de reportar guardaba en `reportes_curso`
+correctamente —solo un Tutor, solo un curso del catálogo, nunca el propio— pero **ninguna pantalla
+leía esa tabla**. Un reporte que nadie ve no retira nada, y la pieza de US49 era justamente *"retirar
+rápido, no aprobar lento"*, con el argumento de que la plataforma es para menores. Se agregó la
+sección **Cursos reportados** en `/superadmin`: el motivo, los detalles y quién reportó, con los dos
+controles de moderación que ya existían al lado. Muestra **solo los cursos que siguen en el
+catálogo**, porque uno ya retirado no necesita decisión y dejarlo ahí convierte la bandeja de
+pendientes en un historial.
+
+**Lo que se revisó y estaba bien:** las otras cuatro acciones de grupos comprueban el espacio en cada
+paso (`grupo.espacioId !== usuario.espacioId`), y `matricularGrupoEnCurso` además exige que el curso
+sea del tutor (o del espacio, si es Administrador) y solo matricula estudiantes **activos**;
+`report-course.ts` valida sesión, rol, que el curso esté en el catálogo y que no sea el propio.
+
+**Verificación final:** `tsc` sin errores nuevos, `eslint` **0 errores** y 28 avisos, y de las fallas
+de la suite en el clon se comprobó el motivo **una por una**: todas son el ruido conocido del cliente
+de Prisma sin generar y de `xlsx` bloqueado. 329 pruebas pasan; las nuevas de esta revisión (6 de
+`asignarGrupoEstudiante`) y las de Antigravity (16 de grupos, 6 de reportes) van en verde con el
+cliente simulado.
 
 ## US54 — el glosario del curso (27/11/2026)
 

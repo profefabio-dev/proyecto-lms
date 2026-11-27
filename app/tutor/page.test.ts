@@ -20,6 +20,7 @@ vi.mock("@/lib/prisma", () => ({
     },
     courseUsers: {
       findMany: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
     },
     contents: {
       count: vi.fn(),
@@ -75,24 +76,30 @@ describe("TutorPage (US18)", () => {
     (prisma.users.findUnique as any).mockResolvedValue({ id: "tutor-1", rol: "TUTOR" });
     // 26/11/2026: el panel pasó a mostrar tarjetas de curso, así que la
     // consulta trae también el título, el estado y los tres conteos.
-    (prisma.courses.findMany as any).mockResolvedValue([
-      {
-        id: "curso-1",
-        titulo: "Curso 1",
-        estado: "PUBLICADO",
-        _count: { inscritos: 2, contenidos: 4, actividades: 1 },
-      },
-      {
-        id: "curso-2",
-        titulo: "Curso 2",
-        estado: "BORRADOR",
-        _count: { inscritos: 0, contenidos: 3, actividades: 0 },
-      },
-    ]);
+    (prisma.courses.findMany as any).mockImplementation((args: any) => {
+      if (args?.where?.origenCursoId) {
+        return Promise.resolve([{ id: "copia-1", tutorId: "otro-tutor" }]);
+      }
+      return Promise.resolve([
+        {
+          id: "curso-1",
+          titulo: "Curso 1",
+          estado: "PUBLICADO",
+          _count: { inscritos: 2, contenidos: 4, actividades: 1 },
+        },
+        {
+          id: "curso-2",
+          titulo: "Curso 2",
+          estado: "BORRADOR",
+          _count: { inscritos: 0, contenidos: 3, actividades: 0 },
+        },
+      ]);
+    });
     (prisma.courseUsers.findMany as any).mockResolvedValue([
       { userId: "est-1" },
       { userId: "est-2" },
     ]);
+    (prisma.courseUsers.count as any).mockResolvedValue(5);
     (prisma.contents.count as any).mockResolvedValue(7);
     (prisma.entregas.findMany as any).mockResolvedValue([]);
     (prisma.entregas.count as any).mockResolvedValue(0);
@@ -105,6 +112,10 @@ describe("TutorPage (US18)", () => {
         _count: { select: { inscritos: true, contenidos: true, actividades: true } },
       },
       orderBy: { createdAt: "desc" },
+    });
+    expect(prisma.courses.findMany).toHaveBeenCalledWith({
+      where: { origenCursoId: { in: ["curso-1", "curso-2"] } },
+      select: { id: true, tutorId: true },
     });
     expect(prisma.courseUsers.findMany).toHaveBeenCalledWith({
       where: { courseId: { in: ["curso-1", "curso-2"] } },

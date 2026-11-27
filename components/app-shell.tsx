@@ -36,6 +36,8 @@ const NAV_POR_ROL: Record<RolConocido, { href: string; label: string; icon: Luci
   TUTOR: [
     { href: "/tutor", label: "Panel", icon: LayoutDashboard },
     { href: "/tutor/estudiantes", label: "Estudiantes", icon: GraduationCap },
+    // US32 (26/11/2026): gestión de salones y grupos escolares.
+    { href: "/tutor/grupos", label: "Grupos", icon: Users },
     { href: "/tutor/cursos", label: "Mis cursos", icon: BookOpen },
     // US44 (20/11/2026): las rutas de aprendizaje son una entidad propia,
     // no una pestaña dentro de un curso — un curso puede estar en varias

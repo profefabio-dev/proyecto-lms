@@ -55,7 +55,13 @@ export default async function TutorPage() {
   });
   const idsCursos = cursosDelTutor.map((curso) => curso.id);
 
-  const [inscripcionesUnicas, totalContenidos, entregasPendientes, totalPendientes] =
+  const [
+    inscripcionesUnicas,
+    totalContenidos,
+    entregasPendientes,
+    totalPendientes,
+    copiasAdoptadas,
+  ] =
     idsCursos.length > 0
       ? await Promise.all([
           prisma.courseUsers.findMany({
@@ -84,8 +90,24 @@ export default async function TutorPage() {
               nota: null,
             },
           }),
+          // US49: impacto comunitario — cuántas copias se han adoptado de mis cursos
+          prisma.courses.findMany({
+            where: { origenCursoId: { in: idsCursos } },
+            select: { id: true, tutorId: true },
+          }),
         ])
-      : [[], 0, [], 0];
+      : [[], 0, [], 0, []];
+
+  const tutoresQueAdoptaron = new Set(
+    copiasAdoptadas.map((c: { id: string; tutorId: string }) => c.tutorId)
+  ).size;
+  const idsCopias = copiasAdoptadas.map((c: { id: string; tutorId: string }) => c.id);
+  const estudiantesImpactados =
+    idsCopias.length > 0
+      ? await prisma.courseUsers.count({
+          where: { courseId: { in: idsCopias } },
+        })
+      : 0;
 
   // Los parámetros de tipo van explícitos: `cursosDelTutor` sale de un
   // `Promise.all` con respaldo `[[], 0, [], 0]`, así que TypeScript pierde
@@ -197,6 +219,42 @@ export default async function TutorPage() {
             </div>
           </div>
         </section>
+
+        {/* US49: IMPACTO COMUNITARIO */}
+        {tutoresQueAdoptaron > 0 && (
+          <section
+            aria-label="Impacto comunitario"
+            className="rounded-2xl border border-primary/30 bg-primary/5 p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
+                <Sparkles className="size-5" />
+              </div>
+              <div className="space-y-0.5">
+                <h3 className="font-heading font-bold text-foreground text-sm sm:text-base">
+                  Tu material compartido tiene impacto en la comunidad
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Tus cursos han sido adoptados por{" "}
+                  <strong className="text-foreground font-semibold">
+                    {tutoresQueAdoptaron} {tutoresQueAdoptaron === 1 ? "docente" : "docentes"}
+                  </strong>{" "}
+                  y están beneficiando a{" "}
+                  <strong className="text-foreground font-semibold">
+                    {estudiantesImpactados} {estudiantesImpactados === 1 ? "estudiante" : "estudiantes"}
+                  </strong>{" "}
+                  en otros espacios.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/tutor/catalogo"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "text-xs shrink-0 rounded-xl font-semibold")}
+            >
+              Explorar catálogo
+            </Link>
+          </section>
+        )}
 
         {/* CONTENIDO PRINCIPAL: 2 COLUMNAS (CANVAS TEACHER DASHBOARD) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

@@ -4,19 +4,29 @@
 > estado de cada historia es [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md); este
 > archivo solo dice **dónde quedamos y qué sigue**, y se reescribe al cerrar cada sesión.
 
-Última sesión: **27 de noviembre de 2026.** Una sola cosa, elegida de cuatro opciones: **US54, el
-glosario del curso** — la última de las cinco ideas que salieron de revisar la plataforma del
-colegio. Tabla nueva `Glosario` con RLS (migración `20261127040000`, **la sexta sin aplicar**),
-pantalla propia para el estudiante enlazada desde el temario y desde el temario lateral de cada
-lección, gestión para el tutor en la pantalla de su curso, orden alfabético con índice de letras, y
-la regla de cuándo dos términos son el mismo en `lib/glosario.ts`, probada aparte. **30 pruebas
-nuevas.** Lo que queda fuera, anotado: enlazar los términos automáticamente dentro del texto de una
-lección (frágil: rompería los bloques de código) y editar un término (borrar y escribir de nuevo no
-pierde nada, a diferencia de un anuncio).
+Última sesión: **27 de noviembre de 2026.** Dos cosas. **US54, el glosario del curso** (la última de
+las cinco ideas de revisar la plataforma del colegio): tabla nueva con RLS, pantalla propia enlazada
+desde el temario y desde el temario lateral de cada lección, orden alfabético con índice de letras, y
+la regla de cuándo dos términos son el mismo en `lib/glosario.ts`, probada aparte — 30 pruebas
+nuevas. Un error atrapado por su propia prueba: convertía la **ñ** en **n** al quitar acentos, así que
+"Diseño" se comparaba como "diseno".
 
-**Un error atrapado por su propia prueba:** la primera versión de `normalizarTermino` convertía la
-**ñ** en **n** al quitar acentos, así que "Diseño" se comparaba como "diseno". Vale la regla general:
-al normalizar texto en español, la ñ se protege y la diéresis se quita.
+**Y después, la revisión de lo que trajo Antigravity:** US32 (grupos) y las dos piezas que le
+faltaban a US49 (reportar un curso y el contador de impacto), más un commit que cerró OP07. De ahí
+salieron cuatro cosas, todas corregidas:
+
+- **Faltaban los dos modelos de Prisma.** Las migraciones creaban `grupos` y `reportes_curso`, pero
+  `schema.prisma` no las declaraba: `prisma.grupos` no existía y **nada de eso compilaba**. **Regla:
+  la migración y el modelo van juntos.**
+- **`app/tutor/estudiantes/page.tsx` llamaba a `redirect()` sin importarlo** (error 500 en esa
+  pantalla), y la de grupos usaba `estiloColor.fondo`/`.texto`, que `colorDeGrupo` no devuelve.
+- **Una fuga de seguridad de la familia de US50:** `asignarGrupoEstudiante` comprobaba el grupo pero
+  no el estudiante — con el id de un alumno de otro colegio se lo podía meter a un grupo propio y, de
+  ahí, a un curso de este espacio. Ahora reutiliza `usuarioVisibleEnEspacio`. Esa acción estaba
+  importada en las pruebas sin un solo caso; ahora tiene 6.
+- **Nadie leía los reportes.** El botón guardaba bien, pero ninguna pantalla mostraba la tabla, así
+  que la pieza de seguridad de US49 no existía en la práctica. Se agregó la sección **Cursos
+  reportados** en `/superadmin`, con los dos controles de moderación al lado.
 
 Sesión anterior: **26 de noviembre de 2026.** Una sola cosa, a pedido del docente: **documentar lo que
 llegó de Antigravity y después buscar errores.** Antigravity rehizo el 25/11 la interfaz del
