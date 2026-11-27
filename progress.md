@@ -2,7 +2,7 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-27 — **US54 (el glosario del curso)**, **la revisión de lo que trajo Antigravity** (US32 grupos y las dos piezas de US49, con tres errores de compilación y una fuga de seguridad corregidos) y **el barrido de diseño**: los degradados quedan solo en portada y login, los nueve emoji pasaron a iconos salvo el confeti, y los seis radios quedaron en uno. Anotada **US55** (plantilla de curso y descarga en PDF), sin construir.
+Última actualización: 2026-11-27 — **US54 (glosario)**, **la revisión de lo que trajo Antigravity** (US32 y US49, con tres errores de compilación y una fuga de seguridad corregidos), **el barrido de diseño** y **tres decisiones de producto**: la dirección de las lecciones (las tres maquetas combinadas, en orden A→B→C), **la moderación pasa a aprobación previa** (el catálogo mostrará solo lo verificado, con cola de revisión) y **se pedirá licencia expresa al compartir** (US57). Anotadas **US55**, **US56** y **US57**, sin construir.
 
 ## Rediseño UI/UX — Modernización integral para jóvenes (Platzi + Canvas LMS)
 
@@ -158,6 +158,38 @@ escribieron los tipos explícitos en las dos consultas nuevas, como dice `AGENTS
 **Estado después de las dos:** `tsc` sin errores nuevos, `eslint` con **0 errores y 23 avisos** (uno
 menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
 tocadas en verde — `course-code` 17, `novedades` 4, `join-course-by-code` 15 y `buscar/page` 9.
+
+## Tres decisiones de producto — 27/11/2026
+
+**1. Cómo se ve una lección: las tres direcciones, combinadas y en orden.** Se le mostraron al
+docente tres maquetas con **la misma lección suya** —editorial, bloques interactivos y lúdica— y
+eligió combinarlas. Quedan ordenadas por dependencia: **A** (tipografía editorial, fondo claro, la
+única que se imprime bien) es la base y sirve de paso a US55; **B** (pregunta rápida dentro de la
+lección, "inténtalo tú" con la solución plegada, pasos) se monta encima; **C** (puntos, misiones,
+insignias) encima de B, y queda por decidir si se activa por curso o por grado — lo que engancha en
+6.º estorba en 11.º. Está en US56.
+
+**2. La moderación pasa a aprobación previa, y eso revierte en parte US49.** El docente planteó que
+*"todos pensamos diferente: puede que muchos cumplan los criterios de compartir pero otros sean muy
+básicos"*. El argumento del 23/11 —*nadie aprueba por adelantado*— **era para una comunidad
+gratuita**, donde lo que mata es un catálogo vacío; acá el dueño del catálogo es quien va a cobrar y
+lo que lleva el sello lleva su nombre. **Y el costo hoy es casi cero**, que es lo que de verdad
+inclina la decisión: con pocos docentes la cola son minutos. **Lo que cambia es poco**, porque el
+modelo ya separaba `compartible` (intención del autor) de `verificado` (visto bueno de la
+plataforma): el catálogo pasa a mostrar solo lo verificado y se agrega una cola de revisión en
+`/superadmin`, igual que la bandeja de reportes. La válvula de escape queda escrita desde ahora —dos
+pestañas, *De la plataforma* y *De la comunidad*— para no tener que rediscutirlo cuando la cola se
+alargue.
+
+**3. Los derechos de autor: la premisa estaba equivocada y conviene que quede escrito.** La pregunta
+fue si el material compartido podía publicarse *"ya sin los derechos de autor, porque podrían ser
+sujetos de cambios"*. **No se puede, y no por una decisión de producto:** los derechos morales
+—que a alguien se le reconozca como autor— son irrenunciables. Lo que sí se pide es una **licencia**
+de uso y adaptación. La plataforma ya hace lo correcto por construcción (US47: se copia el curso, el
+original no se toca, y el crédito al autor se guarda como texto para que sobreviva al borrado); **lo
+que falta es el momento en que el autor acepta**, que hoy no existe — marcar "compartible" es un
+interruptor sin advertencia. Es US57, y es requisito antes de abrir el catálogo a docentes de fuera.
+El texto de los términos lo tiene que revisar un abogado.
 
 ## El barrido de diseño — 27/11/2026
 

@@ -17,6 +17,13 @@ quiz y las tarjetas no), y los **nueve emoji pasaron a iconos** salvo el 🎉 de
 unificaron los radios: **214 reemplazos en 77 archivos**, y quedan tres radios, los tres escritos en
 `DESIGN.md`. Los `duo-*` quedaron en cuatro usos, todos permitidos por la regla 1.
 
+**Tres decisiones de producto del 27/11**, todas documentadas y ninguna construida: la **dirección
+de las lecciones** (las tres maquetas combinadas, en orden A editorial → B bloques → C lúdico, US56);
+**la moderación pasa a aprobación previa** —el catálogo mostrará solo lo verificado, con cola de
+revisión en `/superadmin`, lo que revierte en parte US49 y queda explicado ahí—; y **se pedirá
+licencia expresa al compartir** (US57), porque los derechos morales del autor no se pueden quitar y
+hoy nadie acepta nada al marcar un curso como compartible.
+
 **Anotada US55 y sin construir:** la **plantilla común de curso** editable por secciones y la
 **descarga en PDF** para el estudiante. Al empezarla se le muestran primero al docente dos o tres
 maquetas —cómo se ve en el LMS y cómo se ve ya impresa— y él elige, como se hizo en OP09. Las cuatro
@@ -141,6 +148,34 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
   lleva embebidos los nombres completos de 229 estudiantes menores de edad y el repositorio es
   público: **nunca debe subirse.**
 
+## Mañana se arranca por aquí
+
+**La cola de revisión del catálogo** (US49, aprobación previa). Es lo más corto de las tres historias
+nuevas, **no necesita migración**, y el modelo ya lo preveía: `compartible` es la intención del autor
+y `verificado` el visto bueno de la plataforma. Cuatro piezas:
+
+1. **El catálogo pasa a mostrar solo lo aprobado.** En `app/tutor/catalogo/page.tsx`, la consulta
+   suma `verificado: true` al `compartible: true` que ya tiene. Con eso el filtro *"solo
+   verificados"* que hay hoy deja de tener sentido: o se quita, o se invierte para que el Super
+   Administrador pueda ver también lo que falta por revisar.
+2. **La cola en `/superadmin`.** Los cursos con `compartible: true` y `verificado: false`, **el más
+   viejo primero** —es una bandeja de pendientes, no un listado—, con el enlace a la ficha del curso
+   para poder mirarlo antes de decidir y, al lado, los dos controles que ya existen
+   (`ModerateCourseControls`: dar el sello o retirarlo del catálogo). Es la misma forma de la
+   bandeja de cursos reportados del 27/11, y conviene que se vean parecidas.
+3. **Decirle al docente que su curso queda en revisión.** Hoy `share-course-form.tsx` da a entender
+   que compartir publica de inmediato. Tiene que decir que pasa a revisión y, cuando ya tenga sello,
+   que está publicado. Sin esto, el docente cree que falló algo.
+4. **Las pruebas de las dos consultas**, que es donde esto se rompe en silencio: que el catálogo no
+   devuelva un curso sin sello, y que la cola no muestre uno ya aprobado.
+
+**Lo que NO entra mañana:** la licencia al compartir (US57) necesita migración —guardar qué versión
+de los términos aceptó el docente y cuándo— y el texto lo tiene que revisar un abogado. Y la
+dirección de las lecciones (US56) empieza por la capa A, que es tipografía, y conviene hacerla
+seguida de US55 porque comparten el problema del papel.
+
+---
+
 ## Lo pendiente, en orden
 
 1. **El recorrido de prueba, que es lo más atrasado.** `Checklist_Validacion_Manual.md` tiene dos
@@ -162,10 +197,11 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
      aunque sus historias ya estuvieran validadas. Y **US51 agrega dos pasos nuevos**: el Tutor
      copia el código de su curso, el estudiante entra con él, y se comprueba que un código de un
      curso en borrador no sirva.
-2. **Las dos piezas que faltan de US49**, reconocidas como deuda en `progress.md`: el botón para que
-   un Tutor **reporte** un curso (es por seguridad, no por calidad — la plataforma es para menores) y
-   el **contador de impacto** en el panel del Tutor ("tu curso lo usan 4 docentes y 112
-   estudiantes"), que sale gratis de los datos que US47 ya guarda y es lo que más mueve a compartir.
+2. **Las tres historias nuevas del 27/11**, en este orden: **US49 con aprobación previa** (la cola de
+   revisión, detallada arriba, sin migración); **US57**, la licencia expresa al compartir, que es
+   **requisito antes de abrir el catálogo a docentes de fuera** y necesita migración; y **US55 +
+   US56** juntas, que comparten el problema del papel — la capa A de US56 (tipografía editorial) es
+   la base del PDF de US55.
 3. **Cerrar la columna `codigo` de US51 antes de abrir la plataforma a otros docentes.** El
    endurecimiento del 26/11 quitó lo urgente, pero el código sigue derivándose del id del curso y por
    eso **no se puede revocar**: si se filtra, la única salida es rehacer el curso. Lo que falta es una
