@@ -49,14 +49,16 @@ export default async function TutoresPage() {
   return (
     <AppShell usuario={usuarioActual}>
       <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
+        {/* El formulario de creación vive dentro de un diálogo que abre este
+            botón (OP07), así la pantalla arranca mostrando los tutores y no un
+            formulario vacío encima del listado. */}
         <PageHeader
           titulo="Gestión de Tutores"
           descripcion="Crea cuentas de tutor y administra sus datos de acceso."
           icono={UserCog}
           insignia={`${tutores.length} ${tutores.length === 1 ? "tutor" : "tutores"}`}
+          accion={<CreateTutorForm />}
         />
-
-        <CreateTutorForm />
 
         <section className="space-y-4">
           <div className="flex items-center gap-2">

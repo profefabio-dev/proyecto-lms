@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
   return {
     test: {
       environment: "node",
+      exclude: ["**/node_modules/**", "**/.claude/**", "**/dist/**"],
     },
     resolve: {
       alias: {

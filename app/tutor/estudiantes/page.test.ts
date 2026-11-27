@@ -79,7 +79,7 @@ describe("EstudiantesPage", () => {
     expect(prisma.users.findMany).not.toHaveBeenCalled();
   });
 
-  it("consulta solo los Estudiantes inscritos en un curso del espacio del Tutor (US24)", async () => {
+  it("consulta solo los Estudiantes visibles en el espacio del Tutor (US24 + US50)", async () => {
     mockSesion("auth-3");
     (prisma.users.findUnique as any).mockResolvedValue({
       rol: "TUTOR",
@@ -93,7 +93,10 @@ describe("EstudiantesPage", () => {
     expect(prisma.users.findMany).toHaveBeenCalledWith({
       where: {
         rol: "ESTUDIANTE",
-        inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } },
+        OR: [
+          { inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } } },
+          { espacioOrigenId: "espacio-1" },
+        ],
       },
       orderBy: { createdAt: "desc" },
     });

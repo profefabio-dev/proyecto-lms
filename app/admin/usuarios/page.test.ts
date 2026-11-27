@@ -108,7 +108,10 @@ describe("UsuariosPage (US03 - listado de usuarios para el Admin)", () => {
           { rol: { in: ["ADMINISTRADOR", "TUTOR"] }, espacioId: "espacio-1" },
           {
             rol: "ESTUDIANTE",
-            inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } },
+            OR: [
+              { inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } } },
+              { espacioOrigenId: "espacio-1" },
+            ],
           },
         ],
       },
@@ -132,7 +135,7 @@ describe("UsuariosPage (US03 - listado de usuarios para el Admin)", () => {
     });
   });
 
-  it("filtrando por Estudiante, consulta por inscripcion en un curso del espacio (no por espacioId propio)", async () => {
+  it("filtrando por Estudiante, consulta por visibilidad en el espacio (US24 + US50)", async () => {
     mockSesion("auth-4b");
     (prisma.users.findUnique as any).mockResolvedValue({
       rol: "ADMINISTRADOR",
@@ -145,7 +148,10 @@ describe("UsuariosPage (US03 - listado de usuarios para el Admin)", () => {
     expect(prisma.users.findMany).toHaveBeenCalledWith({
       where: {
         rol: "ESTUDIANTE",
-        inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } },
+        OR: [
+          { inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } } },
+          { espacioOrigenId: "espacio-1" },
+        ],
       },
       orderBy: { createdAt: "desc" },
     });
@@ -167,7 +173,10 @@ describe("UsuariosPage (US03 - listado de usuarios para el Admin)", () => {
           { rol: { in: ["ADMINISTRADOR", "TUTOR"] }, espacioId: "espacio-1" },
           {
             rol: "ESTUDIANTE",
-            inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } },
+            OR: [
+              { inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } } },
+              { espacioOrigenId: "espacio-1" },
+            ],
           },
         ],
       },

@@ -124,7 +124,10 @@ describe("SuperAdminPage (US25/US27)", () => {
     expect(prisma.users.count).toHaveBeenCalledWith({
       where: {
         rol: "ESTUDIANTE",
-        inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } },
+        OR: [
+          { inscripciones: { some: { course: { tutor: { espacioId: "espacio-1" } } } } },
+          { espacioOrigenId: "espacio-1" },
+        ],
       },
     });
   });

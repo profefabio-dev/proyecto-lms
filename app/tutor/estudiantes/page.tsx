@@ -8,6 +8,7 @@ import { EditEmailForm } from "@/components/edit-email-form";
 import { EditUserNameForm } from "@/components/edit-user-name-form";
 import { ResetPasswordForm } from "@/components/reset-password-form";
 import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { etiquetaEstado } from "@/lib/etiquetas";
 import { filtroUsuarioVisibleEnEspacio } from "@/lib/espacio-scope";
@@ -56,29 +57,19 @@ export default async function EstudiantesPage() {
   return (
     <AppShell usuario={usuarioActual} breadcrumbs={[{ label: "Estudiantes" }]}>
       <main className="mx-auto max-w-5xl space-y-8 px-4 sm:px-6 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground">
-              Gestión de Estudiantes
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Registra alumnos individualmente, realiza cargas masivas y gestiona credenciales de
-              acceso.
-            </p>
-          </div>
+        {/* El formulario de registro individual vive dentro de un diálogo que
+            abre este botón (OP07). La pantalla abre con el listado de
+            alumnos y la opción de carga masiva, sin un formulario vacío. */}
+        <PageHeader
+          titulo="Gestión de Estudiantes"
+          descripcion="Registra alumnos individualmente, realiza cargas masivas y gestiona credenciales de acceso."
+          icono={Sparkles}
+          insignia={`${estudiantes.length} ${estudiantes.length === 1 ? "alumno visible" : "alumnos visibles"}`}
+          accion={<CreateStudentForm />}
+        />
 
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-semibold text-xs">
-              <Sparkles className="size-3 mr-1 text-primary" />
-              {estudiantes.length}{" "}
-              {estudiantes.length === 1 ? "alumno visible" : "alumnos visibles"}
-            </Badge>
-          </div>
-        </div>
-
-        {/* REGISTRO INDIVIDUAL Y CARGA MASIVA */}
-        <div className="space-y-6">
-          <CreateStudentForm />
+        {/* CARGA MASIVA (EXCEL O PDF) */}
+        <div>
           <BulkImportStudentsForm cursos={cursos} />
         </div>
 
