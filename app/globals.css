@@ -26,6 +26,15 @@
      texto normal y los encabezados se sientan como dos niveles
      jerárquicos distintos, no como el mismo párrafo en negrita. */
   --font-heading: var(--font-geist-sans);
+  /* US56, capa A (2026-11-28): la tipografia del CUERPO de una leccion.
+     Inter y Geist son correctas y neutras, que es justo lo que el docente
+     dijo que no queria. Una serif en el cuerpo es el recurso que mas
+     separa "esto es una leccion" de "esto es una pantalla de la
+     aplicacion", y es la que se imprime bien en el PDF de US55. Los
+     titulos siguen en Geist (`--font-heading`): sans en los titulos y
+     serif en el cuerpo es la combinacion editorial de siempre. Se cambia
+     en una linea de `app/layout.tsx` si el docente prefiere otra. */
+  --font-lectura: var(--font-serif-lectura);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -78,7 +87,27 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+/* US56, capa A (2026-11-28) — la paleta clara se declara en DOS lugares: en
+   `:root` como siempre, y en `.hoja-clara`, que es la clase que convierte
+   una superficie interna en hoja de papel aunque el documento entero este
+   en oscuro (OP09). El docente eligio el 28/11 que el modo de lectura lo
+   decida el estudiante, y asi es como se cumple sin mantener dos temas: los
+   mismos tokens, declarados de nuevo mas abajo en el arbol. Lo que esta
+   dentro de `.hoja-clara` —tarjetas, bordes, texto, codigo— se pone claro
+   solo, porque todo usa tokens y ninguno de esos componentes tiene colores
+   fijos.
+
+   **El limite, y hay que respetarlo:** la variante `dark:` de Tailwind en
+   este proyecto es `&:is(.dark *)`, y dentro de la hoja clara el elemento
+   SIGUE siendo descendiente de `.dark`, asi que esas clases se siguen
+   aplicando. No molesta cuando el valor sale de un token (se resuelve con
+   el valor claro), pero si una clase `dark:` trae un color literal
+   —`dark:text-emerald-400` en los Badge de exito, por ejemplo— ese color se
+   queda oscuro sobre papel blanco. Por eso la hoja envuelve solo la tarjeta
+   del contenido de la leccion y no la cabecera ni la barra inferior, que
+   son las que tienen esos badges. */
+:root,
+.hoja-clara {
   /* Paleta de marca — indigo/tecnología (Plataforma Educativa Fabio Andrés
      Aguirre). Antes del pase de diseño de 2026-08-31, todo el tema era
      gris/negro puro por defecto de shadcn ("neutral") — este bloque es lo
@@ -218,6 +247,13 @@
   --duo-gold-shadow: oklch(0.6 0.13 75);
   --duo-blue: oklch(0.66 0.16 235);
   --duo-blue-shadow: oklch(0.48 0.15 250);
+}
+
+/* La hoja clara ademas le avisa al navegador: con esto las barras de scroll
+   del bloque de codigo y de la tabla ancha salen claras dentro de la hoja en
+   vez de quedar oscuras sobre el papel. */
+.hoja-clara {
+  color-scheme: light;
 }
 
 @layer base {

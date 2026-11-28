@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, List } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -23,6 +24,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { ICONO_POR_TIPO } from "@/lib/content-type-icon";
+import { COOKIE_MODO_LECTURA, leerModoLectura } from "@/lib/reading-mode";
+import { ReadingModeToggle } from "@/components/reading-mode-toggle";
 import { cn } from "@/lib/utils";
 
 /**
@@ -193,6 +196,12 @@ export default async function LeccionEstudiantePage({
       : []),
   ];
 
+  // US56-A (28/11/2026): el modo de lectura se lee ACÁ, en el servidor, antes
+  // de pintar nada. Es lo que evita el parpadeo de la lección oscura que se
+  // vuelve clara medio segundo después. Ver `lib/reading-mode.ts`.
+  const galletas = await cookies();
+  const modoLectura = leerModoLectura(galletas.get(COOKIE_MODO_LECTURA)?.value);
+
   const { Icon, clase, etiqueta } = ICONO_POR_TIPO[actual.tipo];
   const seccionDeLaLeccion = curso.secciones.find((seccion) => seccion.id === actual.seccionId);
 
@@ -275,6 +284,7 @@ export default async function LeccionEstudiantePage({
                 titulo={actual.titulo}
                 contenido={actual.contenido}
                 documentos={documentosConUrl}
+                variante="lectura"
               />
             </div>
           }
@@ -331,9 +341,10 @@ export default async function LeccionEstudiantePage({
           totalLecciones={lecciones.length}
           progreso={progreso}
           yaVista={yaVista}
-          esUltima={siguiente === null}
           hrefAnterior={anterior ? `/estudiante/cursos/${curso.id}/lecciones/${anterior.id}` : null}
           tituloAnterior={anterior ? anterior.titulo : null}
+          modoLectura={modoLectura}
+          controlDeLectura={<ReadingModeToggle modo={modoLectura} />}
           botonCompletar={
             <CompleteLessonButton
               contentId={actual.id}

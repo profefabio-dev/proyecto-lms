@@ -24,18 +24,26 @@ export function ContentBody({
   titulo,
   contenido,
   documentos = [],
+  variante = "compacta",
 }: {
   tipo: TipoContenidoConIcono;
   titulo: string;
   contenido: string;
   documentos?: DocumentoConUrl[];
+  /**
+   * US56-A (28/11/2026): `"lectura"` solo desde el reproductor de lecciones,
+   * que es la unica pantalla donde el texto se lee de corrido. Todo lo demas
+   * —la vista del Tutor, las tarjetas de un listado— se queda en
+   * `"compacta"`, que es lo que habia.
+   */
+  variante?: "compacta" | "lectura";
 }) {
   if (tipo === "VIDEO") {
     return <YoutubeEmbed url={contenido} titulo={titulo} />;
   }
 
   if (tipo === "TEXTO") {
-    return <MarkdownContent contenido={contenido} />;
+    return <MarkdownContent contenido={contenido} variante={variante} />;
   }
 
   if (tipo === "DOCUMENTO") {

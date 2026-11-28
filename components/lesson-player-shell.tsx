@@ -2,17 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  Maximize2,
-  Minimize2,
-  ArrowLeft,
-  ArrowRight,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import { Maximize2, Minimize2, ArrowLeft, Trophy } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { type ModoLectura, claseDeLaHoja } from "@/lib/reading-mode";
 
 export function LessonPlayerShell({
   header,
@@ -24,10 +18,11 @@ export function LessonPlayerShell({
   totalLecciones,
   progreso,
   yaVista,
-  esUltima,
   hrefAnterior,
   tituloAnterior,
   botonCompletar,
+  modoLectura,
+  controlDeLectura,
 }: {
   header: React.ReactNode;
   content: React.ReactNode;
@@ -38,10 +33,19 @@ export function LessonPlayerShell({
   totalLecciones: number;
   progreso: number;
   yaVista: boolean;
-  esUltima: boolean;
   hrefAnterior: string | null;
   tituloAnterior: string | null;
   botonCompletar: React.ReactNode;
+  /**
+   * US56-A (28/11/2026): el modo que eligio el estudiante, leido de la
+   * cookie por el servidor. Llega como prop y no como estado del cliente:
+   * asi la leccion ya sale pintada del servidor con el modo correcto, sin
+   * parpadeo y sin un `setState` dentro de un `useEffect` — el error de
+   * eslint que este mismo archivo tuvo el 26/11.
+   */
+  modoLectura: ModoLectura;
+  /** El interruptor, que es un Server Component con su propio `<form>`. */
+  controlDeLectura: React.ReactNode;
 }) {
   const [modoEnfoque, setModoEnfoque] = useState(false);
 
@@ -89,30 +93,38 @@ export function LessonPlayerShell({
           )}
         </div>
 
-        {/* Botón para alternar Modo Enfoque (Estilo Platzi) */}
-        <button
-          type="button"
-          onClick={() => setModoEnfoque((prev) => !prev)}
-          className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all border shadow-xs",
-            modoEnfoque
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-card text-muted-foreground border-border/80 hover:text-foreground hover:bg-muted/40"
-          )}
-          title={modoEnfoque ? "Restaurar temario lateral" : "Ocultar temario para pantalla completa"}
-        >
-          {modoEnfoque ? (
-            <>
-              <Minimize2 className="size-3.5" />
-              <span>Salir de modo enfoque</span>
-            </>
-          ) : (
-            <>
-              <Maximize2 className="size-3.5" />
-              <span>Modo enfoque</span>
-            </>
-          )}
-        </button>
+        {/* Los dos controles de cómo se VE la lección, juntos: el modo de
+            lectura (US56-A, 28/11/2026) y el modo enfoque. */}
+        <div className="flex items-center gap-2">
+          {controlDeLectura}
+
+          <button
+            type="button"
+            onClick={() => setModoEnfoque((prev) => !prev)}
+            className={cn(
+              "inline-flex min-h-11 items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs font-semibold shadow-xs transition-all",
+              modoEnfoque
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border/80 bg-card text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+            )}
+            title={
+              modoEnfoque ? "Restaurar temario lateral" : "Ocultar temario para pantalla completa"
+            }
+          >
+            {modoEnfoque ? (
+              <>
+                <Minimize2 className="size-3.5" />
+                <span className="hidden sm:inline">Salir de modo enfoque</span>
+                <span className="sm:hidden">Salir</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="size-3.5" />
+                <span>Modo enfoque</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Banner de Felicitación al completar el curso */}
@@ -145,7 +157,14 @@ export function LessonPlayerShell({
         {/* Contenido Principal de la Lección */}
         <article className="order-2 space-y-6 lg:order-1 min-w-0">
           {header}
-          {content}
+
+          {/* US56-A: la hoja. Envuelve SOLO la tarjeta del contenido —no la
+              cabecera ni la barra inferior— porque esas llevan Badge con
+              colores literales en sus clases `dark:`, que dentro de la hoja
+              clara se quedarían oscuros sobre papel blanco (ver la nota en
+              `app/globals.css`). */}
+          <div className={claseDeLaHoja(modoLectura)}>{content}</div>
+
           {navigation}
         </article>
 

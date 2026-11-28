@@ -13,6 +13,21 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+/**
+ * US56-A (28/11/2026): la pantalla lee el modo de lectura de una cookie, en
+ * el servidor, antes de pintar. Sin este doble, `cookies()` revienta con
+ * "was called outside a request scope" y se cae TODO el archivo — no solo
+ * las pruebas nuevas.
+ */
+const falso = vi.hoisted(() => ({ cookies: {} as Record<string, string> }));
+
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(async () => ({
+    get: (nombre: string) =>
+      nombre in falso.cookies ? { name: nombre, value: falso.cookies[nombre] } : undefined,
+  })),
+}));
+
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(() => {
     throw new Error("NEXT_REDIRECT");
@@ -55,6 +70,43 @@ function mockSesion(authUserId: string | null) {
 
 function params(contenidoId: string) {
   return Promise.resolve({ courseId: "curso-1", contenidoId });
+}
+
+/**
+ * Busca, en el árbol de elementos que devuelve la página, el primero que
+ * tenga una prop con ese nombre, y devuelve sus props.
+ *
+ * Hace falta porque lo que se quiere afirmar es un **contrato entre la
+ * página y el reproductor**: que el modo que el servidor leyó de la cookie
+ * es el que recibe el reproductor. Los componentes hijos no se ejecutan
+ * —`createElement` solo guarda el tipo y las props—, así que no sirve
+ * espiarlos con un doble: hay que mirar el árbol.
+ */
+function propsConLaClave(nodo: unknown, clave: string): Record<string, unknown> | null {
+  if (Array.isArray(nodo)) {
+    for (const hijo of nodo) {
+      const encontrado = propsConLaClave(hijo, clave);
+      if (encontrado) return encontrado;
+    }
+    return null;
+  }
+
+  if (!nodo || typeof nodo !== "object") return null;
+
+  const props = (nodo as { props?: Record<string, unknown> }).props;
+  if (!props) return null;
+  if (clave in props) return props;
+
+  // Se recorren TODAS las props, no solo `children`: el reproductor recibe
+  // la cabecera, el contenido, la navegación y el temario como props
+  // sueltas (`content`, `header`, `navigation`, `sidebar`), así que mirar
+  // solo `children` no llega al cuerpo de la lección.
+  for (const valor of Object.values(props)) {
+    const encontrado = propsConLaClave(valor, clave);
+    if (encontrado) return encontrado;
+  }
+
+  return null;
 }
 
 /**
@@ -127,6 +179,7 @@ describe("LeccionEstudiantePage — seguridad (bloque D.1)", () => {
     (prisma.courses.findUnique as any).mockResolvedValue(cursoConSeccionCerrada());
     (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
     (prisma.contentViews.findMany as any).mockResolvedValue([]);
+    falso.cookies = {};
   });
 
   it("da 404 en una lección de una sección NO_DISPONIBLE, aunque esté marcada como visible", async () => {
@@ -205,5 +258,62 @@ describe("LeccionEstudiantePage — seguridad (bloque D.1)", () => {
     await expect(LeccionEstudiantePage({ params: params("oculta") })).rejects.toThrow(
       "NEXT_NOT_FOUND"
     );
+  });
+});
+
+/**
+ * US56-A (28/11/2026) — el modo de lectura que eligió el estudiante.
+ *
+ * El docente eligió el 28/11 que la lección pueda leerse sobre fondo claro
+ * y que lo decida el estudiante. Lo que se afirma acá es lo único que puede
+ * salir mal sin que nadie lo note: que el modo **se lea en el servidor** y
+ * llegue al reproductor. Si algún día alguien lo mueve a `localStorage`,
+ * estas pruebas caen — y deben caer.
+ */
+describe("LeccionEstudiantePage — modo de lectura (US56-A)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSesion("auth-1");
+    (prisma.users.findUnique as any).mockResolvedValue({
+      id: "est-1",
+      rol: "ESTUDIANTE",
+      nombre: "Ana",
+      apellido: "Pérez",
+    });
+    (prisma.courses.findUnique as any).mockResolvedValue(cursoConSeccionCerrada());
+    (prisma.courseUsers.findFirst as any).mockResolvedValue({ id: "insc-1" });
+    (prisma.contentViews.findMany as any).mockResolvedValue([]);
+    falso.cookies = {};
+  });
+
+  it("sin cookie, la lección sale en el modo de la plataforma", async () => {
+    const arbol = await LeccionEstudiantePage({ params: params("abierta") });
+
+    expect(propsConLaClave(arbol, "modoLectura")?.modoLectura).toBe("oscuro");
+  });
+
+  it("con la cookie en claro, la lección sale en modo lectura", async () => {
+    falso.cookies["modo-lectura"] = "claro";
+
+    const arbol = await LeccionEstudiantePage({ params: params("abierta") });
+
+    expect(propsConLaClave(arbol, "modoLectura")?.modoLectura).toBe("claro");
+  });
+
+  it("una cookie ilegible no rompe la lección: vuelve al modo oscuro", async () => {
+    // La cookie la escribe el navegador y puede decir cualquier cosa.
+    falso.cookies["modo-lectura"] = "sepia";
+
+    const arbol = await LeccionEstudiantePage({ params: params("abierta") });
+
+    expect(propsConLaClave(arbol, "modoLectura")?.modoLectura).toBe("oscuro");
+  });
+
+  it("el cuerpo de la lección se pinta con la tipografía de lectura", async () => {
+    // La otra mitad de la capa A: la variante tipográfica es la del
+    // reproductor, no la compacta de los anuncios y el glosario.
+    const arbol = await LeccionEstudiantePage({ params: params("abierta") });
+
+    expect(propsConLaClave(arbol, "variante")?.variante).toBe("lectura");
   });
 });

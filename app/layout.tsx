@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,18 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// US56, capa A (28/11/2026): la tipografia del cuerpo de una leccion.
+// Source Serif 4 es variable y trae italica de verdad (`em` en una leccion
+// se usa, y una italica sintetica se nota). Se carga aqui y se usa SOLO en
+// el cuerpo de las lecciones a traves de `--font-lectura`; el resto de la
+// plataforma sigue con Inter y Geist, sin cambios. Si el docente prefiere
+// otra combinacion, se cambia esta declaracion y nada mas.
+const serifLectura = Source_Serif_4({
+  variable: "--font-serif-lectura",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -36,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         "antialiased",
         geistSans.variable,
         geistMono.variable,
+        serifLectura.variable,
         "font-sans",
         inter.variable
       )}
