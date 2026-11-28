@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2, Flag } from "lucide-react";
+import { Building2, Flag, Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { Rol } from "@prisma/client";
@@ -62,6 +63,44 @@ export default async function SuperAdminPage() {
       return { ...espacio, administradorPrincipal, cantidadTutores, cantidadCursos, cantidadEstudiantes };
     })
   );
+
+  // US49 (28/11/2026): la cola de revisión del catálogo.
+  //
+  // Desde hoy el catálogo muestra **solo lo verificado**, así que marcar un
+  // curso como compartible ya no lo publica: lo pone en esta cola. Si nadie
+  // la mira, el docente comparte y no pasa nada — que es exactamente lo que
+  // le pasó al botón de reportar antes de ayer.
+  //
+  // **El más viejo primero**: esto es una bandeja de pendientes, no un
+  // listado de novedades, y lo que importa es quién lleva más tiempo
+  // esperando. Se trae lo mismo que muestra la ficha del catálogo —título,
+  // autor y cuánto material tiene— para poder decidir sin salir de acá, y
+  // el enlace a la ficha para mirarlo completo antes de dar el sello.
+  type CursoPorRevisar = {
+    id: string;
+    titulo: string;
+    descripcion: string;
+    verificado: boolean;
+    compartible: boolean;
+    createdAt: Date;
+    tutor: { nombre: string; apellido: string };
+    _count: { contenidos: number; actividades: number; quizzes: number };
+  };
+
+  const porRevisar: CursoPorRevisar[] = await prisma.courses.findMany({
+    where: { compartible: true, verificado: false },
+    select: {
+      id: true,
+      titulo: true,
+      descripcion: true,
+      verificado: true,
+      compartible: true,
+      createdAt: true,
+      tutor: { select: { nombre: true, apellido: true } },
+      _count: { select: { contenidos: true, actividades: true, quizzes: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
 
   // US49 (27/11/2026): los cursos reportados por otros docentes.
   //
@@ -178,6 +217,73 @@ export default async function SuperAdminPage() {
             ))}
           </tbody>
         </DataTable>
+
+        {/* POR REVISAR — US49 (28/11/2026). Desde hoy nada entra al catálogo
+            sin pasar por acá: el catálogo es el producto, y lo que circula
+            con el sello lleva el nombre de la plataforma. */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Inbox className="size-5 text-primary" aria-hidden="true" />
+            <h2 className="font-heading text-xl font-bold text-foreground">
+              Cursos por revisar
+            </h2>
+            {porRevisar.length > 0 && (
+              <Badge variant="warning" className="text-xs font-semibold">
+                {porRevisar.length}
+              </Badge>
+            )}
+          </div>
+
+          {porRevisar.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border/80 p-6 text-center text-sm text-muted-foreground">
+              Ningún curso espera revisión. Cuando un docente comparta uno, aparece acá antes de
+              entrar al catálogo.
+            </p>
+          ) : (
+            <ul className="space-y-4">
+              {porRevisar.map((curso) => (
+                <li
+                  key={curso.id}
+                  className="space-y-3 rounded-2xl border border-border/80 bg-card p-5"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <Link
+                        href={`/tutor/catalogo/${curso.id}`}
+                        className="font-heading text-base font-bold text-foreground hover:text-primary hover:underline"
+                      >
+                        {curso.titulo}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">
+                        De {curso.tutor.nombre} {curso.tutor.apellido} · esperando desde el{" "}
+                        {curso.createdAt.toLocaleDateString("es-CO", {
+                          day: "numeric",
+                          month: "long",
+                        })}
+                      </p>
+                      <p className="max-w-[70ch] text-sm text-muted-foreground">
+                        {curso.descripcion}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {curso._count.contenidos} lecciones · {curso._count.actividades} actividades
+                        · {curso._count.quizzes} evaluaciones
+                      </p>
+                    </div>
+
+                    {/* Los mismos dos controles de siempre: dar el sello
+                        —que acá es lo que publica— o retirarlo del
+                        catálogo, que devuelve el curso a su autor. */}
+                    <ModerateCourseControls
+                      courseId={curso.id}
+                      verificado={curso.verificado}
+                      compartible={curso.compartible}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         {/* CURSOS REPORTADOS — US49 (27/11/2026). La plataforma es para
             menores de edad: un curso con contenido inapropiado tiene que

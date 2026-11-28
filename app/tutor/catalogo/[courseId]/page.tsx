@@ -80,7 +80,16 @@ export default async function FichaCursoCompartidoPage({
     },
   });
 
+  // 28/11/2026: además del `compartible` del autor, hace falta el sello.
+  // Desde hoy el catálogo solo lista lo verificado, y si la ficha siguiera
+  // abriendo cualquier curso compartido, conocer el id bastaría para saltarse
+  // la revisión por completo — la cola quedaría de adorno. El dueño del curso
+  // es la excepción: tiene que poder ver su propia ficha mientras espera.
   if (!curso || !curso.compartible) {
+    notFound();
+  }
+
+  if (!curso.verificado && curso.tutorId !== usuarioActual.id) {
     notFound();
   }
 

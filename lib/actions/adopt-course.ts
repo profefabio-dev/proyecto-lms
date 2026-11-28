@@ -84,7 +84,12 @@ export async function adoptarCurso(
   // La comprobación que sostiene toda la historia: solo se puede adoptar un
   // curso que su autor marcó como compartible. Conocer el id de un curso
   // privado no debe alcanzar para sacarlo de su espacio.
-  if (!original || !original.compartible) {
+  //
+  // 28/11/2026: y además tiene que estar **verificado**. Desde hoy el sello
+  // es lo que publica en el catálogo (US49), así que sin esta línea bastaría
+  // con conocer el id para adoptar un curso que nadie revisó, y la cola de
+  // revisión sería decorativa. Ocultar un control no es una restricción.
+  if (!original || !original.compartible || !original.verificado) {
     return { success: false, error: "Ese curso no está disponible para adoptar." };
   }
 

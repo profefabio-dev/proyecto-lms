@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Share2, Check, Copy, Lock } from "lucide-react";
+import { Share2, Check, Copy, Lock, Hourglass } from "lucide-react";
 import { alternarCursoCompartible } from "@/lib/actions/toggle-course-shareable";
 import { Button } from "@/components/ui/button";
 
@@ -20,10 +20,19 @@ const estadoInicial = null;
 export function ShareCourseForm({
   courseId,
   compartible,
+  verificado,
   adopciones,
 }: {
   courseId: string;
   compartible: boolean;
+  /**
+   * El sello del Super Administrador. Desde el 28/11/2026 es lo que publica
+   * en el catálogo, así que acá decide si el estado es "en revisión" o
+   * "publicado": antes este control daba a entender que compartir publicaba
+   * de inmediato, y el docente iba a buscar su curso al catálogo sin
+   * encontrarlo.
+   */
+  verificado: boolean;
   adopciones: number;
 }) {
   const [estado, accion, enviando] = useActionState(alternarCursoCompartible, estadoInicial);
@@ -32,6 +41,10 @@ export function ShareCourseForm({
   // El valor que manda es el de la acción si ya respondió; si no, el que
   // vino del servidor.
   const activo = estado?.success ? estado.compartible : compartible;
+  // Tres estados, no dos: guardado para mí · compartido y esperando
+  // revisión · publicado en el catálogo.
+  const publicado = activo && verificado;
+  const enRevision = activo && !verificado;
 
   async function copiarEnlace() {
     try {
@@ -51,19 +64,27 @@ export function ShareCourseForm({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            {activo ? (
+            {publicado ? (
               <Share2 className="size-4 text-primary" aria-hidden="true" />
+            ) : enRevision ? (
+              <Hourglass className="size-4 text-amber-500" aria-hidden="true" />
             ) : (
               <Lock className="size-4 text-muted-foreground" aria-hidden="true" />
             )}
             <h3 className="font-semibold text-foreground">
-              {activo ? "Compartido con otros docentes" : "Solo tuyo"}
+              {publicado
+                ? "Publicado en el catálogo"
+                : enRevision
+                  ? "En revisión"
+                  : "Solo tuyo"}
             </h3>
           </div>
           <p className="max-w-prose text-sm text-muted-foreground">
-            {activo
-              ? "Otro docente puede tomar este curso y quedarse con su propia copia para su grupo. Tu curso no se toca, y tu nombre aparece como autor en cada copia."
-              : "Nadie más puede ver ni tomar este curso. Si lo compartes, otros docentes podrán hacer su propia copia y adaptarla, sin modificar el tuyo."}
+            {publicado
+              ? "Está en el catálogo. Otro docente puede tomarlo y quedarse con su propia copia para su grupo: tu curso no se toca, y tu nombre aparece como autor en cada copia."
+              : enRevision
+                ? "Lo enviaste al catálogo y el administrador tiene que revisarlo antes de que aparezca. Mientras tanto nadie más puede verlo ni tomarlo. Si quieres, puedes dejar de compartirlo."
+                : "Nadie más puede ver ni tomar este curso. Si lo compartes, pasa a revisión del administrador y, una vez aprobado, otros docentes podrán hacer su propia copia y adaptarla, sin modificar el tuyo."}
           </p>
         </div>
 
@@ -75,7 +96,9 @@ export function ShareCourseForm({
         </form>
       </div>
 
-      {activo && (
+      {/* El enlace solo cuando ya está publicado: mientras espera, la ficha
+          no abre para nadie más que su autor. */}
+      {publicado && (
         <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
           <Button type="button" variant="outline" size="sm" onClick={copiarEnlace}>
             {copiado ? (

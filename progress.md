@@ -2,7 +2,7 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-27 — **US54 (glosario)**, **la revisión de lo que trajo Antigravity** (US32 y US49, con tres errores de compilación y una fuga de seguridad corregidos), **el barrido de diseño** y **tres decisiones de producto**: la dirección de las lecciones (las tres maquetas combinadas, en orden A→B→C), **la moderación pasa a aprobación previa** (el catálogo mostrará solo lo verificado, con cola de revisión) y **se pedirá licencia expresa al compartir** (US57). Anotadas **US55**, **US56** y **US57**, sin construir.
+Última actualización: 2026-11-28 — **La cola de revisión del catálogo (US49)**: nada entra al catálogo sin el sello del Super Administrador, con la bandeja de pendientes en `/superadmin` y el control de compartir diciendo la verdad (tres estados en vez de dos). De paso se cerraron **dos puertas que dejaban la cola de adorno**: la ficha del catálogo y la acción de adoptar aceptaban cualquier curso compartido, con sello o sin él.
 
 ## Rediseño UI/UX — Modernización integral para jóvenes (Platzi + Canvas LMS)
 
@@ -158,6 +158,45 @@ escribieron los tipos explícitos en las dos consultas nuevas, como dice `AGENTS
 **Estado después de las dos:** `tsc` sin errores nuevos, `eslint` con **0 errores y 23 avisos** (uno
 menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
 tocadas en verde — `course-code` 17, `novedades` 4, `join-course-by-code` 15 y `buscar/page` 9.
+
+## La cola de revisión del catálogo — 28/11/2026
+
+Lo decidido ayer, construido. **No hizo falta migración**: el modelo ya separaba `compartible` (la
+intención del autor) de `verificado` (el visto bueno de la plataforma), así que todo el cambio es
+qué se exige para aparecer y dónde se revisa.
+
+**Lo que se hizo, en el orden del plan.** El catálogo (`app/tutor/catalogo/page.tsx`) exige ahora
+`verificado: true` junto al `compartible: true` que ya tenía, y **desaparece el filtro "solo
+verificados"**, que dejó de distinguir nada. La cola vive en `/superadmin`, con la misma forma que
+la bandeja de reportados de anteayer: los compartidos sin sello, **el más viejo primero** —es una
+bandeja de pendientes, no un listado de novedades—, con el enlace a la ficha para mirar el curso
+antes de decidir y los dos controles de moderación que ya existían. Y el control de compartir del
+Tutor pasó de dos estados a **tres**: *Solo tuyo*, *En revisión* y *Publicado en el catálogo*.
+
+**Las dos puertas que había que cerrar, y son la parte que importa.** Acotar la *lista* no acota
+nada: la **ficha** del catálogo (`/tutor/catalogo/[courseId]`) y la acción de **adoptar** seguían
+aceptando cualquier curso con `compartible: true`, con sello o sin él. Es decir, bastaba conocer el
+id —o tener el enlace que el propio autor pasó por WhatsApp— para saltarse la revisión por completo
+y copiarse un curso que nadie miró: la cola habría quedado de adorno. Las dos exigen ahora el sello.
+**La ficha deja pasar a una persona: su autor**, que tiene que poder ver cómo quedó su curso
+mientras espera. Es la misma lección de US50 y del límite de intentos de OP08, y van tres veces:
+**ocultar un control no es una restricción; la comprobación del servidor es la que manda.**
+
+**Y una tercera, de honestidad con el docente:** el control de compartir decía *"Compartido con
+otros docentes"* apenas se activaba el interruptor. Con la revisión de por medio eso es mentira
+durante el rato que el curso espera, y el docente iría a buscarlo al catálogo sin encontrarlo. Ahora
+dice que está en revisión, y **el botón de copiar el enlace para un colega solo aparece cuando ya
+está publicado**, porque hasta entonces esa ficha no abre para nadie más.
+
+**Verificación:** `tsc` sin errores nuevos, `eslint` 0 errores, y **9 pruebas nuevas** — 6 del
+catálogo (archivo nuevo: que exija las tres condiciones, que no traiga estudiantes ni notas del
+curso ajeno, que cuente las adopciones en una sola consulta), 2 de la cola del Super Administrador y
+1 de adoptar un curso sin sello. 335 pruebas pasan en el clon; de las que fallan se comprobó el
+motivo una por una y son el ruido conocido.
+
+**Una nota del entorno:** el clon de la nube no puede instalar `remark-gfm` (el proxy la bloquea con
+403), así que se le dejó un sustituto vacío **solo dentro del clon** para poder correr las pruebas
+de las pantallas que renderizan Markdown. En la máquina del docente está la dependencia de verdad.
 
 ## Tres decisiones de producto — 27/11/2026
 

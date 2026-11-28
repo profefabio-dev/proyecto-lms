@@ -20,6 +20,10 @@ vi.mock("@/lib/prisma", () => ({
     courses: {
       findMany: vi.fn().mockResolvedValue([]),
     },
+    // US32: la página lista grupos del espacio para el selector de cada estudiante.
+    grupos: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 

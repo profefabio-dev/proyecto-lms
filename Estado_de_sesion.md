@@ -4,7 +4,22 @@
 > estado de cada historia es [`Backlog.md`](./Backlog.md) y [`progress.md`](./progress.md); este
 > archivo solo dice **dónde quedamos y qué sigue**, y se reescribe al cerrar cada sesión.
 
-Última sesión: **27 de noviembre de 2026.** Dos cosas. **US54, el glosario del curso** (la última de
+Última sesión: **28 de noviembre de 2026.** Se construyó **la cola de revisión del catálogo**
+(US49), que era lo planeado, sin migración. El catálogo exige el sello, la bandeja de pendientes
+vive en `/superadmin` con el más viejo primero, y el control de compartir del Tutor pasó de dos
+estados a tres: *Solo tuyo · En revisión · Publicado en el catálogo*.
+
+**Lo que apareció al construirla y es lo que de verdad importa:** acotar la lista no acotaba nada.
+La **ficha** del catálogo y la acción de **adoptar** seguían aceptando cualquier curso compartido,
+con sello o sin él, así que bastaba conocer el id —o tener el enlace que el propio autor pasó— para
+saltarse la revisión entera. Las dos exigen ahora el sello; la ficha deja pasar solo a su autor,
+que tiene que poder ver su curso mientras espera. Van tres veces con la misma lección: **ocultar un
+control no es una restricción.**
+
+También se verificó lo que Antigravity dejó sin confirmar (la columna de grupo en la lista de
+estudiantes y el enlace a `/tutor/grupos`): limpio, sin nada que corregir.
+
+Sesión anterior: **27 de noviembre de 2026.** Dos cosas. **US54, el glosario del curso** (la última de
 las cinco ideas de revisar la plataforma del colegio): tabla nueva con RLS, pantalla propia enlazada
 desde el temario y desde el temario lateral de cada lección, orden alfabético con índice de letras, y
 la regla de cuándo dos términos son el mismo en `lib/glosario.ts`, probada aparte — 30 pruebas
@@ -150,29 +165,16 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 
 ## Mañana se arranca por aquí
 
-**La cola de revisión del catálogo** (US49, aprobación previa). Es lo más corto de las tres historias
-nuevas, **no necesita migración**, y el modelo ya lo preveía: `compartible` es la intención del autor
-y `verificado` el visto bueno de la plataforma. Cuatro piezas:
+**US57 — la licencia expresa al compartir.** Es la que sigue del 27/11 y ahora encaja mejor que
+nunca: el curso ya pasa por una revisión antes de publicarse, así que el momento en que el docente
+acepta los términos es justo el mismo clic. Necesita **migración** (guardar qué versión de los
+términos aceptó y cuándo), la casilla en el control de compartir —sin ella no se comparte— y el
+texto, que **lo tiene que revisar un abogado** antes de cobrarle a nadie. Lo que no cambia: el
+crédito al autor en cada copia ya está desde US47, y los derechos morales no se pueden ceder.
 
-1. **El catálogo pasa a mostrar solo lo aprobado.** En `app/tutor/catalogo/page.tsx`, la consulta
-   suma `verificado: true` al `compartible: true` que ya tiene. Con eso el filtro *"solo
-   verificados"* que hay hoy deja de tener sentido: o se quita, o se invierte para que el Super
-   Administrador pueda ver también lo que falta por revisar.
-2. **La cola en `/superadmin`.** Los cursos con `compartible: true` y `verificado: false`, **el más
-   viejo primero** —es una bandeja de pendientes, no un listado—, con el enlace a la ficha del curso
-   para poder mirarlo antes de decidir y, al lado, los dos controles que ya existen
-   (`ModerateCourseControls`: dar el sello o retirarlo del catálogo). Es la misma forma de la
-   bandeja de cursos reportados del 27/11, y conviene que se vean parecidas.
-3. **Decirle al docente que su curso queda en revisión.** Hoy `share-course-form.tsx` da a entender
-   que compartir publica de inmediato. Tiene que decir que pasa a revisión y, cuando ya tenga sello,
-   que está publicado. Sin esto, el docente cree que falló algo.
-4. **Las pruebas de las dos consultas**, que es donde esto se rompe en silencio: que el catálogo no
-   devuelva un curso sin sello, y que la cola no muestre uno ya aprobado.
-
-**Lo que NO entra mañana:** la licencia al compartir (US57) necesita migración —guardar qué versión
-de los términos aceptó el docente y cuándo— y el texto lo tiene que revisar un abogado. Y la
-dirección de las lecciones (US56) empieza por la capa A, que es tipografía, y conviene hacerla
-seguida de US55 porque comparten el problema del papel.
+Alternativas si prefiere otra cosa: **US55 + US56** juntas (la plantilla de curso, el PDF y los
+bloques interactivos, que comparten el problema del papel), o **la columna `codigo` rotable de
+US51**, que sigue siendo la deuda de seguridad más vieja sin cerrar.
 
 ---
 

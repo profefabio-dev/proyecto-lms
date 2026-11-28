@@ -98,6 +98,16 @@ export default async function EstudiantesPage({
             <h2 className="font-heading text-xl font-bold text-foreground">
               Alumnos Registrados en tu Espacio
             </h2>
+            <Link
+              href="/tutor/grupos"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                "ml-auto text-xs gap-1.5",
+              )}
+            >
+              <FolderKanban className="size-3.5" />
+              Gestionar grupos
+            </Link>
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-border/80 bg-card shadow-xs">
@@ -116,12 +126,15 @@ export default async function EstudiantesPage({
                   <th className="py-3.5 pr-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Acciones
                   </th>
+                  <th className="py-3.5 pr-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Grupo
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
                 {estudiantes.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                       Aún no hay estudiantes registrados en tus cursos.
                     </td>
                   </tr>
@@ -152,6 +165,13 @@ export default async function EstudiantesPage({
                         <EditEmailForm usuarioId={estudiante.id} emailActual={estudiante.email} />
                         <ResetPasswordForm usuarioId={estudiante.id} />
                       </div>
+                    </td>
+                    <td className="py-3 pr-5">
+                      <AssignGroupToStudent
+                        userId={estudiante.id}
+                        grupoIdActual={estudiante.grupoId ?? null}
+                        grupos={grupos}
+                      />
                     </td>
                   </tr>
                 ))}

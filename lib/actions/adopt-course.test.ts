@@ -60,6 +60,8 @@ function cursoCompartido(extra: Record<string, unknown> = {}) {
     imagen: null,
     tutorId: "tutor-autor",
     compartible: true,
+    // 28/11/2026: el sello es desde hoy requisito para adoptar.
+    verificado: true,
     tutor: { nombre: "Ana", apellido: "Ríos" },
     secciones: [],
     contenidos: [],
@@ -100,6 +102,21 @@ describe("adoptarCurso (US47)", () => {
       error: "Solo un tutor puede adoptar un curso.",
     });
     expect(prisma.courses.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("RECHAZA un curso compartido que el administrador todavía no ha verificado", async () => {
+    // 28/11/2026: el sello es lo que publica en el catálogo (US49). Sin esta
+    // guarda bastaría con conocer el id para adoptar un curso que nadie
+    // revisó, y la cola de revisión sería decorativa.
+    (prisma.courses.findUnique as any).mockResolvedValue(cursoCompartido({ verificado: false }));
+
+    const resultado = await adoptarCurso(null, formData());
+
+    expect(resultado).toEqual({
+      success: false,
+      error: "Ese curso no está disponible para adoptar.",
+    });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
   it("RECHAZA un curso que no está marcado como compartible, aunque se conozca su id", async () => {

@@ -135,4 +135,27 @@ describe("SuperAdminPage (US25/US27)", () => {
       },
     });
   });
+
+  // US49 (28/11/2026): la cola de revisión del catálogo.
+  describe("cola de cursos por revisar", () => {
+    it("pide los compartidos SIN sello, el más viejo primero", async () => {
+      // Es una bandeja de pendientes: lo que importa es quién lleva más
+      // tiempo esperando, no qué llegó último.
+      await SuperAdminPage();
+
+      const llamada = (prisma.courses.findMany as any).mock.calls[0][0];
+      expect(llamada.where).toEqual({ compartible: true, verificado: false });
+      expect(llamada.orderBy).toEqual({ createdAt: "asc" });
+    });
+
+    it("la bandeja de reportados sigue pidiendo solo los que están en el catálogo", async () => {
+      // Un curso ya retirado no necesita decisión: dejarlo convertiría la
+      // bandeja en un historial.
+      await SuperAdminPage();
+
+      const llamada = (prisma.courses.findMany as any).mock.calls[1][0];
+      expect(llamada.where.compartible).toBe(true);
+      expect(llamada.where.reportes).toEqual({ some: {} });
+    });
+  });
 });

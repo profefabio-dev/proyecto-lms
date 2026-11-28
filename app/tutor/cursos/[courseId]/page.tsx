@@ -17,6 +17,7 @@ import {
   Eye,
 } from "lucide-react";
 import { ShareCourseForm } from "@/components/share-course-form";
+import { EnrollGroupDialog } from "@/components/enroll-group-dialog";
 import { Rol } from "@prisma/client";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
@@ -353,6 +354,7 @@ export default async function CursoDetallePage({
         <ShareCourseForm
           courseId={curso.id}
           compartible={curso.compartible}
+          verificado={curso.verificado}
           adopciones={adopciones}
         />
 

@@ -18,7 +18,6 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 /**
  * US48 — el catálogo de cursos que otros docentes compartieron
@@ -38,15 +37,30 @@ import { cn } from "@/lib/utils";
  * **Los cursos propios no aparecen**: el catálogo es para encontrar lo de
  * otros, y verse a uno mismo ahí solo ocupa sitio. Para ver cómo lo ven los
  * demás está la ficha, enlazada desde el propio curso.
+ *
+ * **28/11/2026 — el catálogo pasa a mostrar solo lo aprobado.** Hasta hoy
+ * publicaba todo lo que cumpliera el piso automático de US49 y el sello
+ * `verificado` era solo un distintivo, con un filtro opcional para verlo.
+ * El docente pidió lo contrario: *"puede que muchos cumplan los criterios de
+ * compartir pero otros sean muy básicos"*. Así que la consulta exige
+ * **`verificado: true`** y el filtro desaparece, porque ya no hay dos
+ * conjuntos que distinguir.
+ *
+ * **Por qué el argumento del 23/11 deja de valer** (está largo en US49):
+ * *nadie aprueba por adelantado* era la regla correcta para una comunidad
+ * gratuita, donde lo que mata es un catálogo vacío. Acá el dueño del
+ * catálogo es quien va a cobrar por la plataforma y lo que circula lleva su
+ * nombre. Lo que no se cambió es el piso automático: sigue filtrando lo
+ * obviamente incompleto **antes** de que llegue a la cola de revisión, para
+ * que esa cola no se llene de cursos de dos lecciones.
  */
 export default async function CatalogoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; soloVerificados?: string }>;
+  searchParams: Promise<{ q?: string }>;
 }) {
-  const { q, soloVerificados } = await searchParams;
+  const { q } = await searchParams;
   const termino = (q ?? "").trim();
-  const filtrarVerificados = soloVerificados === "1";
 
   const supabase = await createClient();
   const {
@@ -66,8 +80,10 @@ export default async function CatalogoPage({
   const cursos = await prisma.courses.findMany({
     where: {
       compartible: true,
+      // El sello del Super Administrador, que desde el 28/11/2026 es
+      // requisito para aparecer acá y no un distintivo opcional.
+      verificado: true,
       tutorId: { not: usuarioActual.id },
-      ...(filtrarVerificados ? { verificado: true } : {}),
       ...(termino ? construirFiltroBusqueda(termino) : {}),
     },
     select: {
@@ -80,8 +96,8 @@ export default async function CatalogoPage({
       tutor: { select: { nombre: true, apellido: true } },
       _count: { select: { contenidos: true, actividades: true, quizzes: true } },
     },
-    // Los verificados primero: es la razón de que el sello exista.
-    orderBy: [{ verificado: "desc" }, { createdAt: "desc" }],
+    // Ya todos están verificados, así que lo que ordena es la novedad.
+    orderBy: [{ createdAt: "desc" }],
   });
 
   // Cuántos docentes adoptaron cada uno. En una sola consulta para todo el
@@ -146,8 +162,7 @@ export default async function CatalogoPage({
             />
           </div>
           <Button type="submit">Buscar</Button>
-          {filtrarVerificados && <input type="hidden" name="soloVerificados" value="1" />}
-          {(termino || filtrarVerificados) && (
+          {termino && (
             <Link
               href="/tutor/catalogo"
               className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
@@ -157,43 +172,13 @@ export default async function CatalogoPage({
           )}
         </form>
 
-        {/* US49: el sello como filtro. El catálogo no excluye a nadie, pero
-            quien quiera ir sobre seguro puede ver solo lo revisado. */}
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <Link
-            href={termino ? `/tutor/catalogo?q=${encodeURIComponent(termino)}` : "/tutor/catalogo"}
-            className={cn(
-              "rounded-full border px-3 py-1.5 font-medium transition-colors",
-              filtrarVerificados
-                ? "border-border text-muted-foreground hover:text-foreground"
-                : "border-primary bg-primary/10 text-foreground"
-            )}
-          >
-            Todos
-          </Link>
-          <Link
-            href={`/tutor/catalogo?soloVerificados=1${termino ? `&q=${encodeURIComponent(termino)}` : ""}`}
-            className={cn(
-              "flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium transition-colors",
-              filtrarVerificados
-                ? "border-primary bg-primary/10 text-foreground"
-                : "border-border text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <BadgeCheck className="size-4" aria-hidden="true" />
-            Solo verificados
-          </Link>
-        </div>
-
         {cursos.length === 0 ? (
           <EmptyState
             icon={Library}
             message={
               termino
-                ? `Ningún curso compartido coincide con “${termino}”.`
-                : filtrarVerificados
-                  ? "Todavía no hay cursos verificados. Quita el filtro para ver todo lo que han compartido los docentes."
-                  : "Todavía ningún docente ha compartido un curso. Si compartes uno tuyo, aparecerá aquí para los demás."
+                ? `Ningún curso del catálogo coincide con “${termino}”.`
+                : "Todavía no hay cursos publicados en el catálogo. Los que comparten otros docentes aparecen aquí cuando el administrador los revisa."
             }
           />
         ) : (
