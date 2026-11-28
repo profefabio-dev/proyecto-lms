@@ -1,0 +1,22 @@
+-- US57 (28/11/2026): la licencia que acepta un docente al compartir un curso.
+--
+-- Hasta hoy marcar "compartible" era un interruptor sin advertencia: el curso
+-- quedaba disponible para que otros docentes lo copiaran y adaptaran, y nadie
+-- había aceptado nada. Si un docente reclama porque adaptaron su material, no
+-- hay un momento en el que haya dicho que sí.
+--
+-- **No se pide renunciar a nada.** Los derechos morales del autor son
+-- irrenunciables; lo que se guarda acá es un **permiso**: que otros docentes
+-- de la plataforma copien y adapten el curso, conservando el crédito.
+--
+-- Dos columnas y no una: la fecha sola diría "aceptó algo", y lo que importa
+-- es **qué** aceptó. Cuando cambie el texto se sube `VERSION_LICENCIA` en
+-- `lib/licencia-compartir.ts` y las aceptaciones viejas siguen diciendo cuál
+-- fue la suya.
+--
+-- **Las dos quedan en NULL para los cursos ya compartidos, a propósito:** una
+-- migración no puede inventar un consentimiento que nadie dio. Esos cursos se
+-- ven en la cola de revisión marcados como "sin licencia registrada", y la
+-- próxima vez que su autor toque el interruptor se le pide.
+ALTER TABLE "courses" ADD COLUMN IF NOT EXISTS "licenciaVersion" TEXT;
+ALTER TABLE "courses" ADD COLUMN IF NOT EXISTS "licenciaAceptadaEn" TIMESTAMP(3);

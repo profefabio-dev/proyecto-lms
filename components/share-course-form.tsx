@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Share2, Check, Copy, Lock, Hourglass } from "lucide-react";
+import { Share2, Check, Copy, Lock, Hourglass, FileText } from "lucide-react";
 import { alternarCursoCompartible } from "@/lib/actions/toggle-course-shareable";
+import { PUNTOS_LICENCIA, RESUMEN_LICENCIA } from "@/lib/licencia-compartir";
 import { Button } from "@/components/ui/button";
 
 const estadoInicial = null;
@@ -37,6 +38,11 @@ export function ShareCourseForm({
 }) {
   const [estado, accion, enviando] = useActionState(alternarCursoCompartible, estadoInicial);
   const [copiado, setCopiado] = useState(false);
+  // US57 (28/11/2026): la casilla de la licencia. Vive acá y no en un
+  // diálogo aparte porque el permiso se da **en el mismo gesto** de
+  // compartir; separarlo convierte el consentimiento en un trámite que se
+  // acepta sin leer.
+  const [acepta, setAcepta] = useState(false);
 
   // El valor que manda es el de la acción si ya respondió; si no, el que
   // vino del servidor.
@@ -88,13 +94,47 @@ export function ShareCourseForm({
           </p>
         </div>
 
-        <form action={accion}>
+        <form action={accion} className="shrink-0">
           <input type="hidden" name="courseId" value={courseId} />
-          <Button type="submit" variant={activo ? "outline" : "default"} disabled={enviando}>
+          <input type="hidden" name="aceptaLicencia" value={acepta ? "si" : "no"} />
+          <Button
+            type="submit"
+            variant={activo ? "outline" : "default"}
+            disabled={enviando || (!activo && !acepta)}
+          >
             {enviando ? "Guardando..." : activo ? "Dejar de compartir" : "Compartir"}
           </Button>
         </form>
       </div>
+
+      {/* US57: los términos, en el mismo gesto de compartir. Solo cuando el
+          curso todavía no está compartido: una vez dado el permiso, repetir
+          el texto cada vez solo estorba. */}
+      {!activo && (
+        <div className="space-y-2 border-t border-border/60 pt-3">
+          <label className="flex cursor-pointer items-start gap-2.5 text-sm">
+            <input
+              type="checkbox"
+              checked={acepta}
+              onChange={(e) => setAcepta(e.target.checked)}
+              className="mt-0.5 size-4 shrink-0 accent-primary"
+            />
+            <span className="text-foreground">{RESUMEN_LICENCIA}</span>
+          </label>
+
+          <details className="text-sm">
+            <summary className="inline-flex cursor-pointer items-center gap-1.5 font-medium text-primary">
+              <FileText className="size-3.5" aria-hidden="true" />
+              Qué estás autorizando
+            </summary>
+            <ul className="mt-2 ml-5 list-outside list-disc space-y-1.5 text-muted-foreground marker:text-primary">
+              {PUNTOS_LICENCIA.map((punto) => (
+                <li key={punto}>{punto.replace(/\*\*/g, "")}</li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      )}
 
       {/* El enlace solo cuando ya está publicado: mientras espera, la ficha
           no abre para nadie más que su autor. */}

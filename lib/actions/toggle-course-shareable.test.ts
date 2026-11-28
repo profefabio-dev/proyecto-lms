@@ -14,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import { alternarCursoCompartible } from "./toggle-course-shareable";
+import { VERSION_LICENCIA } from "@/lib/licencia-compartir";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 
@@ -27,9 +28,12 @@ function mockSesion(authUserId: string | null) {
   });
 }
 
-function formData(courseId = "curso-1") {
+function formData(courseId = "curso-1", aceptaLicencia = true) {
   const fd = new FormData();
   fd.set("courseId", courseId);
+  // US57 (28/11/2026): la casilla de los términos. Por defecto aceptada, que
+  // es el camino normal; los casos que la prueban mandan `false`.
+  fd.set("aceptaLicencia", aceptaLicencia ? "si" : "no");
   return fd;
 }
 
@@ -96,9 +100,15 @@ describe("alternarCursoCompartible (US47)", () => {
     const resultado = await alternarCursoCompartible(null, formData());
 
     expect(resultado).toEqual({ success: true, compartible: true });
+    // Desde US57 (28/11/2026) compartir guarda además la aceptación de la
+    // licencia; la fecha se comprueba aparte, en el bloque de la licencia.
     expect(prisma.courses.update).toHaveBeenCalledWith({
       where: { id: "curso-1" },
-      data: { compartible: true },
+      data: {
+        compartible: true,
+        licenciaVersion: VERSION_LICENCIA,
+        licenciaAceptadaEn: expect.any(Date),
+      },
     });
   });
 
@@ -161,5 +171,45 @@ describe("alternarCursoCompartible (US47)", () => {
     const resultado = await alternarCursoCompartible(null, formData());
 
     expect(resultado).toEqual({ success: true, compartible: false });
+  });
+
+  // US57 (28/11/2026): el permiso del autor.
+  describe("la licencia al compartir", () => {
+    it("NO comparte si no se aceptaron los términos", async () => {
+      // La comprobación va en el servidor y no solo en el formulario: un
+      // botón deshabilitado no impide reenviar la petición, y acá lo que
+      // está en juego es el permiso del autor sobre su trabajo.
+      (prisma.courses.findUnique as any).mockResolvedValue(cursoCompleto());
+
+      const resultado = await alternarCursoCompartible(null, formData("curso-1", false));
+
+      expect(resultado.success).toBe(false);
+      expect(prisma.courses.update).not.toHaveBeenCalled();
+    });
+
+    it("guarda QUÉ versión aceptó y cuándo, no solo que aceptó", async () => {
+      (prisma.courses.findUnique as any).mockResolvedValue(cursoCompleto());
+      (prisma.courses.update as any).mockResolvedValue({ compartible: true });
+
+      await alternarCursoCompartible(null, formData());
+
+      const datos = (prisma.courses.update as any).mock.calls[0][0].data;
+      expect(datos.compartible).toBe(true);
+      expect(datos.licenciaVersion).toBe(VERSION_LICENCIA);
+      expect(datos.licenciaAceptadaEn).toBeInstanceOf(Date);
+    });
+
+    it("dejar de compartir no pide la casilla ni borra la aceptación", async () => {
+      // El registro de que ese día aceptó sigue valiendo para las copias que
+      // ya se hicieron.
+      (prisma.courses.findUnique as any).mockResolvedValue(cursoCompleto({ compartible: true }));
+      (prisma.courses.update as any).mockResolvedValue({ compartible: false });
+
+      const resultado = await alternarCursoCompartible(null, formData("curso-1", false));
+
+      expect(resultado.success).toBe(true);
+      const datos = (prisma.courses.update as any).mock.calls[0][0].data;
+      expect(datos).toEqual({ compartible: false });
+    });
   });
 });

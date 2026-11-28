@@ -83,6 +83,7 @@ export default async function SuperAdminPage() {
     verificado: boolean;
     compartible: boolean;
     createdAt: Date;
+    licenciaAceptadaEn: Date | null;
     tutor: { nombre: string; apellido: string };
     _count: { contenidos: number; actividades: number; quizzes: number };
   };
@@ -96,6 +97,10 @@ export default async function SuperAdminPage() {
       verificado: true,
       compartible: true,
       createdAt: true,
+      // US57 (28/11/2026): si el autor aceptó los términos. Los cursos
+      // compartidos antes de que la casilla existiera lo tienen en NULL, y
+      // eso se dice acá en vez de esconderlo: quien aprueba decide.
+      licenciaAceptadaEn: true,
       tutor: { select: { nombre: true, apellido: true } },
       _count: { select: { contenidos: true, actividades: true, quizzes: true } },
     },
@@ -268,6 +273,20 @@ export default async function SuperAdminPage() {
                         {curso._count.contenidos} lecciones · {curso._count.actividades} actividades
                         · {curso._count.quizzes} evaluaciones
                       </p>
+                      {curso.licenciaAceptadaEn ? (
+                        <p className="text-xs text-muted-foreground">
+                          Licencia aceptada por el autor el{" "}
+                          {curso.licenciaAceptadaEn.toLocaleDateString("es-CO", {
+                            day: "numeric",
+                            month: "long",
+                          })}
+                        </p>
+                      ) : (
+                        <p className="text-xs font-semibold text-amber-500">
+                          Sin licencia registrada — se compartió antes de que se pidiera. Pídele al
+                          autor que lo comparta de nuevo antes de aprobarlo.
+                        </p>
+                      )}
                     </div>
 
                     {/* Los mismos dos controles de siempre: dar el sello

@@ -9,6 +9,14 @@
 vive en `/superadmin` con el más viejo primero, y el control de compartir del Tutor pasó de dos
 estados a tres: *Solo tuyo · En revisión · Publicado en el catálogo*.
 
+**Y después US57, la licencia al compartir**, que encajó justo donde quedó la revisión: compartir un
+curso ahora pasa por una casilla con los términos a la vista, y se guarda **qué versión aceptó el
+autor y cuándo** —dos columnas, porque la fecha sola no dice qué aceptó—. Lo compartido antes queda
+en `NULL` a propósito: una migración no inventa un consentimiento, así que esos cursos salen en la
+cola marcados *"sin licencia registrada"*. Y el texto **pide permiso en vez de pedir renuncia**,
+porque los derechos morales del autor no se pueden ceder; hay hasta una prueba que falla si
+aparecen las palabras "renuncia" o "cede".
+
 **Lo que apareció al construirla y es lo que de verdad importa:** acotar la lista no acotaba nada.
 La **ficha** del catálogo y la acción de **adoptar** seguían aceptando cualquier curso compartido,
 con sello o sin él, así que bastaba conocer el id —o tener el enlace que el propio autor pasó— para
@@ -149,10 +157,11 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
   `create-glossary-term-form.tsx`, la pantalla del glosario, los enlaces en el temario, en
   `lesson-curriculum.tsx` y en el reproductor, la sección del curso del tutor, y las dos pruebas de
   pantalla actualizadas — más `Backlog.md`, `progress.md` y este archivo.
-- **Seis migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
+- **Migraciones sin confirmar que estén aplicadas:** `20261123040000_add_curso_compartible`,
   `20261124040000_add_curso_verificado`, `20261125040000_add_espacio_origen_estudiante`,
   `20261125050000_add_ventana_y_tipo_entrega`, `20261125060000_add_anuncios` y
-  `20261127040000_add_glosario` — **seis**. Siempre
+  `20261127040000_add_glosario` y `20261128040000_add_licencia_compartir` — **nueve**, contando
+  las dos de Antigravity (`add_reportes_curso` y `add_grupos`). Siempre
   con `npx prisma migrate deploy` + `npx prisma generate`, nunca `migrate dev`.
 - **`bulk-import-students.test.ts` hay que correrlo en su máquina**: no corre en el clon de la nube
   porque `xlsx` está bloqueado ahí, y US50 le cambió la detección de duplicados.
@@ -165,16 +174,17 @@ Confirmar con `git log --oneline -1` antes de tocar nada.
 
 ## Mañana se arranca por aquí
 
-**US57 — la licencia expresa al compartir.** Es la que sigue del 27/11 y ahora encaja mejor que
-nunca: el curso ya pasa por una revisión antes de publicarse, así que el momento en que el docente
-acepta los términos es justo el mismo clic. Necesita **migración** (guardar qué versión de los
-términos aceptó y cuándo), la casilla en el control de compartir —sin ella no se comparte— y el
-texto, que **lo tiene que revisar un abogado** antes de cobrarle a nadie. Lo que no cambia: el
-crédito al autor en cada copia ya está desde US47, y los derechos morales no se pueden ceder.
+**El docente dijo que destinará un día entero solo a pruebas**, y es lo que más falta hace: la cola
+de revisión, la licencia, el glosario, los grupos y los reportes **no se han visto nunca en
+navegador**, y el barrido de diseño cambió 214 clases que solo se verifican con los ojos.
 
-Alternativas si prefiere otra cosa: **US55 + US56** juntas (la plantilla de curso, el PDF y los
-bloques interactivos, que comparten el problema del papel), o **la columna `codigo` rotable de
-US51**, que sigue siendo la deuda de seguridad más vieja sin cerrar.
+Antes de ese día: **`npm run verificar`**, que aplica las **nueve** migraciones pendientes. Sin eso
+la plataforma ni siquiera abre los cursos — ya pasó el 27/11.
+
+Si en vez de probar se prefiere seguir construyendo, lo que sigue en orden de valor: **US55 + US56**
+juntas (la plantilla de curso, el PDF y los bloques interactivos, que comparten el problema del
+papel y tienen las tres maquetas ya elegidas), o **la columna `codigo` rotable de US51**, que es la
+deuda de seguridad más vieja sin cerrar.
 
 ---
 

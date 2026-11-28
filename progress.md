@@ -2,7 +2,7 @@
 
 > Este archivo se sincroniza 1:1 con [`Backlog.md`](./Backlog.md): mismo ID de historia, mismo orden. Cada fila se actualiza cuando cambia el estado real de la implementación — no antes. Al marcar una historia como `Hecho` aquí, su `Estado` en `Backlog.md` debe actualizarse en el mismo commit.
 
-Última actualización: 2026-11-28 — **La cola de revisión del catálogo (US49)**: nada entra al catálogo sin el sello del Super Administrador, con la bandeja de pendientes en `/superadmin` y el control de compartir diciendo la verdad (tres estados en vez de dos). De paso se cerraron **dos puertas que dejaban la cola de adorno**: la ficha del catálogo y la acción de adoptar aceptaban cualquier curso compartido, con sello o sin él.
+Última actualización: 2026-11-28 — **La cola de revisión del catálogo (US49)** y **la licencia al compartir (US57)**. Nada entra al catálogo sin el sello, la ficha y la acción de adoptar también lo exigen —eran dos puertas que dejaban la cola de adorno—, y compartir un curso pasa ahora por aceptar unos términos que quedan guardados con su versión y su fecha.
 
 ## Rediseño UI/UX — Modernización integral para jóvenes (Platzi + Canvas LMS)
 
@@ -158,6 +158,52 @@ escribieron los tipos explícitos en las dos consultas nuevas, como dice `AGENTS
 **Estado después de las dos:** `tsc` sin errores nuevos, `eslint` con **0 errores y 23 avisos** (uno
 menos: la importación de `Novedad` que quedaba sin usar en el panel del Estudiante), y las pruebas
 tocadas en verde — `course-code` 17, `novedades` 4, `join-course-by-code` 15 y `buscar/page` 9.
+
+## US57 — la licencia al compartir (28/11/2026)
+
+La pregunta del docente el 27/11 fue si el material compartido podía publicarse *"ya sin los
+derechos de autor, porque podrían ser sujetos de cambios"*. **La premisa no se sostiene y conviene
+que quede escrito:** los derechos morales —que a alguien se le reconozca como autor— son
+irrenunciables; no se quitan por una decisión de producto ni porque el material se modifique. Lo que
+sí se puede pedir es una **licencia**: permiso para usar y adaptar.
+
+**Lo que ya estaba bien y no se tocó:** desde US47 el que adopta trabaja sobre **su copia**, el
+original no se toca, y el crédito al autor se guarda como texto para que sobreviva incluso al
+borrado del curso original. **El crédito es lo barato, y es justo lo que no se puede quitar.**
+
+**Lo que faltaba era el momento en que el autor dice que sí.** Marcar "compartible" era un
+interruptor sin advertencia. Ahora, en el mismo gesto, hay una casilla con el resumen en una línea y
+los términos desplegables en cinco puntos, escritos para que un docente los entienda: qué puede
+hacer otro con su curso, que sigue siendo el autor, que el permiso es solo para docentes de esta
+plataforma, que puede dejar de compartir cuando quiera —y qué pasa con las copias ya hechas—, y que
+antes de aparecer en el catálogo hay una revisión. **La casilla va ahí y no en un diálogo aparte:
+separarla convierte el consentimiento en un trámite que se acepta sin leer.**
+
+**Tres decisiones que vale la pena dejar escritas.**
+
+**(1) Dos columnas, no una.** `licenciaAceptadaEn` sola diría "aceptó algo"; con `licenciaVersion`
+se sabe **qué** aceptó. Cuando el texto cambie se sube la versión en `lib/licencia-compartir.ts` y
+las aceptaciones viejas siguen siendo válidas para su propio texto.
+
+**(2) Las dos quedan en `NULL` para lo que ya estaba compartido.** Una migración no puede inventar
+un consentimiento. Esos cursos aparecen en la cola de revisión marcados **"sin licencia
+registrada"**, con la sugerencia de pedirle al autor que lo comparta de nuevo antes de aprobarlo:
+la decisión queda donde está la persona, no escondida en un `UPDATE`.
+
+**(3) Dejar de compartir no borra la aceptación.** Es el registro de que ese día dio el permiso, y
+sigue valiendo para las copias que ya se hicieron con él. Hay una prueba que lo fija.
+
+**Y una prueba que no es de código sino de redacción:** el texto **pide permiso en vez de pedir
+renuncia**, y hay un caso que falla si aparecen las palabras "renuncia" o "cede". Suena raro probar
+un texto legal, pero es exactamente la confusión que originó la historia.
+
+**Lo que falta y no es programación:** que un abogado revise el texto antes de cobrarle a nadie, y
+decidir si alguna vez se pedirá la licencia más fuerte —que la plataforma incluya el curso en su
+biblioteca propia y lo edite—, que es una conversación comercial y se pide aparte.
+
+**Verificación:** `tsc` sin errores nuevos, `eslint` 0 errores, **12 pruebas nuevas** (9 del módulo
+de términos, 3 de la acción) y una existente actualizada, porque compartir ahora escribe también la
+aceptación. 344 pruebas pasan en el clon.
 
 ## La cola de revisión del catálogo — 28/11/2026
 
